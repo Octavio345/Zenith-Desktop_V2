@@ -92,7 +92,7 @@ function MetricsPanel({ result, insights }) {
         <span className="material-symbols-outlined" aria-hidden="true">
           analytics
         </span>
-        <span>Analise do talhao</span>
+        <span>Análise do talhão</span>
       </div>
 
       <div className={styles.metriasPrincipais}>
@@ -142,13 +142,13 @@ function MetricsPanel({ result, insights }) {
                 )}
                 {rows.orientation_deg != null && (
                   <span className={styles.fileirasDetalheItem}>
-                    {rows.orientation_deg} graus de angulo
+                    {rows.orientation_deg} graus de ângulo
                   </span>
                 )}
               </div>
             ) : (
               <span className={`${styles.statusTag} ${styles.statusTag_info}`}>
-                Nao identificadas
+                Não identificadas
               </span>
             )
           ) : (
@@ -162,7 +162,7 @@ function MetricsPanel({ result, insights }) {
           )}
         </CartaoMetrica>
 
-        <CartaoMetrica icon="wb_sunny" rotulo="Iluminacao">
+        <CartaoMetrica icon="image_search" rotulo="Condições da imagem">
           <span className={`${styles.statusTag} ${iluminacaoInfo.classe}`}>
             {iluminacaoInfo.texto}
           </span>
@@ -170,14 +170,16 @@ function MetricsPanel({ result, insights }) {
             <span className={styles.notaSombra}>{sombraPct}% em sombra</span>
           )}
           {pathPct > 2 && (
-            <span className={styles.notaSombra}>{pathPct}% caminhos excluidos</span>
+            <span className={styles.notaSombra}>
+              Área excluída: {pathPct}% em caminhos
+            </span>
           )}
         </CartaoMetrica>
       </div>
 
       {insights?.length > 0 && (
         <div className={styles.secaoInterpretacao}>
-          <p className={styles.interpretacaoTitulo}>Interpretacao</p>
+          <p className={styles.interpretacaoTitulo}>Interpretação</p>
           <ul className={styles.listaInsights}>
             {insights.map((insight) => (
               <li

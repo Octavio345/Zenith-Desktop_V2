@@ -20,14 +20,14 @@ function interpretarCobertura(coverage) {
   if (coverage < THRESHOLDS.coverage.critico) {
     return {
       tipo: "perigo",
-      texto: `Cobertura de ${pct}% muito abaixo do esperado. Pode haver falha de germinacao ou estande comprometido.`,
+      texto: `Cobertura de ${pct}% muito abaixo do esperado. Pode haver falha de germinação ou estande comprometido.`,
     }
   }
 
   if (coverage < THRESHOLDS.coverage.moderado) {
     return {
       tipo: "aviso",
-      texto: `Cobertura de ${pct}% abaixo do ideal. Acompanhe o desenvolvimento nos proximos dias.`,
+      texto: `Cobertura de ${pct}% abaixo do ideal. Acompanhe o desenvolvimento nos próximos dias.`,
     }
   }
 
@@ -44,20 +44,20 @@ function interpretarFalhas(failureScore, failureLevel) {
   if (nivel === "ALTO") {
     return {
       tipo: "perigo",
-      texto: `${pct}% da area com falhas criticas. Avaliacao urgente e possivel replantio recomendados.`,
+      texto: `${pct}% da área com falhas críticas. Avaliação urgente e possível replantio recomendados.`,
     }
   }
 
   if (nivel === "MEDIO") {
     return {
       tipo: "aviso",
-      texto: `${pct}% da area com falhas moderadas. Agende uma visita tecnica para avaliacao presencial.`,
+      texto: `${pct}% da área com falhas moderadas. Agende uma visita técnica para avaliação presencial.`,
     }
   }
 
   return {
     tipo: "ok",
-    texto: "Distribuicao do plantio em boas condicoes. Nenhuma falha significativa detectada.",
+    texto: "Distribuição do plantio em boas condições. Nenhuma falha significativa detectada.",
   }
 }
 
@@ -67,14 +67,14 @@ function interpretarUniformidade(uniformity) {
   if (uniformity < THRESHOLDS.uniformity.baixa) {
     return {
       tipo: "aviso",
-      texto: `Uniformidade de ${pct}%. A distribuicao esta irregular entre regioes do talhao.`,
+      texto: `Uniformidade de ${pct}%. A distribuição está irregular entre regiões do talhão.`,
     }
   }
 
   if (uniformity >= THRESHOLDS.uniformity.media) {
     return {
       tipo: "ok",
-      texto: `Uniformidade de ${pct}%. Boa homogeneidade na distribuicao do plantio.`,
+      texto: `Uniformidade de ${pct}%. Boa homogeneidade na distribuição do plantio.`,
     }
   }
 
@@ -88,15 +88,18 @@ function interpretarFileiras(rows) {
     if (rows.periodicity_snr < THRESHOLDS.periodicity.fraco) {
       return {
         tipo: "info",
-        texto: "Estrutura de fileiras nao identificada. Pode indicar dossel fechado ou imagem inclinada.",
+        texto: "Fileiras não identificadas com confiança. Em dossel fechado, isso pode ser esperado.",
       }
     }
-    return null
+    return {
+      tipo: "info",
+      texto: "As fileiras não atingiram confiança suficiente para estimar alinhamento e espaçamento.",
+    }
   }
 
   const partes = ["Fileiras detectadas com regularidade."]
   if (rows.row_count) partes.push(`Estimativa: ${rows.row_count} fileiras.`)
-  if (rows.orientation_deg != null) partes.push(`Angulo: ${rows.orientation_deg} graus.`)
+  if (rows.orientation_deg != null) partes.push(`Ângulo: ${rows.orientation_deg} graus.`)
 
   return { tipo: "info", texto: partes.join(" ") }
 }
@@ -105,14 +108,14 @@ function interpretarIluminacao(quality, shadowCoverage) {
   if (quality === "poor") {
     return {
       tipo: "aviso",
-      texto: "Qualidade de iluminacao ruim. Os resultados podem ser menos precisos.",
+      texto: "Qualidade de iluminação ruim. Os resultados podem ser menos precisos.",
     }
   }
 
   if (shadowCoverage > 0.2) {
     return {
       tipo: "info",
-      texto: `${Math.round(shadowCoverage * 100)}% da imagem esta em sombra. Essas areas foram excluidas da analise.`,
+      texto: `${Math.round(shadowCoverage * 100)}% da imagem está em sombra. Essas áreas foram excluídas da análise.`,
     }
   }
 
@@ -124,7 +127,7 @@ function interpretarCaminhos(pathCoverage) {
 
   return {
     tipo: "info",
-    texto: `${Math.round(pathCoverage * 100)}% da imagem foi identificado como caminho de maquinario e excluido da contagem.`,
+    texto: `${Math.round(pathCoverage * 100)}% da imagem foi identificado como caminho de maquinário e excluído da contagem.`,
   }
 }
 
@@ -154,7 +157,7 @@ export function interpretar(result) {
 
   const alertaPrincipal = perigo || aviso || {
     nivel: "ok",
-    texto: "Plantio em boas condicoes. Nenhuma intervencao urgente necessaria.",
+    texto: "Plantio em boas condições. Nenhuma intervenção urgente necessária.",
   }
 
   return {

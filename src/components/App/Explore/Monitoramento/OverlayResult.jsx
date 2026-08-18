@@ -2,10 +2,10 @@ import { useMemo, useState } from "react"
 import styles from "../../../../styles/App/MonitoramentoView.module.css"
 
 const LEGENDA = [
-  { cor: "#56a870", rotulo: "Vegetacao saudavel" },
+  { cor: "#56a870", rotulo: "Vegetação saudável" },
   { cor: "#f59e0b", rotulo: "Alerta moderado" },
-  { cor: "#ef4444", rotulo: "Falha critica" },
-  { cor: "#3b82f6", rotulo: "Caminho ignorado" },
+  { cor: "#ef4444", rotulo: "Falha crítica" },
+  { cor: "#3b82f6", rotulo: "Caminho excluído da análise" },
 ]
 
 export default function OverlayResult({ originalSrc, result }) {
@@ -27,7 +27,7 @@ export default function OverlayResult({ originalSrc, result }) {
       <div className={styles.abas} role="tablist" aria-label="Imagem analisada">
         {[
           { id: "original", rotulo: "Original" },
-          { id: "analise", rotulo: "Analise" },
+          { id: "analise", rotulo: "Análise" },
         ].map(({ id, rotulo }) => (
           <button
             key={id}
@@ -45,7 +45,7 @@ export default function OverlayResult({ originalSrc, result }) {
       <div className={styles.imagemWrapper}>
         <img
           src={imagemAtual}
-          alt={abaAtiva === "original" ? "Imagem original" : "Mapa de densidade da plantacao"}
+          alt={abaAtiva === "original" ? "Imagem original" : "Mapa de densidade da plantação"}
           className={styles.imagemDisplay}
           loading="lazy"
         />
