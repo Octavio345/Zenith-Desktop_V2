@@ -62,8 +62,7 @@ export async function createModelo3DTask(images, name, options = {}) {
     const response = await fetch(`${MODELO_3D_API_BASE_URL}/webodm/tasks`, {
       method: "POST",
       body,
-      signal: controller.signal,
-      credentials: "include"
+      signal: controller.signal
     })
     return await readResponse(response)
   } catch (error) {
@@ -79,8 +78,7 @@ export async function createModelo3DTask(images, name, options = {}) {
 
 export async function getModelo3DTask(taskId, options = {}) {
   const response = await fetch(`${MODELO_3D_API_BASE_URL}/webodm/tasks/${encodeURIComponent(taskId)}`, {
-    signal: options.signal,
-    credentials: "include"
+    signal: options.signal
   })
   return readResponse(response)
 }
