@@ -87,4 +87,8 @@ export function getModelo3DViewerUrl(taskId) {
   return `${MODELO_3D_API_BASE_URL}/viewer/${encodeURIComponent(taskId)}`
 }
 
+export function getModelo3DModelUrl(taskId) {
+  return `${MODELO_3D_API_BASE_URL}/webodm/tasks/${encodeURIComponent(taskId)}/model`
+}
+
 export { MODELO_3D_API_BASE_URL }

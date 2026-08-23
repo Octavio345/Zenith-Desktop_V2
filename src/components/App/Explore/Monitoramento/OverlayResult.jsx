@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react"
+import Monitoring3DMap from "./Monitoring3DMap"
 import styles from "../../../../styles/App/MonitoramentoView.module.css"
 
 const LEGENDA = [
@@ -28,6 +29,7 @@ export default function OverlayResult({ originalSrc, result }) {
         {[
           { id: "original", rotulo: "Original" },
           { id: "analise", rotulo: "Análise" },
+          { id: "mapa3d", rotulo: "Mapa 3D" },
         ].map(({ id, rotulo }) => (
           <button
             key={id}
@@ -42,16 +44,20 @@ export default function OverlayResult({ originalSrc, result }) {
         ))}
       </div>
 
-      <div className={styles.imagemWrapper}>
-        <img
-          src={imagemAtual}
-          alt={abaAtiva === "original" ? "Imagem original" : "Mapa de densidade da plantação"}
-          className={styles.imagemDisplay}
-          loading="lazy"
-        />
-      </div>
+      {abaAtiva === "mapa3d" && overlaySrc ? (
+        <Monitoring3DMap imageSrc={overlaySrc} result={result} />
+      ) : (
+        <div className={styles.imagemWrapper}>
+          <img
+            src={imagemAtual}
+            alt={abaAtiva === "original" ? "Imagem original" : "Mapa de densidade da plantação"}
+            className={styles.imagemDisplay}
+            loading="lazy"
+          />
+        </div>
+      )}
 
-      {abaAtiva === "analise" && (
+      {(abaAtiva === "analise" || abaAtiva === "mapa3d") && (
         <div className={styles.legenda}>
           {LEGENDA.map(({ cor, rotulo }) => (
             <span key={rotulo} className={styles.legendaItem}>
