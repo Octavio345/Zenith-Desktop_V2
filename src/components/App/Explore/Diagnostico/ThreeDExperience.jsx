@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   createModelo3DTask,
-  getModelo3DModelUrl,
-  getModelo3DTask
+  getModelo3DTask,
+  getModelo3DViewerUrl
 } from "../../../../services/modelo3dApi"
 import "../../../../styles/App/ThreeDExperience.css"
 
@@ -41,7 +41,6 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
   )
   const uploadControllerRef = useRef(null)
   const pollingTimerRef = useRef(null)
-  const viewerShellRef = useRef(null)
 
   const [decision, setDecision] = useState("prompt")
   const [selectedIds, setSelectedIds] = useState(initialSelection)
@@ -58,14 +57,6 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
   const progress = Math.max(0, Math.min(100, Math.round(Number(task?.progress) || 0)))
   const isCompleted = task?.status === "completed"
   const statusCopy = taskStatusCopy(task?.status)
-
-  const toggleViewerFullscreen = async () => {
-    if (document.fullscreenElement) {
-      await document.exitFullscreen()
-      return
-    }
-    await viewerShellRef.current?.requestFullscreen?.()
-  }
 
   useEffect(() => {
     return () => {
@@ -328,27 +319,16 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
           {task.status === "canceled" && <div className="zenith-3d-error" role="alert">A tarefa foi cancelada antes da conclusão.</div>}
 
           {isCompleted ? (
-            <div className="zenith-3d-viewer-shell" ref={viewerShellRef}>
-              <div className="zenith-3d-viewer-horizon" aria-hidden="true" />
-              <div className="zenith-3d-soil-base" aria-hidden="true">
-                <span>BASE VISUAL DO SOLO</span>
-              </div>
-              <model-viewer
-                className="zenith-3d-model-viewer"
-                src={getModelo3DModelUrl(task.task_id)}
-                alt="Modelo 3D da área analisada"
-                camera-controls
-                auto-rotate
-                shadow-intensity="1.4"
-                shadow-softness="0.8"
-                exposure="1"
-                interaction-prompt="auto"
-                camera-orbit="-25deg 65deg auto"
+            <div className="zenith-3d-viewer-shell">
+              <iframe
+                src={getModelo3DViewerUrl(task.task_id)}
+                title="Visualizador 3D da lavoura"
+                allow="fullscreen"
               />
-              <button type="button" className="zenith-3d-viewer-fullscreen" onClick={toggleViewerFullscreen}>
-                <span className="material-symbols-outlined">fullscreen</span>
-                Tela cheia
-              </button>
+              <a href={getModelo3DViewerUrl(task.task_id)} target="_blank" rel="noreferrer">
+                <span className="material-symbols-outlined">open_in_new</span>
+                Abrir visualizador em tela cheia
+              </a>
             </div>
           ) : (
             <div className="zenith-3d-processing-stage" aria-live="polite">
