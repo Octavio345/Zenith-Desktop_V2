@@ -1,0 +1,833 @@
+.zenith-3d-invitation,
+.zenith-3d-workspace,
+.zenith-3d-dismissed {
+  --z3d-green: #00ffaa;
+  --z3d-green-deep: #0d7c4b;
+  --z3d-surface: #09150f;
+  --z3d-border: rgba(0, 255, 170, 0.16);
+  position: relative;
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid var(--z3d-border);
+  border-radius: 24px;
+  color: #edf7f1;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(0, 255, 170, 0.13), transparent 30%),
+    linear-gradient(135deg, rgba(15, 42, 27, 0.96), rgba(7, 16, 11, 0.98));
+  box-shadow: 0 22px 58px rgba(0, 0, 0, 0.26);
+}
+
+.zenith-3d-invitation::before,
+.zenith-3d-workspace::before {
+  position: absolute;
+  inset: 0;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(rgba(0, 255, 170, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 170, 0.055) 1px, transparent 1px);
+  background-size: 34px 34px;
+  content: "";
+  mask-image: linear-gradient(90deg, #000, transparent 78%);
+  pointer-events: none;
+}
+
+.zenith-3d-invitation {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) auto;
+  gap: clamp(22px, 3vw, 42px);
+  align-items: center;
+  padding: clamp(26px, 4vw, 42px);
+}
+
+.zenith-3d-visual {
+  position: relative;
+  display: grid;
+  width: 140px;
+  height: 140px;
+  place-items: center;
+  border: 1px solid rgba(0, 255, 170, 0.17);
+  border-radius: 34px;
+  background: rgba(0, 255, 170, 0.045);
+  box-shadow: inset 0 0 45px rgba(0, 255, 170, 0.05), 0 0 42px rgba(0, 255, 170, 0.06);
+}
+
+.zenith-3d-visual > .material-symbols-outlined {
+  color: var(--z3d-green);
+  font-size: 58px;
+  filter: drop-shadow(0 0 14px rgba(0, 255, 170, 0.36));
+}
+
+.zenith-3d-orbit {
+  position: absolute;
+  inset: 21px;
+  border: 1px solid rgba(0, 255, 170, 0.18);
+  border-radius: 50%;
+  transform: rotateX(65deg) rotateZ(25deg);
+}
+
+.zenith-3d-orbit-two {
+  inset: 29px 16px;
+  transform: rotateY(66deg) rotateZ(-18deg);
+}
+
+.zenith-3d-invitation-copy,
+.zenith-3d-invitation-actions,
+.zenith-3d-workspace > *,
+.zenith-3d-progress-area > * {
+  position: relative;
+  z-index: 1;
+}
+
+.zenith-3d-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--z3d-green);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+}
+
+.zenith-3d-invitation h2,
+.zenith-3d-workspace h2,
+.zenith-3d-progress-area h3 {
+  margin: 0;
+  color: #f7fbf8;
+  line-height: 1.15;
+}
+
+.zenith-3d-invitation h2 {
+  font-size: clamp(1.25rem, 2vw, 1.85rem);
+}
+
+.zenith-3d-invitation-copy > p,
+.zenith-3d-workspace-header p,
+.zenith-3d-progress-copy p {
+  max-width: 760px;
+  margin: 10px 0 0;
+  color: #97aa9f;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.zenith-3d-quick-warning {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+  color: #c6d6cd;
+  font-size: 0.72rem;
+}
+
+.zenith-3d-quick-warning .material-symbols-outlined {
+  color: #f4c860;
+  font-size: 18px;
+}
+
+.zenith-3d-invitation-actions {
+  display: flex;
+  min-width: 210px;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.zenith-3d-primary,
+.zenith-3d-secondary,
+.zenith-3d-close,
+.zenith-3d-dismissed button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 750;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.zenith-3d-primary {
+  min-height: 48px;
+  padding: 12px 18px;
+  border-radius: 13px;
+  color: #03150d;
+  background: linear-gradient(135deg, #00d991, #00ffaa);
+  box-shadow: 0 10px 28px rgba(0, 255, 170, 0.16);
+}
+
+.zenith-3d-primary:hover:not(:disabled) {
+  box-shadow: 0 14px 34px rgba(0, 255, 170, 0.25);
+  transform: translateY(-2px);
+}
+
+.zenith-3d-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+  filter: saturate(0.45);
+}
+
+.zenith-3d-secondary {
+  min-height: 43px;
+  padding: 10px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  color: #93a79b;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.zenith-3d-secondary:hover {
+  border-color: rgba(0, 255, 170, 0.22);
+  color: #dff5e9;
+}
+
+.zenith-3d-workspace {
+  padding: clamp(24px, 4vw, 38px);
+}
+
+.zenith-3d-workspace-header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.zenith-3d-workspace-header h2 {
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+}
+
+.zenith-3d-close {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 12px;
+  color: #82968a;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.zenith-3d-close:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.zenith-3d-quality-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.zenith-3d-quality-grid article {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  column-gap: 11px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.065);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.022);
+}
+
+.zenith-3d-quality-grid .material-symbols-outlined {
+  grid-row: 1 / span 2;
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--z3d-green);
+  background: rgba(0, 255, 170, 0.07);
+  font-size: 21px;
+}
+
+.zenith-3d-quality-grid strong {
+  color: #ebf5ef;
+  font-size: 0.76rem;
+}
+
+.zenith-3d-quality-grid p {
+  margin: 4px 0 0;
+  color: #748a7e;
+  font-size: 0.67rem;
+  line-height: 1.45;
+}
+
+.zenith-3d-critical-note,
+.zenith-3d-insufficient,
+.zenith-3d-error {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-top: 13px;
+  padding: 14px 16px;
+  border: 1px solid rgba(244, 200, 96, 0.2);
+  border-radius: 14px;
+  color: #eedda8;
+  background: rgba(244, 200, 96, 0.06);
+}
+
+.zenith-3d-critical-note > .material-symbols-outlined,
+.zenith-3d-insufficient > .material-symbols-outlined {
+  color: #f4c860;
+  font-size: 22px;
+}
+
+.zenith-3d-critical-note strong,
+.zenith-3d-insufficient strong {
+  display: block;
+  color: #f7e8b8;
+  font-size: 0.75rem;
+}
+
+.zenith-3d-critical-note p,
+.zenith-3d-insufficient p {
+  margin: 3px 0 0;
+  color: #a89565;
+  font-size: 0.68rem;
+  line-height: 1.45;
+}
+
+.zenith-3d-form-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-top: 18px;
+}
+
+.zenith-3d-form-row label > span {
+  display: block;
+  margin-bottom: 8px;
+  color: #8ca096;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.zenith-3d-form-row input {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 13px;
+  outline: 0;
+  color: #f1f7f3;
+  background: rgba(0, 0, 0, 0.22);
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.zenith-3d-form-row input:focus {
+  border-color: rgba(0, 255, 170, 0.45);
+  box-shadow: 0 0 0 3px rgba(0, 255, 170, 0.07);
+}
+
+.zenith-3d-selection-counter {
+  display: flex;
+  min-width: 180px;
+  gap: 10px;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 15px;
+  border: 1px solid rgba(0, 255, 170, 0.13);
+  border-radius: 13px;
+  background: rgba(0, 255, 170, 0.045);
+}
+
+.zenith-3d-selection-counter > span {
+  color: var(--z3d-green);
+}
+
+.zenith-3d-selection-counter strong,
+.zenith-3d-selection-counter small {
+  display: block;
+}
+
+.zenith-3d-selection-counter strong {
+  font-size: 0.85rem;
+}
+
+.zenith-3d-selection-counter small {
+  margin-top: 1px;
+  color: #73877b;
+  font-size: 0.62rem;
+}
+
+.zenith-3d-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 8px;
+  max-height: 390px;
+  margin-top: 13px;
+  overflow-y: auto;
+  padding: 3px 3px 3px 0;
+}
+
+.zenith-3d-photo {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  opacity: 0.48;
+  background: #04100a;
+  cursor: pointer;
+  transition: opacity 160ms ease, border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.zenith-3d-photo:hover {
+  opacity: 0.8;
+  transform: translateY(-2px);
+}
+
+.zenith-3d-photo.selected {
+  border-color: rgba(0, 255, 170, 0.75);
+  opacity: 1;
+  box-shadow: 0 0 0 2px rgba(0, 255, 170, 0.08), 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+.zenith-3d-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.zenith-3d-photo-index,
+.zenith-3d-photo-check {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(3, 12, 7, 0.78);
+  backdrop-filter: blur(8px);
+}
+
+.zenith-3d-photo-index {
+  bottom: 6px;
+  left: 6px;
+  min-width: 23px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 7px;
+  font-size: 0.58rem;
+  font-weight: 800;
+}
+
+.zenith-3d-photo-check {
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.zenith-3d-photo.selected .zenith-3d-photo-check {
+  border-color: var(--z3d-green);
+  color: #04150d;
+  background: var(--z3d-green);
+}
+
+.zenith-3d-limit-note {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin: 10px 0 0;
+  color: #81978a;
+  font-size: 0.68rem;
+}
+
+.zenith-3d-limit-note .material-symbols-outlined {
+  color: var(--z3d-green);
+  font-size: 18px;
+}
+
+.zenith-3d-confirmation {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+  margin-top: 18px;
+  color: #9bada2;
+  cursor: pointer;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.zenith-3d-confirmation > input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.zenith-3d-checkbox {
+  display: grid;
+  flex: 0 0 auto;
+  width: 21px;
+  height: 21px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.zenith-3d-checkbox .material-symbols-outlined {
+  color: transparent;
+  font-size: 15px;
+}
+
+.zenith-3d-confirmation > input:checked + .zenith-3d-checkbox {
+  border-color: var(--z3d-green);
+  background: var(--z3d-green);
+}
+
+.zenith-3d-confirmation > input:checked + .zenith-3d-checkbox .material-symbols-outlined {
+  color: #03140c;
+}
+
+.zenith-3d-confirmation > input:focus-visible + .zenith-3d-checkbox {
+  box-shadow: 0 0 0 3px rgba(0, 255, 170, 0.18);
+}
+
+.zenith-3d-error {
+  border-color: rgba(251, 113, 133, 0.22);
+  color: #fecdd3;
+  background: rgba(244, 63, 94, 0.07);
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.zenith-3d-error .material-symbols-outlined {
+  color: #fb7185;
+  font-size: 20px;
+}
+
+.zenith-3d-submit-row {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.065);
+}
+
+.zenith-3d-submit-row > div {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.zenith-3d-submit-row > div > span {
+  color: var(--z3d-green);
+  font-size: 21px;
+}
+
+.zenith-3d-submit-row p {
+  margin: 0;
+}
+
+.zenith-3d-submit-row strong,
+.zenith-3d-submit-row small {
+  display: block;
+}
+
+.zenith-3d-submit-row strong {
+  color: #b9cbc0;
+  font-size: 0.68rem;
+}
+
+.zenith-3d-submit-row small {
+  margin-top: 2px;
+  color: #687d71;
+  font-size: 0.61rem;
+}
+
+.zenith-3d-create {
+  min-width: 230px;
+}
+
+.zenith-3d-progress-area {
+  margin-top: 24px;
+}
+
+.zenith-3d-progress-copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 15px;
+  align-items: center;
+}
+
+.zenith-3d-progress-icon {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid rgba(0, 255, 170, 0.18);
+  border-radius: 16px;
+  color: var(--z3d-green);
+  background: rgba(0, 255, 170, 0.06);
+}
+
+.zenith-3d-progress-copy .zenith-3d-eyebrow {
+  overflow: hidden;
+  max-width: 720px;
+  margin-bottom: 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zenith-3d-progress-copy h3 {
+  font-size: 1rem;
+}
+
+.zenith-3d-progress-copy > strong {
+  color: var(--z3d-green);
+  font-size: clamp(1.5rem, 3vw, 2.35rem);
+}
+
+.zenith-3d-progress-track {
+  height: 8px;
+  margin-top: 18px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.zenith-3d-progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #00aa71, #00ffaa);
+  box-shadow: 0 0 18px rgba(0, 255, 170, 0.3);
+  transition: width 450ms ease;
+}
+
+.zenith-3d-processing-stage {
+  position: relative;
+  display: flex;
+  min-height: 310px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-top: 18px;
+  padding: 30px;
+  border: 1px solid rgba(0, 255, 170, 0.1);
+  border-radius: 18px;
+  text-align: center;
+  background: radial-gradient(circle at center, rgba(0, 255, 170, 0.08), rgba(1, 9, 5, 0.7) 65%);
+}
+
+.zenith-3d-processing-grid {
+  position: absolute;
+  right: -10%;
+  bottom: -62%;
+  left: -10%;
+  height: 100%;
+  opacity: 0.38;
+  background-image:
+    linear-gradient(rgba(0, 255, 170, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 170, 0.2) 1px, transparent 1px);
+  background-size: 34px 34px;
+  transform: perspective(360px) rotateX(64deg);
+  transform-origin: center top;
+}
+
+.zenith-3d-processing-stage > .material-symbols-outlined {
+  position: relative;
+  color: var(--z3d-green);
+  font-size: 60px;
+  filter: drop-shadow(0 0 16px rgba(0, 255, 170, 0.35));
+  animation: zenith3dFloat 2.8s ease-in-out infinite;
+}
+
+.zenith-3d-processing-stage strong,
+.zenith-3d-processing-stage p {
+  position: relative;
+}
+
+.zenith-3d-processing-stage strong {
+  margin-top: 14px;
+  font-size: 0.88rem;
+}
+
+.zenith-3d-processing-stage p {
+  max-width: 520px;
+  margin: 7px 0 0;
+  color: #71867a;
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+.zenith-3d-viewer-shell {
+  position: relative;
+  margin-top: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 170, 0.15);
+  border-radius: 19px;
+  background: #030a06;
+}
+
+.zenith-3d-viewer-shell iframe {
+  display: block;
+  width: 100%;
+  height: min(68vh, 680px);
+  min-height: 480px;
+  border: 0;
+}
+
+.zenith-3d-viewer-shell a {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  padding: 10px 13px;
+  border: 1px solid rgba(0, 255, 170, 0.25);
+  border-radius: 11px;
+  color: #dffbef;
+  background: rgba(4, 19, 11, 0.88);
+  backdrop-filter: blur(12px);
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.zenith-3d-dismissed {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px 17px;
+  border-radius: 16px;
+  background: rgba(9, 21, 15, 0.62);
+}
+
+.zenith-3d-dismissed > span {
+  color: #71887a;
+}
+
+.zenith-3d-dismissed p {
+  flex: 1;
+  margin: 0;
+  color: #72877b;
+  font-size: 0.72rem;
+}
+
+.zenith-3d-dismissed button {
+  padding: 8px 11px;
+  border: 1px solid rgba(0, 255, 170, 0.16);
+  border-radius: 9px;
+  color: var(--z3d-green);
+  background: rgba(0, 255, 170, 0.045);
+  font-size: 0.68rem;
+}
+
+.zenith-3d-spin {
+  animation: zenith3dSpin 900ms linear infinite;
+}
+
+@keyframes zenith3dSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes zenith3dFloat {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-9px) rotate(2deg); }
+}
+
+@media (max-width: 980px) {
+  .zenith-3d-invitation {
+    grid-template-columns: 110px minmax(0, 1fr);
+  }
+
+  .zenith-3d-visual {
+    width: 104px;
+    height: 104px;
+    border-radius: 26px;
+  }
+
+  .zenith-3d-invitation-actions {
+    grid-column: 1 / -1;
+    min-width: 0;
+    flex-direction: row;
+  }
+
+  .zenith-3d-invitation-actions button {
+    flex: 1;
+  }
+
+  .zenith-3d-quality-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .zenith-3d-invitation,
+  .zenith-3d-workspace {
+    border-radius: 19px;
+  }
+
+  .zenith-3d-invitation {
+    grid-template-columns: 1fr;
+    padding: 22px;
+  }
+
+  .zenith-3d-visual {
+    width: 88px;
+    height: 88px;
+  }
+
+  .zenith-3d-visual > .material-symbols-outlined {
+    font-size: 43px;
+  }
+
+  .zenith-3d-invitation-actions,
+  .zenith-3d-submit-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .zenith-3d-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .zenith-3d-selection-counter {
+    min-width: 0;
+  }
+
+  .zenith-3d-photo-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .zenith-3d-create {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .zenith-3d-progress-copy {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .zenith-3d-progress-copy > strong {
+    grid-column: 1 / -1;
+  }
+
+  .zenith-3d-viewer-shell iframe {
+    height: 520px;
+    min-height: 420px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zenith-3d-processing-stage > .material-symbols-outlined,
+  .zenith-3d-spin,
+  .zenith-3d-primary,
+  .zenith-3d-photo,
+  .zenith-3d-progress-track span {
+    animation: none;
+    transition: none;
+  }
+}

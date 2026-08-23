@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react"
 import { formatDiagnosisName } from "./diagnosisLabels"
+import ThreeDExperience from "./ThreeDExperience"
 import "../../../../styles/App/BatchDiagnosis.css"
 
 const IMAGE_STATUS = {
@@ -188,6 +189,9 @@ export default function BatchDiagnosisResult({ result, selectedImages = [], onRe
   const probabilities = Object.entries(general?.probabilidades_medias || {})
     .map(([name, value]) => ({ name, value: asNumber(value) }))
     .sort((a, b) => b.value - a.value)
+  const detectedConditionNames = conditions
+    .filter((condition) => !isHealthy(condition.classe))
+    .map((condition) => formatDiagnosisName(condition.classe))
 
   const nextSteps = general?.status === "heterogeneo"
     ? [
@@ -252,6 +256,10 @@ export default function BatchDiagnosisResult({ result, selectedImages = [], onRe
             <MetricCard icon="handshake" value={`${consensus}%`} label="consenso do lote" />
             <MetricCard icon="timer" value={`${asNumber(result?.tempo_processamento_ms).toFixed(0)} ms`} label="tempo de processamento" />
           </section>
+
+          {detectedConditionNames.length > 0 && selectedImages.length > 0 && (
+            <ThreeDExperience images={selectedImages} conditionNames={detectedConditionNames} />
+          )}
 
           <div className="batch-result-layout">
             <section className="batch-panel batch-conditions-panel">
