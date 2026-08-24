@@ -9,6 +9,97 @@ import "../../../../styles/App/ThreeDExperience.css"
 const MAX_3D_IMAGES = 40
 const POLLING_INTERVAL_MS = 5000
 const RETRY_INTERVAL_MS = 10000
+const DJI_MODERN_FILE_PATTERN = /^DJI_(\d{8})(\d{6})_(\d{4})_[A-Z]_(\d{6})/i
+const DJI_LEGACY_FILE_PATTERN = /^DJI_(\d{4})_(\d{6})/i
+
+function getDronePhotoMetadata(image) {
+  const fileName = image?.file?.name || ""
+  const modernMatch = fileName.match(DJI_MODERN_FILE_PATTERN)
+  if (modernMatch) {
+    const [, date, time, flightNumber, sequence] = modernMatch
+    return {
+      fileName,
+      flightKey: `modern_${date}_${time}_${flightNumber}`,
+      flightLabel: `${date.slice(6, 8)}/${date.slice(4, 6)}/${date.slice(0, 4)} · ${time.slice(0, 2)}:${time.slice(2, 4)} · voo ${flightNumber}`,
+      sequence: Number(sequence),
+      sequenceLabel: String(Number(sequence)).padStart(3, "0")
+    }
+  }
+
+  const legacyMatch = fileName.match(DJI_LEGACY_FILE_PATTERN)
+  if (!legacyMatch) return null
+
+  const [, flightNumber, sequence] = legacyMatch
+  return {
+    fileName,
+    flightKey: `legacy_${flightNumber}`,
+    flightLabel: `Voo DJI ${flightNumber}`,
+    sequence: Number(sequence),
+    sequenceLabel: String(Number(sequence)).padStart(3, "0")
+  }
+}
+
+function buildContinuousSequences(items) {
+  const ordered = [...items]
+    .filter((item) => item.metadata)
+    .sort((a, b) => a.metadata.sequence - b.metadata.sequence)
+
+  return ordered.reduce((sequences, item) => {
+    const current = sequences[sequences.length - 1]
+    const previous = current?.[current.length - 1]
+    if (!previous || item.metadata.sequence > previous.metadata.sequence + 1) sequences.push([item])
+    else current.push(item)
+    return sequences
+  }, [])
+}
+
+function groupDroneImages(images) {
+  const groups = new Map()
+
+  images.forEach((image) => {
+    const metadata = getDronePhotoMetadata(image)
+    if (!metadata) return
+    if (!groups.has(metadata.flightKey)) {
+      groups.set(metadata.flightKey, {
+        key: metadata.flightKey,
+        label: metadata.flightLabel,
+        items: []
+      })
+    }
+    groups.get(metadata.flightKey).items.push({ image, metadata })
+  })
+
+  return [...groups.values()]
+    .map((group) => ({ ...group, sequences: buildContinuousSequences(group.items) }))
+    .sort((a, b) => {
+      const longestA = Math.max(0, ...a.sequences.map((sequence) => sequence.length))
+      const longestB = Math.max(0, ...b.sequences.map((sequence) => sequence.length))
+      return longestB - longestA || b.items.length - a.items.length
+    })
+}
+
+function getRecommendedPhotoSet(group) {
+  const longestSequence = [...(group?.sequences || [])]
+    .sort((a, b) => b.length - a.length)[0]
+  return (longestSequence || group?.items || []).slice(0, MAX_3D_IMAGES)
+}
+
+function getInitialSelection(images) {
+  const groups = groupDroneImages(images)
+  const recommended = getRecommendedPhotoSet(groups[0])
+  const candidates = recommended.length >= 2
+    ? recommended.map(({ image }) => image)
+    : images.slice(0, MAX_3D_IMAGES)
+  return new Set(candidates.map((image) => image.id))
+}
+
+function formatSequenceRange(items) {
+  const labels = [...items]
+    .sort((a, b) => a.metadata.sequence - b.metadata.sequence)
+    .map(({ metadata }) => metadata.sequenceLabel)
+  if (labels.length === 1) return labels[0]
+  return `${labels[0]}–${labels[labels.length - 1]}`
+}
 
 function defaultTaskName(conditionNames) {
   const condition = conditionNames[0] || "área monitorada"
@@ -36,12 +127,11 @@ function taskStatusCopy(status) {
 
 export default function ThreeDExperience({ images = [], conditionNames = [] }) {
   const initialSelection = useMemo(
-    () => new Set(images.slice(0, MAX_3D_IMAGES).map((image) => image.id)),
+    () => getInitialSelection(images),
     [images]
   )
   const uploadControllerRef = useRef(null)
   const pollingTimerRef = useRef(null)
-  const viewerShellRef = useRef(null)
 
   const [decision, setDecision] = useState("prompt")
   const [selectedIds, setSelectedIds] = useState(initialSelection)
@@ -55,14 +145,26 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
     () => images.filter((image) => selectedIds.has(image.id)),
     [images, selectedIds]
   )
+  const flightGroups = useMemo(() => groupDroneImages(images), [images])
+  const selectedFlightKeys = useMemo(() => new Set(
+    selectedImages
+      .map((image) => getDronePhotoMetadata(image)?.flightKey)
+      .filter(Boolean)
+  ), [selectedImages])
+  const hasMixedFlights = selectedFlightKeys.size > 1
+  const selectedDroneItems = useMemo(() => selectedImages
+    .map((image) => ({ image, metadata: getDronePhotoMetadata(image) }))
+    .filter((item) => item.metadata), [selectedImages])
+  const hasDiscontinuousSelection = selectedFlightKeys.size === 1
+    && selectedDroneItems.length === selectedImages.length
+    && buildContinuousSequences(selectedDroneItems).length > 1
+  const activeFlight = selectedFlightKeys.size === 1
+    ? flightGroups.find((group) => selectedFlightKeys.has(group.key))
+    : null
+  const recommendedFlightItems = getRecommendedPhotoSet(activeFlight)
   const progress = Math.max(0, Math.min(100, Math.round(Number(task?.progress) || 0)))
   const isCompleted = task?.status === "completed"
   const statusCopy = taskStatusCopy(task?.status)
-
-  const toggleViewerFullscreen = async () => {
-    if (document.fullscreenElement) await document.exitFullscreen()
-    else await viewerShellRef.current?.requestFullscreen?.()
-  }
 
   useEffect(() => {
     return () => {
@@ -105,6 +207,7 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
   const toggleImage = (imageId) => {
     if (task) return
     setError("")
+    setQualityConfirmed(false)
     setSelectedIds((current) => {
       const next = new Set(current)
       if (next.has(imageId)) next.delete(imageId)
@@ -114,9 +217,28 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
     })
   }
 
+  const selectPhotoSet = (items) => {
+    setSelectedIds(new Set(items.slice(0, MAX_3D_IMAGES).map(({ image }) => image.id)))
+    setQualityConfirmed(false)
+    setError("")
+  }
+
+  const isPhotoSetSelected = (items) => (
+    selectedIds.size === items.length
+    && items.every(({ image }) => selectedIds.has(image.id))
+  )
+
   const createTask = async () => {
     if (selectedImages.length < 2) {
       setError("Selecione pelo menos 2 fotografias do mesmo voo.")
+      return
+    }
+    if (hasMixedFlights) {
+      setError("Foram detectados voos diferentes na seleção. Escolha somente um voo antes de criar o modelo 3D.")
+      return
+    }
+    if (hasDiscontinuousSelection) {
+      setError("A seleção contém intervalos sem continuidade. Use um trecho consecutivo para evitar partes soltas ou deformadas no 3D.")
       return
     }
     if (!qualityConfirmed) {
@@ -248,6 +370,95 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
             </div>
           </div>
 
+          {flightGroups.length > 0 && (
+            <div className="zenith-3d-flight-panel">
+              <div className="zenith-3d-flight-heading">
+                <span className="material-symbols-outlined">flight</span>
+                <div>
+                  <strong>{flightGroups.length === 1 ? "1 voo DJI identificado" : `${flightGroups.length} voos DJI identificados`}</strong>
+                  <p>O formato do 3D acompanha a área coberta. Mais fotos podem ampliar o trecho, não apenas aumentar o detalhe.</p>
+                </div>
+              </div>
+
+              <div className="zenith-3d-flight-list">
+                {flightGroups.map((group) => {
+                  const recommendedItems = getRecommendedPhotoSet(group)
+                  const isActive = isPhotoSetSelected(recommendedItems)
+                  return (
+                    <button
+                      type="button"
+                      className={`zenith-3d-flight-option ${isActive ? "selected" : ""}`}
+                      key={group.key}
+                      onClick={() => selectPhotoSet(recommendedItems)}
+                    >
+                      <span className="material-symbols-outlined">travel_explore</span>
+                      <span>
+                        <strong>{group.label}</strong>
+                        <small>{group.items.length} foto{group.items.length === 1 ? "" : "s"} no voo · trecho recomendado com {recommendedItems.length}</small>
+                      </span>
+                      <em>{isActive ? "Selecionado" : "Usar trecho"}</em>
+                    </button>
+                  )
+                })}
+              </div>
+
+              {activeFlight?.sequences.length > 1 && (
+                <div className="zenith-3d-sequence-picker">
+                  <div>
+                    <strong>Escolha a cobertura desejada</strong>
+                    <p>Use um trecho compacto para reconstruir somente aquela parte da lavoura, ou o voo completo para cobrir uma faixa maior.</p>
+                  </div>
+                  <div className="zenith-3d-sequence-actions">
+                    {recommendedFlightItems.length >= 2 && (
+                      <button
+                        type="button"
+                        className={isPhotoSetSelected(recommendedFlightItems) ? "selected" : ""}
+                        onClick={() => selectPhotoSet(recommendedFlightItems)}
+                      >
+                        Recomendado · {formatSequenceRange(recommendedFlightItems)} · {recommendedFlightItems.length} fotos
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className={isPhotoSetSelected(activeFlight.items) ? "selected" : ""}
+                      onClick={() => selectPhotoSet(activeFlight.items)}
+                    >
+                      Voo completo · {activeFlight.items.length} fotos
+                    </button>
+                    {activeFlight.sequences
+                      .filter((sequence) => sequence.length >= 2)
+                      .map((sequence) => {
+                        return (
+                          <button
+                            type="button"
+                            className={isPhotoSetSelected(sequence) ? "selected" : ""}
+                            key={`${activeFlight.key}-${formatSequenceRange(sequence)}`}
+                            onClick={() => selectPhotoSet(sequence)}
+                          >
+                            Trecho {formatSequenceRange(sequence)} · {sequence.length} fotos
+                          </button>
+                        )
+                      })}
+                  </div>
+                </div>
+              )}
+
+              {hasMixedFlights && (
+                <div className="zenith-3d-flight-alert" role="alert">
+                  <span className="material-symbols-outlined">wrong_location</span>
+                  <span><strong>Voos diferentes estão misturados.</strong> O processamento pode descartar fotos e gerar uma área imprevisível. Selecione um único voo acima.</span>
+                </div>
+              )}
+
+              {hasDiscontinuousSelection && (
+                <div className="zenith-3d-flight-alert" role="alert">
+                  <span className="material-symbols-outlined">broken_image</span>
+                  <span><strong>Há lacunas entre as fotos escolhidas.</strong> Selecione o trecho recomendado ou somente arquivos consecutivos para manter a malha unida.</span>
+                </div>
+              )}
+            </div>
+          )}
+
           {images.length < 2 ? (
             <div className="zenith-3d-insufficient">
               <span className="material-symbols-outlined">add_photo_alternate</span>
@@ -257,6 +468,7 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
             <div className="zenith-3d-photo-grid" aria-label="Selecionar fotografias para o modelo 3D">
               {images.map((image, index) => {
                 const selected = selectedIds.has(image.id)
+                const metadata = getDronePhotoMetadata(image)
                 return (
                   <button
                     type="button"
@@ -264,9 +476,10 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
                     key={image.id}
                     onClick={() => toggleImage(image.id)}
                     aria-pressed={selected}
+                    title={image.file?.name || `Fotografia ${index + 1}`}
                   >
                     <img src={image.preview} alt={`Fotografia ${index + 1} do levantamento`} />
-                    <span className="zenith-3d-photo-index">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="zenith-3d-photo-index">{metadata?.sequenceLabel || String(index + 1).padStart(2, "0")}</span>
                     <span className="zenith-3d-photo-check material-symbols-outlined">{selected ? "check" : "add"}</span>
                   </button>
                 )
@@ -297,7 +510,7 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
             <button
               type="button"
               className="zenith-3d-primary zenith-3d-create"
-              disabled={isSubmitting || selectedImages.length < 2 || !qualityConfirmed}
+              disabled={isSubmitting || selectedImages.length < 2 || !qualityConfirmed || hasMixedFlights || hasDiscontinuousSelection}
               onClick={createTask}
             >
               <span className={`material-symbols-outlined ${isSubmitting ? "zenith-3d-spin" : ""}`}>
@@ -325,22 +538,16 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
           {task.status === "canceled" && <div className="zenith-3d-error" role="alert">A tarefa foi cancelada antes da conclusão.</div>}
 
           {isCompleted ? (
-            <div className="zenith-3d-viewer-shell" ref={viewerShellRef}>
+            <div className="zenith-3d-viewer-shell">
               <iframe
                 src={getModelo3DViewerUrl(task.task_id)}
                 title="Visualizador 3D da lavoura"
                 allow="fullscreen"
-                allowFullScreen
-                scrolling="no"
               />
-              <div className="zenith-3d-viewer-caption">
-                <span className="material-symbols-outlined">view_in_ar</span>
-                <span><strong>Lavoura 3D interativa</strong><small>Arraste para girar · aproxime para explorar</small></span>
-              </div>
-              <button type="button" className="zenith-3d-viewer-fullscreen" onClick={toggleViewerFullscreen}>
-                <span className="material-symbols-outlined">fullscreen</span>
-                Tela cheia
-              </button>
+              <a href={getModelo3DViewerUrl(task.task_id)} target="_blank" rel="noreferrer">
+                <span className="material-symbols-outlined">open_in_new</span>
+                Abrir visualizador em tela cheia
+              </a>
             </div>
           ) : (
             <div className="zenith-3d-processing-stage" aria-live="polite">

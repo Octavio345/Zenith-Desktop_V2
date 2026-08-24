@@ -352,6 +352,194 @@
   font-size: 0.62rem;
 }
 
+.zenith-3d-flight-panel {
+  margin-top: 13px;
+  padding: 14px;
+  border: 1px solid rgba(0, 255, 170, 0.12);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.zenith-3d-flight-heading {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+}
+
+.zenith-3d-flight-heading > .material-symbols-outlined {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--z3d-green);
+  background: rgba(0, 255, 170, 0.07);
+  font-size: 19px;
+}
+
+.zenith-3d-flight-heading strong,
+.zenith-3d-flight-heading p {
+  display: block;
+}
+
+.zenith-3d-flight-heading strong {
+  color: #deeee5;
+  font-size: 0.73rem;
+}
+
+.zenith-3d-flight-heading p {
+  margin: 3px 0 0;
+  color: #718579;
+  font-size: 0.65rem;
+  line-height: 1.45;
+}
+
+.zenith-3d-flight-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.zenith-3d-flight-option {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  min-height: 58px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  color: #a9bbb0;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 160ms ease, background 160ms ease;
+}
+
+.zenith-3d-flight-option:hover,
+.zenith-3d-flight-option.selected {
+  border-color: rgba(0, 255, 170, 0.28);
+  background: rgba(0, 255, 170, 0.055);
+}
+
+.zenith-3d-flight-option > .material-symbols-outlined {
+  color: var(--z3d-green);
+  font-size: 19px;
+}
+
+.zenith-3d-flight-option strong,
+.zenith-3d-flight-option small {
+  display: block;
+}
+
+.zenith-3d-flight-option strong {
+  overflow: hidden;
+  color: #dbe9e1;
+  font-size: 0.67rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.zenith-3d-flight-option small {
+  margin-top: 3px;
+  color: #708479;
+  font-size: 0.58rem;
+}
+
+.zenith-3d-flight-option em {
+  color: #739084;
+  font-size: 0.57rem;
+  font-style: normal;
+  font-weight: 750;
+}
+
+.zenith-3d-flight-option.selected em {
+  color: var(--z3d-green);
+}
+
+.zenith-3d-sequence-picker {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 11px;
+  border-radius: 12px;
+  background: rgba(0, 255, 170, 0.035);
+}
+
+.zenith-3d-sequence-picker > div:first-child {
+  min-width: 210px;
+}
+
+.zenith-3d-sequence-picker strong {
+  display: block;
+  color: #dceae2;
+  font-size: 0.67rem;
+}
+
+.zenith-3d-sequence-picker p {
+  max-width: 520px;
+  margin: 3px 0 0;
+  color: #708479;
+  font-size: 0.59rem;
+  line-height: 1.45;
+}
+
+.zenith-3d-sequence-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.zenith-3d-sequence-actions button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(0, 255, 170, 0.16);
+  border-radius: 9px;
+  color: #b6cec1;
+  background: rgba(0, 255, 170, 0.04);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.59rem;
+  font-weight: 700;
+}
+
+.zenith-3d-sequence-actions button:hover {
+  border-color: rgba(0, 255, 170, 0.38);
+  color: #e3f9ed;
+}
+
+.zenith-3d-sequence-actions button.selected {
+  border-color: rgba(0, 255, 170, 0.5);
+  color: #03150d;
+  background: var(--z3d-green);
+  box-shadow: 0 7px 18px rgba(0, 255, 170, 0.12);
+}
+
+.zenith-3d-flight-alert {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px 11px;
+  border: 1px solid rgba(251, 113, 133, 0.22);
+  border-radius: 11px;
+  color: #e8b9c0;
+  background: rgba(244, 63, 94, 0.065);
+  font-size: 0.64rem;
+  line-height: 1.45;
+}
+
+.zenith-3d-flight-alert .material-symbols-outlined {
+  color: #fb7185;
+  font-size: 19px;
+}
+
 .zenith-3d-photo-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
@@ -663,8 +851,6 @@
 
 .zenith-3d-viewer-shell {
   position: relative;
-  height: min(68vh, 680px);
-  min-height: 480px;
   margin-top: 18px;
   overflow: hidden;
   border: 1px solid rgba(0, 255, 170, 0.15);
@@ -673,56 +859,15 @@
 }
 
 .zenith-3d-viewer-shell iframe {
-  position: absolute;
-  top: -148px;
-  left: -14px;
   display: block;
-  width: calc(100% + 28px);
-  height: calc(100% + 148px);
+  width: 100%;
+  height: min(68vh, 680px);
+  min-height: 480px;
   border: 0;
 }
 
-.zenith-3d-viewer-caption {
+.zenith-3d-viewer-shell a {
   position: absolute;
-  z-index: 2;
-  top: 14px;
-  left: 14px;
-  display: flex;
-  gap: 9px;
-  align-items: center;
-  padding: 9px 11px;
-  border: 1px solid rgba(0, 255, 170, 0.19);
-  border-radius: 11px;
-  color: #dffbef;
-  background: rgba(4, 19, 11, 0.82);
-  backdrop-filter: blur(12px);
-  pointer-events: none;
-}
-
-.zenith-3d-viewer-caption > .material-symbols-outlined {
-  color: #00ffaa;
-  font-size: 19px;
-}
-
-.zenith-3d-viewer-caption span,
-.zenith-3d-viewer-caption strong,
-.zenith-3d-viewer-caption small {
-  display: block;
-}
-
-.zenith-3d-viewer-caption strong {
-  font-size: 0.64rem;
-}
-
-.zenith-3d-viewer-caption small {
-  margin-top: 2px;
-  color: #80968a;
-  font-size: 0.53rem;
-}
-
-.zenith-3d-viewer-fullscreen {
-  position: absolute;
-  z-index: 2;
   right: 14px;
   bottom: 14px;
   display: inline-flex;
@@ -734,24 +879,9 @@
   color: #dffbef;
   background: rgba(4, 19, 11, 0.88);
   backdrop-filter: blur(12px);
-  cursor: pointer;
-  font-family: inherit;
   font-size: 0.68rem;
   font-weight: 750;
-}
-
-.zenith-3d-viewer-fullscreen:hover {
-  border-color: rgba(0, 255, 170, 0.5);
-  background: rgba(5, 34, 20, 0.94);
-}
-
-.zenith-3d-viewer-shell:fullscreen {
-  width: 100vw;
-  height: 100vh;
-  min-height: 100vh;
-  margin: 0;
-  border: 0;
-  border-radius: 0;
+  text-decoration: none;
 }
 
 .zenith-3d-dismissed {
@@ -852,6 +982,15 @@
     grid-template-columns: 1fr;
   }
 
+  .zenith-3d-sequence-picker {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .zenith-3d-sequence-actions {
+    justify-content: flex-start;
+  }
+
   .zenith-3d-selection-counter {
     min-width: 0;
   }
@@ -873,13 +1012,9 @@
     grid-column: 1 / -1;
   }
 
-  .zenith-3d-viewer-shell {
+  .zenith-3d-viewer-shell iframe {
     height: 520px;
     min-height: 420px;
-  }
-
-  .zenith-3d-viewer-caption small {
-    display: none;
   }
 }
 

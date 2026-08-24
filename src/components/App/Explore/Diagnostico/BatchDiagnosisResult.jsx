@@ -192,6 +192,15 @@ export default function BatchDiagnosisResult({ result, selectedImages = [], onRe
   const detectedConditionNames = conditions
     .filter((condition) => !isHealthy(condition.classe))
     .map((condition) => formatDiagnosisName(condition.classe))
+  const reconstructionImages = useMemo(() => {
+    const reliableFileNames = new Set(
+      (result?.resultados || [])
+        .filter((item) => item?.status === "ok" && item?.arquivo)
+        .map((item) => item.arquivo)
+    )
+    const reliableImages = selectedImages.filter((image) => reliableFileNames.has(image.file?.name))
+    return reliableImages.length >= 2 ? reliableImages : selectedImages
+  }, [result, selectedImages])
 
   const nextSteps = general?.status === "heterogeneo"
     ? [
@@ -257,8 +266,8 @@ export default function BatchDiagnosisResult({ result, selectedImages = [], onRe
             <MetricCard icon="timer" value={`${asNumber(result?.tempo_processamento_ms).toFixed(0)} ms`} label="tempo de processamento" />
           </section>
 
-          {detectedConditionNames.length > 0 && selectedImages.length > 0 && (
-            <ThreeDExperience images={selectedImages} conditionNames={detectedConditionNames} />
+          {detectedConditionNames.length > 0 && reconstructionImages.length > 0 && (
+            <ThreeDExperience images={reconstructionImages} conditionNames={detectedConditionNames} />
           )}
 
           <div className="batch-result-layout">
