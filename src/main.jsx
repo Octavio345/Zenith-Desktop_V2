@@ -9,12 +9,27 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   </React.StrictMode>
 )
 
-// registrar service worker
+const LEGACY_CACHE_NAMES = ["agrovoo-cache-v1"]
+
+// Mantem a PWA atualizada e remove o cache criado pelo Service Worker antigo.
 if ("serviceWorker" in navigator) {
+  let refreshing = false
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (refreshing) return
+    refreshing = true
+    window.location.reload()
+  })
+
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js")
-      .then(() => {
-        console.log("Service Worker registrado")
+    if ("caches" in window) {
+      Promise.all(LEGACY_CACHE_NAMES.map((cacheName) => caches.delete(cacheName)))
+        .catch(() => undefined)
+    }
+
+    navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" })
+      .then((registration) => {
+        registration.update().catch(() => undefined)
       })
       .catch((err) => {
         console.log("Erro ao registrar SW:", err)

@@ -663,6 +663,8 @@
 
 .zenith-3d-viewer-shell {
   position: relative;
+  height: min(68vh, 680px);
+  min-height: 480px;
   margin-top: 18px;
   overflow: hidden;
   border: 1px solid rgba(0, 255, 170, 0.15);
@@ -671,15 +673,56 @@
 }
 
 .zenith-3d-viewer-shell iframe {
+  position: absolute;
+  top: -148px;
+  left: -14px;
   display: block;
-  width: 100%;
-  height: min(68vh, 680px);
-  min-height: 480px;
+  width: calc(100% + 28px);
+  height: calc(100% + 148px);
   border: 0;
 }
 
-.zenith-3d-viewer-shell a {
+.zenith-3d-viewer-caption {
   position: absolute;
+  z-index: 2;
+  top: 14px;
+  left: 14px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 9px 11px;
+  border: 1px solid rgba(0, 255, 170, 0.19);
+  border-radius: 11px;
+  color: #dffbef;
+  background: rgba(4, 19, 11, 0.82);
+  backdrop-filter: blur(12px);
+  pointer-events: none;
+}
+
+.zenith-3d-viewer-caption > .material-symbols-outlined {
+  color: #00ffaa;
+  font-size: 19px;
+}
+
+.zenith-3d-viewer-caption span,
+.zenith-3d-viewer-caption strong,
+.zenith-3d-viewer-caption small {
+  display: block;
+}
+
+.zenith-3d-viewer-caption strong {
+  font-size: 0.64rem;
+}
+
+.zenith-3d-viewer-caption small {
+  margin-top: 2px;
+  color: #80968a;
+  font-size: 0.53rem;
+}
+
+.zenith-3d-viewer-fullscreen {
+  position: absolute;
+  z-index: 2;
   right: 14px;
   bottom: 14px;
   display: inline-flex;
@@ -691,9 +734,24 @@
   color: #dffbef;
   background: rgba(4, 19, 11, 0.88);
   backdrop-filter: blur(12px);
+  cursor: pointer;
+  font-family: inherit;
   font-size: 0.68rem;
   font-weight: 750;
-  text-decoration: none;
+}
+
+.zenith-3d-viewer-fullscreen:hover {
+  border-color: rgba(0, 255, 170, 0.5);
+  background: rgba(5, 34, 20, 0.94);
+}
+
+.zenith-3d-viewer-shell:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
 }
 
 .zenith-3d-dismissed {
@@ -815,9 +873,13 @@
     grid-column: 1 / -1;
   }
 
-  .zenith-3d-viewer-shell iframe {
+  .zenith-3d-viewer-shell {
     height: 520px;
     min-height: 420px;
+  }
+
+  .zenith-3d-viewer-caption small {
+    display: none;
   }
 }
 

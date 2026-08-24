@@ -41,6 +41,7 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
   )
   const uploadControllerRef = useRef(null)
   const pollingTimerRef = useRef(null)
+  const viewerShellRef = useRef(null)
 
   const [decision, setDecision] = useState("prompt")
   const [selectedIds, setSelectedIds] = useState(initialSelection)
@@ -57,6 +58,11 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
   const progress = Math.max(0, Math.min(100, Math.round(Number(task?.progress) || 0)))
   const isCompleted = task?.status === "completed"
   const statusCopy = taskStatusCopy(task?.status)
+
+  const toggleViewerFullscreen = async () => {
+    if (document.fullscreenElement) await document.exitFullscreen()
+    else await viewerShellRef.current?.requestFullscreen?.()
+  }
 
   useEffect(() => {
     return () => {
@@ -319,16 +325,22 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
           {task.status === "canceled" && <div className="zenith-3d-error" role="alert">A tarefa foi cancelada antes da conclusão.</div>}
 
           {isCompleted ? (
-            <div className="zenith-3d-viewer-shell">
+            <div className="zenith-3d-viewer-shell" ref={viewerShellRef}>
               <iframe
                 src={getModelo3DViewerUrl(task.task_id)}
                 title="Visualizador 3D da lavoura"
                 allow="fullscreen"
+                allowFullScreen
+                scrolling="no"
               />
-              <a href={getModelo3DViewerUrl(task.task_id)} target="_blank" rel="noreferrer">
-                <span className="material-symbols-outlined">open_in_new</span>
-                Abrir visualizador em tela cheia
-              </a>
+              <div className="zenith-3d-viewer-caption">
+                <span className="material-symbols-outlined">view_in_ar</span>
+                <span><strong>Lavoura 3D interativa</strong><small>Arraste para girar · aproxime para explorar</small></span>
+              </div>
+              <button type="button" className="zenith-3d-viewer-fullscreen" onClick={toggleViewerFullscreen}>
+                <span className="material-symbols-outlined">fullscreen</span>
+                Tela cheia
+              </button>
             </div>
           ) : (
             <div className="zenith-3d-processing-stage" aria-live="polite">
