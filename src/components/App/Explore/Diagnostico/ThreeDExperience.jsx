@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 import {
   createModelo3DTask,
-  getModelo3DModelUrl,
   getModelo3DTask,
   getModelo3DViewerUrl
 } from "../../../../services/modelo3dApi"
-import FloatingSoilModel from "./FloatingSoilModel"
 import "../../../../styles/App/ThreeDExperience.css"
 
 const MAX_3D_IMAGES = 40
@@ -322,10 +320,15 @@ export default function ThreeDExperience({ images = [], conditionNames = [] }) {
 
           {isCompleted ? (
             <div className="zenith-3d-viewer-shell">
-              <FloatingSoilModel
-                modelUrl={getModelo3DModelUrl(task.task_id)}
-                fallbackUrl={getModelo3DViewerUrl(task.task_id)}
+              <iframe
+                src={getModelo3DViewerUrl(task.task_id)}
+                title="Visualizador 3D da lavoura"
+                allow="fullscreen"
               />
+              <a href={getModelo3DViewerUrl(task.task_id)} target="_blank" rel="noreferrer">
+                <span className="material-symbols-outlined">open_in_new</span>
+                Abrir visualizador em tela cheia
+              </a>
             </div>
           ) : (
             <div className="zenith-3d-processing-stage" aria-live="polite">
