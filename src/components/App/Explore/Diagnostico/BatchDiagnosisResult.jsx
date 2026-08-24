@@ -189,11 +189,9 @@ export default function BatchDiagnosisResult({ result, selectedImages = [], onRe
   const probabilities = Object.entries(general?.probabilidades_medias || {})
     .map(([name, value]) => ({ name, value: asNumber(value) }))
     .sort((a, b) => b.value - a.value)
-  const detectedConditionNames = conditions.length > 0
-    ? conditions.map((condition) => formatDiagnosisName(condition.classe))
-    : general?.condicao_predominante
-      ? [formatDiagnosisName(general.condicao_predominante)]
-      : []
+  const detectedConditionNames = conditions
+    .filter((condition) => !isHealthy(condition.classe))
+    .map((condition) => formatDiagnosisName(condition.classe))
 
   const nextSteps = general?.status === "heterogeneo"
     ? [
