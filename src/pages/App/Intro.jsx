@@ -63,17 +63,13 @@ export default function Intro() {
               <div className="logo-ring"></div>
             </div>
 
-            <div className="logo-badge">
-              <span className="badge-text">TECNOLOGIA AGRO 4.0</span>
-            </div>
-
             <h1 className="logo-title">
-              <span className="title-line">Monitoramento</span>
-              <span className="title-line title-line-highlight">Inteligente</span>
+              <span className="title-line">Sua lavoura</span>
+              <span className="title-line title-line-highlight">sob controle.</span>
             </h1>
 
             <p className="logo-description">
-              Drones autônomos para detectar pragas, acompanhar a saúde da lavoura e transformar dados de campo em decisões rápidas.
+              Acompanhe a saúde da plantação, identifique sinais de doenças e transforme informações do campo em decisões mais seguras.
             </p>
 
             <div className="actions-section">
@@ -92,50 +88,46 @@ export default function Intro() {
           </div>
         </div>
 
-        <div className="stats-section">
-          <div className="stat-item">
-            <span className="stat-number">98%</span>
-            <span className="stat-label">Precisão na detecção</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number">24/7</span>
-            <span className="stat-label">Monitoramento contínuo</span>
-          </div>
-          <div className="stat-item">
-            <span className="stat-number">-40%</span>
-            <span className="stat-label">Perdas evitadas</span>
-          </div>
-        </div>
+        <div className="intro-overview">
+          <header className="intro-overview__header">
+            <span><i /> INFORMAÇÃO PARA DECIDIR MELHOR</span>
+            <h2>Mais clareza, menos erros no manejo.</h2>
+            <p>Entenda o que acontece na lavoura e tenha mais controle sobre cada decisão.</p>
+          </header>
 
         <div className="features-grid">
           <div className="feature-card">
+            <span className="feature-icon material-symbols-outlined">health_and_safety</span>
             <div className="feature-content">
-              <h3 className="feature-title">Análise do solo</h3>
-              <p className="feature-description">Umidade, nutrientes e saúde do solo em tempo real.</p>
+              <h3 className="feature-title">Detecção antecipada</h3>
+              <p className="feature-description">Identifique sinais de doenças antes que o problema avance pela plantação.</p>
             </div>
             <div className="feature-hover-bg"></div>
           </div>
 
           <div className="feature-card">
+            <span className="feature-icon material-symbols-outlined">fact_check</span>
             <div className="feature-content">
-              <h3 className="feature-title">Detecção de pragas</h3>
-              <p className="feature-description">IA identifica sinais de risco antes do dano se espalhar.</p>
+              <h3 className="feature-title">Análises mais consistentes</h3>
+              <p className="feature-description">Reduza erros de avaliação com informações organizadas e fáceis de interpretar.</p>
             </div>
             <div className="feature-hover-bg"></div>
           </div>
 
           <div className="feature-card">
+            <span className="feature-icon material-symbols-outlined">dashboard</span>
             <div className="feature-content">
-              <h3 className="feature-title">Voo autônomo</h3>
-              <p className="feature-description">Rotas inteligentes para mapear talhões com consistência.</p>
+              <h3 className="feature-title">Controle da operação</h3>
+              <p className="feature-description">Centralize equipe, atividades e informações importantes da fazenda.</p>
             </div>
             <div className="feature-hover-bg"></div>
           </div>
 
           <div className="feature-card">
+            <span className="feature-icon material-symbols-outlined">analytics</span>
             <div className="feature-content">
-              <h3 className="feature-title">Relatórios</h3>
-              <p className="feature-description">Indicadores simples para orientar o próximo manejo.</p>
+              <h3 className="feature-title">Decisões mais seguras</h3>
+              <p className="feature-description">Use históricos e indicadores claros para orientar o próximo manejo.</p>
             </div>
             <div className="feature-hover-bg"></div>
           </div>
@@ -143,13 +135,16 @@ export default function Intro() {
 
         <div className="trust-section">
           <div className="trust-badge">
+            <span className="material-symbols-outlined">shield</span>
             <span className="trust-text">Dados seguros</span>
           </div>
           <div className="trust-badge">
+            <span className="material-symbols-outlined">notifications_active</span>
             <span className="trust-text">Alertas inteligentes</span>
           </div>
           <div className="trust-badge">
-            <span className="trust-text">Suporte 24/7</span>
+            <span className="material-symbols-outlined">support_agent</span>
+            <span className="trust-text">Suporte dedicado</span>
           </div>
         </div>
 
@@ -161,6 +156,7 @@ export default function Intro() {
               <span className="link-arrow">→</span>
             </a>
           </p>
+        </div>
         </div>
       </section>
     </div>
