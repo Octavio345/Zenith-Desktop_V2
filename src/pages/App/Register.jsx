@@ -2,6 +2,7 @@ import { useState } from "react"
 import { auth, db } from "../../services/firebase"
 import { createUserWithEmailAndPassword } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
+import CustomSelect from "../../components/App/Global/CustomSelect"
 import "../../styles/App/Register.css"
 
 export default function Register() {
@@ -150,15 +151,17 @@ export default function Register() {
 
             <div className="input-group-register">
               <label>Tipo de propriedade</label>
-              <select
+              <CustomSelect
                 name="type"
                 value={form.type}
                 onChange={handleChange}
-              >
-                <option value="">Selecione o tipo</option>
-                <option value="CPF">Agricultor Familiar (CPF)</option>
-                <option value="PJ">Produtor Rural (CNPJ)</option>
-              </select>
+                placeholder="Selecione o tipo"
+                options={[
+                  { value: "CPF", label: "Agricultor Familiar (CPF)" },
+                  { value: "PJ", label: "Produtor Rural (CNPJ)" },
+                ]}
+                className="register-custom-select"
+              />
             </div>
 
             {form.type && (

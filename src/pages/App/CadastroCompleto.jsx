@@ -4,7 +4,25 @@ import { auth, db } from "../../services/firebase"
 import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth"
 import { doc, setDoc, addDoc, collection } from "firebase/firestore"
 import { ACCOUNT_ROLES } from "../../services/accessControl"
+import CustomSelect from "../../components/App/Global/CustomSelect"
 import "../../styles/App/CadastroCompleto.css"
+
+const PERSON_TYPE_OPTIONS = [
+  { value: "CPF", label: "Pessoa Física (CPF)" },
+  { value: "PJ", label: "Pessoa Jurídica (CNPJ)" },
+]
+
+const OWNER_TYPE_OPTIONS = [
+  { value: "PF", label: "Pessoa Física" },
+  { value: "PJ", label: "Pessoa Jurídica" },
+]
+
+const AREA_OPTIONS = ["1-6", "7-12", "13-20", "21-29", "30-40"].map((value) => ({
+  value,
+  label: `${value.replace("-", " – ")} ha`,
+}))
+
+const CROP_OPTIONS = ["Soja", "Tomate", "Café", "Milho", "Feijão"]
 
 const PLAN_OPTIONS = [
   {
@@ -92,7 +110,7 @@ export default function CadastroCompleto() {
   const [userId, setUserId] = useState(null)
 
   const [userData, setUserData] = useState({
-    name: "", age: "", type: "", document: "", email: "", password: "", plan: "agro-vision"
+    name: "", age: "", type: "", document: "", email: "", password: "", confirmPassword: "", plan: "agro-vision"
   })
   const [farmData, setFarmData] = useState({
     name: "", tipo_proprietario: "", data_aquisicao: "", cep: "",
@@ -123,7 +141,7 @@ export default function CadastroCompleto() {
     if (name === "name") formatted = value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "").replace(/\s+/g, " ").slice(0, 80)
     if (name === "age") formatted = value.replace(/\D/g, "").slice(0, 3)
     if (name === "email") formatted = value.trim().toLowerCase().slice(0, 120)
-    if (name === "password") formatted = value.slice(0, 64)
+    if (name === "password" || name === "confirmPassword") formatted = value.slice(0, 64)
     setUserData({ ...userData, [name]: formatted, ...(name === "type" ? { document: "" } : {}) })
     setAlertMessage({ type: "", text: "" })
   }
@@ -140,7 +158,7 @@ export default function CadastroCompleto() {
   }
 
   const validateUserData = () => {
-    if (!userData.name || !userData.age || !userData.type || !userData.document || !userData.email || !userData.password || !userData.plan) {
+    if (!userData.name || !userData.age || !userData.type || !userData.document || !userData.email || !userData.password || !userData.confirmPassword || !userData.plan) {
       setAlertMessage({ type: "error", text: "Preencha todos os dados obrigatórios." })
       return false
     }
@@ -169,6 +187,10 @@ export default function CadastroCompleto() {
     const passwordError = getPasswordError(userData.password)
     if (passwordError) {
       setAlertMessage({ type: "error", text: passwordError })
+      return false
+    }
+    if (userData.password !== userData.confirmPassword) {
+      setAlertMessage({ type: "error", text: "As senhas não coincidem. Confira e tente novamente." })
       return false
     }
     return true
@@ -320,11 +342,14 @@ export default function CadastroCompleto() {
                   </div>
                   <div className="cc-field">
                     <label>Tipo</label>
-                    <select name="type" value={userData.type} onChange={handleUserChange}>
-                      <option value="">Selecione</option>
-                      <option value="CPF">Pessoa Física (CPF)</option>
-                      <option value="PJ">Pessoa Jurídica (CNPJ)</option>
-                    </select>
+                    <CustomSelect
+                      name="type"
+                      value={userData.type}
+                      onChange={handleUserChange}
+                      options={PERSON_TYPE_OPTIONS}
+                      placeholder="Selecione o tipo de pessoa"
+                      className="cc-custom-select"
+                    />
                   </div>
                 </div>
 
@@ -339,14 +364,19 @@ export default function CadastroCompleto() {
                   </div>
                 )}
 
+                <div className="cc-field">
+                  <label>Email</label>
+                  <input type="email" name="email" value={userData.email} onChange={handleUserChange} placeholder="voce@empresa.com" autoComplete="email"/>
+                </div>
+
                 <div className="cc-row">
                   <div className="cc-field">
-                    <label>Email</label>
-                    <input type="email" name="email" value={userData.email} onChange={handleUserChange} placeholder="voce@empresa.com"/>
+                    <label>Senha</label>
+                    <input type="password" name="password" value={userData.password} onChange={handleUserChange} placeholder="Crie uma senha segura" autoComplete="new-password"/>
                   </div>
                   <div className="cc-field">
-                    <label>Senha</label>
-                    <input type="password" name="password" value={userData.password} onChange={handleUserChange} placeholder="8+ caracteres, maiúscula, número e símbolo"/>
+                    <label>Confirmar senha</label>
+                    <input type="password" name="confirmPassword" value={userData.confirmPassword} onChange={handleUserChange} placeholder="Digite a senha novamente" autoComplete="new-password"/>
                   </div>
                 </div>
 
@@ -402,11 +432,14 @@ export default function CadastroCompleto() {
                 <div className="cc-row">
                   <div className="cc-field">
                     <label>Tipo proprietário</label>
-                    <select name="tipo_proprietario" value={farmData.tipo_proprietario} onChange={handleFarmChange}>
-                      <option value="">Selecione</option>
-                      <option value="PF">Pessoa Física</option>
-                      <option value="PJ">Pessoa Jurídica</option>
-                    </select>
+                    <CustomSelect
+                      name="tipo_proprietario"
+                      value={farmData.tipo_proprietario}
+                      onChange={handleFarmChange}
+                      options={OWNER_TYPE_OPTIONS}
+                      placeholder="Selecione o proprietário"
+                      className="cc-custom-select"
+                    />
                   </div>
                   <div className="cc-field">
                     <label>Data de aquisição</label>
@@ -440,14 +473,14 @@ export default function CadastroCompleto() {
                 <div className="cc-row">
                   <div className="cc-field">
                     <label>Área total (ha)</label>
-                    <select name="area_total" value={farmData.area_total} onChange={handleFarmChange}>
-                      <option value="">Selecione</option>
-                      <option value="1-6">1 – 6 ha</option>
-                      <option value="7-12">7 – 12 ha</option>
-                      <option value="13-20">13 – 20 ha</option>
-                      <option value="21-29">21 – 29 ha</option>
-                      <option value="30-40">30 – 40 ha</option>
-                    </select>
+                    <CustomSelect
+                      name="area_total"
+                      value={farmData.area_total}
+                      onChange={handleFarmChange}
+                      options={AREA_OPTIONS}
+                      placeholder="Selecione a área"
+                      className="cc-custom-select"
+                    />
                   </div>
                   <div className="cc-field">
                     <label>Telefone</label>
@@ -457,14 +490,14 @@ export default function CadastroCompleto() {
 
                 <div className="cc-field">
                   <label>Principal plantação</label>
-                  <select name="plantacao" value={farmData.plantacao} onChange={handleFarmChange}>
-                    <option value="">Selecione</option>
-                    <option value="Soja">Soja</option>
-                    <option value="Tomate">Tomate</option>
-                    <option value="Café">Café</option>
-                    <option value="Milho">Milho</option>
-                    <option value="Feijão">Feijão</option>
-                  </select>
+                  <CustomSelect
+                    name="plantacao"
+                    value={farmData.plantacao}
+                    onChange={handleFarmChange}
+                    options={CROP_OPTIONS}
+                    placeholder="Selecione a cultura principal"
+                    className="cc-custom-select"
+                  />
                 </div>
 
                 {alertMessage.text && etapa === 2 && (
