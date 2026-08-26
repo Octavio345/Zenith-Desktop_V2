@@ -273,7 +273,7 @@ export default function CadastroCompleto() {
         <header className="cc-top">
           <div className="cc-brand">
             <img src="/assets/image/Logo-redonda.webp" alt="" />
-            <span><strong>Zenith</strong><small>Agricultura inteligente</small></span>
+            <span><strong>Zenith</strong><small>Sua precisão agrícola no ponto mais alto</small></span>
           </div>
         </header>
 

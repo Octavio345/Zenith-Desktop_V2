@@ -111,7 +111,7 @@ export default function Register() {
           </div>
 
           <p className="register-brand-subtitle">
-            A sua precisão agrícola no ponto mais alto
+            Sua precisão agrícola no ponto mais alto
           </p>
         </div>
 

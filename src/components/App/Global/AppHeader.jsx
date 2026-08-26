@@ -45,7 +45,7 @@ export default function AppHeader() {
       <div className="app-header__inner">
         <button className="app-header__brand" type="button" onClick={() => navigateWithLoader("/home")}>
           <img src="/assets/image/Logo-redonda.webp" alt="" />
-          <span><strong>Zenith</strong><small>Agricultura inteligente</small></span>
+          <span><strong>Zenith</strong><small>Sua precisão agrícola no ponto mais alto</small></span>
         </button>
 
         <nav className="app-header__nav" aria-label="Navegação principal">

@@ -59,7 +59,7 @@ export default function Intro() {
         <div className="logo-section">
           <div className="logo-wrapper">
             <div className="logo-container">
-              <img src={Logo} alt="AgroVoo" className="logo-image" />
+              <img src={Logo} alt="Zenith" className="logo-image" />
               <div className="logo-ring"></div>
             </div>
 

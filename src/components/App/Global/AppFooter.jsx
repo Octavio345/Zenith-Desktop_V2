@@ -54,7 +54,7 @@ export default function AppFooter() {
           <section className="zenith-footer__brand">
             <div className="zenith-footer__brand-line">
               <img src="/assets/image/Logo-redonda.webp" alt="" />
-              <div><strong>Zenith</strong><span>Agricultura inteligente</span></div>
+              <div><strong>Zenith</strong><span>Sua precisão agrícola no ponto mais alto</span></div>
             </div>
             <p>Informação clara para proteger a lavoura, organizar a operação e tomar decisões melhores no campo.</p>
             <div className="zenith-footer__capabilities">

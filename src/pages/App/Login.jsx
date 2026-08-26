@@ -146,11 +146,11 @@ export default function Login() {
         <div className="auth-brand">
           <div className="auth-brand-mark">
             <img src="/assets/image/Logo-redonda.webp" alt="" />
-            <span><strong>Zenith</strong><small>Agricultura inteligente</small></span>
+            <span><strong>Zenith</strong><small>Sua precisão agrícola no ponto mais alto</small></span>
           </div>
 
           <p className="auth-brand-tag">
-            A sua precisão agrícola no ponto mais alto
+            Sua precisão agrícola no ponto mais alto
           </p>
         </div>
 

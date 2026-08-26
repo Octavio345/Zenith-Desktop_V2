@@ -1,23 +1,25 @@
 {
-  "name": "AgroVoo",
-  "short_name": "AgroVoo",
-  "description": "Plataforma inteligente para agricultura com drones",
+  "name": "Zenith — sua precisão agrícola no ponto mais alto",
+  "short_name": "Zenith",
+  "description": "Plataforma para acompanhar a lavoura e tomar decisões mais seguras.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#2e7d32",
+  "background_color": "#f4f8ef",
+  "theme_color": "#245f3b",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
+      "src": "/assets/image/Logo.png?v=20260826",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "/assets/image/Logo.png?v=20260826",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
