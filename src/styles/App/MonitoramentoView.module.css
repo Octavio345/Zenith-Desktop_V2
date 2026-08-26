@@ -33,28 +33,28 @@
 
 
   /* Cores base */
-  --n-primary:          var(--g6);
-  --n-primary-dark:     var(--g5);
-  --n-primary-glow:     rgba(19, 236, 128, 0.32);
-  --n-primary-soft:     rgba(19, 236, 128, 0.10);
+  --n-primary:          #2e6f46;
+  --n-primary-dark:     #245c39;
+  --n-primary-glow:     rgba(46, 111, 70, 0.18);
+  --n-primary-soft:     #e5f2e3;
   --n-secondary:        #38bdf8;
   --n-secondary-glow:   rgba(56, 189, 248, 0.24);
 
   /* Backgrounds */
-  --n-bg:               #0a0c0e;
-  --n-card:             rgba(6, 28, 18, 0.82);
-  --n-card-solid:       #071b12;
-  --n-glass:            rgba(255, 255, 255, 0.045);
+  --n-bg:               #f4f8f0;
+  --n-card:             #ffffff;
+  --n-card-solid:       #ffffff;
+  --n-glass:            #f4f8f0;
 
   /* Bordas */
-  --n-border:           rgba(19, 236, 128, 0.13);
-  --n-border-md:        rgba(19, 236, 128, 0.22);
-  --n-border-glow:      rgba(19, 236, 128, 0.32);
+  --n-border:           #dce7da;
+  --n-border-md:        #c9ddc7;
+  --n-border-glow:      rgba(46, 111, 70, 0.3);
 
   /* Texto */
-  --n-text:             #eefcf4;
-  --n-text-secondary:   #cfe8dc;
-  --n-text-muted:       #93aa9d;
+  --n-text:             #173326;
+  --n-text-secondary:   #53665a;
+  --n-text-muted:       #7a897f;
 
   /* Semantica */
   --n-danger:           #ff4d4d;
@@ -66,9 +66,9 @@
   --n-info:             #00ccff;
 
   /* Sombras */
-  --n-shadow:           0 24px 70px rgba(0, 0, 0, 0.38);
-  --n-shadow-sm:        0 2px 12px rgba(0, 0, 0, 0.4);
-  --n-neon:             0 0 20px rgba(86, 168, 112, 0.3);
+  --n-shadow:           0 18px 45px rgba(39, 78, 48, 0.10);
+  --n-shadow-sm:        0 6px 18px rgba(39, 78, 48, 0.08);
+  --n-neon:             0 0 20px rgba(46, 111, 70, 0.12);
 
   /* Radii */
   --n-r-sm:  12px;

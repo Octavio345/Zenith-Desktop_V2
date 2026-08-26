@@ -1,63 +1,98 @@
-// components/Home/AppFooter.jsx
+import { useEffect, useState } from "react"
+import { Link } from "react-router-dom"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "../../../services/firebase"
+import { getUserAccessProfile, isOperationalRole } from "../../../services/accessControl"
+
+const links = [
+  { label: "Início", path: "/home", icon: "home" },
+  { label: "Explore", path: "/explore", icon: "explore" },
+  { label: "Equipe", path: "/equipe", icon: "groups" },
+  { label: "Perfil", path: "/profile", icon: "person" },
+]
+
+const navigateLoading = () => window.dispatchEvent(new CustomEvent("zenith:navigate"))
+
+const rawContacts = [
+  {
+    label: "Telefone",
+    value: "(19) 97115-9598",
+    href: "tel:+5519971159598",
+    icon: "call",
+  },
+  {
+    label: "E-mail",
+    value: "zenith.agroia@gmail.com",
+    href: "mailto:zenith.agroia@gmail.com",
+    icon: "mail",
+  },
+  {
+    label: "Instagram",
+    value: "@zenith.agricola",
+    href: "https://www.instagram.com/zenith.agricola/",
+    icon: "photo_camera",
+  },
+]
+
 export default function AppFooter() {
+  const [canManageTeam, setCanManageTeam] = useState(false)
+
+  useEffect(() => onAuthStateChanged(auth, async (user) => {
+    if (!user) return setCanManageTeam(false)
+    try {
+      const profile = await getUserAccessProfile(user.uid)
+      setCanManageTeam(!isOperationalRole(profile?.role))
+    } catch {
+      setCanManageTeam(false)
+    }
+  }), [])
+
   return (
-    <footer className="app-footer">
-      <div className="footer-glow"></div>
-      <div className="footer-content">
-        <div className="footer-section">
-          <div className="footer-logo">
-            <span className="material-symbols-outlined">agriculture</span>
-            <span>Zenith</span>
-          </div>
-          <p className="footer-description">
-            Tecnologia de ponta para agricultura de precisão, monitoramento em tempo real e análise de dados.
-          </p>
-          <div className="social-links">
-            {['nest_eco', 'linkedin', 'facebook', 'instagram'].map((icon) => (
-              <a key={icon} href="#" className="social-link">
-                <span className="material-symbols-outlined">{icon}</span>
-              </a>
-            ))}
-          </div>
+    <footer className="zenith-footer">
+      <div className="zenith-footer__surface">
+        <div className="zenith-footer__main">
+          <section className="zenith-footer__brand">
+            <div className="zenith-footer__brand-line">
+              <img src="/assets/image/Logo-redonda.webp" alt="" />
+              <div><strong>Zenith</strong><span>Agricultura inteligente</span></div>
+            </div>
+            <p>Informação clara para proteger a lavoura, organizar a operação e tomar decisões melhores no campo.</p>
+            <div className="zenith-footer__capabilities">
+              <span><span className="material-symbols-outlined">eco</span> Diagnóstico</span>
+              <span><span className="material-symbols-outlined">deployed_code</span> Reconstrução 3D</span>
+              <span><span className="material-symbols-outlined">monitoring</span> Gestão</span>
+            </div>
+          </section>
+
+          <section className="zenith-footer__navigation">
+            <small>NAVEGAÇÃO</small>
+            <nav aria-label="Navegação do rodapé">
+              {links.filter((item) => item.path !== "/equipe" || canManageTeam).map((item) => (
+                <Link to={item.path} key={item.path} onClick={navigateLoading}>
+                  <span className="material-symbols-outlined">{item.icon}</span>
+                  <span>{item.label}</span>
+                  <span className="material-symbols-outlined">arrow_outward</span>
+                </Link>
+              ))}
+            </nav>
+          </section>
+
+          <section className="zenith-footer__contact">
+            <small>FALE COM A ZENITH</small>
+            <div className="zenith-footer__contact-list">
+              {rawContacts.map((item) => {
+                const content = <><span className="material-symbols-outlined">{item.icon}</span><span><small>{item.label}</small><strong>{item.value}</strong></span></>
+                return item.href
+                  ? <a href={item.href} key={item.label} target={item.label === "Instagram" ? "_blank" : undefined} rel={item.label === "Instagram" ? "noreferrer" : undefined}>{content}</a>
+                  : <div key={item.label}>{content}</div>
+              })}
+            </div>
+          </section>
         </div>
-        
-        <div className="footer-section">
-          <h5>Plataforma</h5>
-          <ul>
-            {['Dashboard', 'Fazendas', 'Voos', 'Relatórios', 'API'].map((item) => (
-              <li key={item}><a href={`/${item.toLowerCase()}`}>{item}</a></li>
-            ))}
-          </ul>
-        </div>
-        
-        <div className="footer-section">
-          <h5>Suporte</h5>
-          <ul>
-            {['Ajuda', 'Documentação', 'Tutoriais', 'Contato', 'Status'].map((item) => (
-              <li key={item}><a href={`/${item.toLowerCase()}`}>{item}</a></li>
-            ))}
-          </ul>
-        </div>
-        
-        <div className="footer-section">
-          <h5>Legal</h5>
-          <ul>
-            {['Termos', 'Privacidade', 'Segurança', 'Licenças'].map((item) => (
-              <li key={item}><a href={`/${item.toLowerCase()}`}>{item}</a></li>
-            ))}
-          </ul>
-        </div>
-      </div>
-      
-      <div className="footer-bottom">
-        <div className="footer-stats">
-          <span>🌱 2,500+ fazendas monitoradas</span>
-          <span>🚁 15,000+ voos realizados</span>
-          <span>📊 1M+ análises processadas</span>
-        </div>
-        <div className="footer-copyright">
-          <p>© 2026 Zenith. Todos os direitos reservados.</p>
-          <p>Versão 2.0.1 • Desenvolvido com precision agriculture</p>
+
+        <div className="zenith-footer__bottom">
+          <span>© 2026 Zenith. Todos os direitos reservados.</span>
+          <span><span className="material-symbols-outlined">verified_user</span> Tecnologia aplicada ao campo com clareza e precisão.</span>
         </div>
       </div>
     </footer>

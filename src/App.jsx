@@ -1,7 +1,7 @@
 // App.jsx do PWA
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom"
+import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
-import { AnimatePresence } from "framer-motion"
+import { onAuthStateChanged } from "firebase/auth"
 
 import Intro from "./pages/App/Intro"
 import Login from "./pages/App/Login"
@@ -11,61 +11,80 @@ import Home from "./pages/App/Home"
 import Profile from "./pages/App/Profile"
 import ForgotPassword from "./pages/App/ForgotPassword"
 import Explore from "./pages/App/Explore"
+import AdminTeamDashboard from "./pages/App/AdminTeamDashboard"
+import { auth } from "./services/firebase"
+import { getUserAccessProfile, isOperationalRole } from "./services/accessControl"
 
 // Componentes
-import SplashScreen from "./components/App/Global/SplashScreen"
 import InstallPrompt from "./components/App/Global/InstallPrompt"
 import InstallSuccess from "./components/App/Global/InstallSuccess"
 
 // Estilos
 import "./App.css"
+import "./styles/Global/DesktopMobileTheme.css"
+
+function TeamRoute() {
+  const [access, setAccess] = useState("loading")
+
+  useEffect(() => onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      setAccess("denied")
+      return
+    }
+    try {
+      const profile = await getUserAccessProfile(user.uid)
+      setAccess(isOperationalRole(profile?.role) ? "denied" : "allowed")
+    } catch {
+      setAccess("denied")
+    }
+  }), [])
+
+  if (access === "loading") {
+    return (
+      <div className="access-loader" role="status">
+        <img src="/assets/image/Logo-redonda.webp" alt="" />
+        <div><strong>Verificando acesso</strong><span>Preparando sua área de trabalho</span></div>
+        <i aria-hidden="true" />
+      </div>
+    )
+  }
+  return access === "allowed" ? <AdminTeamDashboard /> : <Navigate to="/home" replace />
+}
 
 function AppShell() {
   const location = useLocation()
-  const firstRoute = useRef(true)
-  const [loading, setLoading] = useState(false)
-  const [routeLoading, setRouteLoading] = useState(false)
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [showInstallSuccess, setShowInstallSuccess] = useState(false)
   const [isInstalled, setIsInstalled] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
   const [isAndroid, setIsAndroid] = useState(false)
+  const [quickLoading, setQuickLoading] = useState(false)
+  const firstRoute = useRef(true)
 
   useEffect(() => {
+    let timeout
+    const showQuickLoader = () => {
+      setQuickLoading(true)
+      window.clearTimeout(timeout)
+      timeout = window.setTimeout(() => setQuickLoading(false), 850)
+    }
+    window.addEventListener("zenith:navigate", showQuickLoader)
+    return () => {
+      window.removeEventListener("zenith:navigate", showQuickLoader)
+      window.clearTimeout(timeout)
+    }
+  }, [])
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
     if (firstRoute.current) {
       firstRoute.current = false
       return
     }
-
-    setRouteLoading(true)
-    const timeout = setTimeout(() => setRouteLoading(false), 650)
-    return () => clearTimeout(timeout)
-  }, [location.pathname])
-
-  useEffect(() => {
-    const startNavigationLoading = () => {
-      setRouteLoading(true)
-    }
-
-    window.addEventListener("zenith:navigate", startNavigationLoading)
-    return () => window.removeEventListener("zenith:navigate", startNavigationLoading)
-  }, [])
-
-  useEffect(() => {
-    const handleDocumentClick = (event) => {
-      const link = event.target.closest?.("a[href]")
-      if (!link) return
-
-      const url = new URL(link.href)
-      const appRoutes = ["/home", "/explore", "/profile"]
-      if (url.origin === window.location.origin && appRoutes.includes(url.pathname) && url.pathname !== location.pathname) {
-        setRouteLoading(true)
-      }
-    }
-
-    document.addEventListener("click", handleDocumentClick, true)
-    return () => document.removeEventListener("click", handleDocumentClick, true)
+    setQuickLoading(true)
+    const routeTimeout = window.setTimeout(() => setQuickLoading(false), 900)
+    return () => window.clearTimeout(routeTimeout)
   }, [location.pathname])
 
   
@@ -157,17 +176,6 @@ const handleInstall = async () => {
 }
 
   return (
-      <AnimatePresence mode="wait">
-        {loading || routeLoading ? (
-          <SplashScreen
-            key="splash"
-            message={routeLoading ? "Abrindo tela..." : "Preparando sua area..."}
-            onComplete={() => {
-              setLoading(false)
-              setRouteLoading(false)
-            }}
-          />
-        ) : (
           <>
             {/* Prompt de instalação */}
             {showInstallPrompt && !isInstalled && (
@@ -189,19 +197,28 @@ const handleInstall = async () => {
               />
             )}
             
-            <Routes key="app">
+            <Routes location={location}>
               <Route path="/" element={<Intro />} />
-              <Route path="/login" element={<Login setAppLoading={setLoading} />} />
+              <Route path="/login" element={<Login />} />
               <Route path="/register" element={<CadastroCompleto />} />
               <Route path="/cadastrar-fazenda" element={<CadastrarFazenda />} />
               <Route path="/home" element={<Home />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/explore" element={<Explore />} />
+              <Route path="/equipe" element={<TeamRoute />} />
+              <Route path="/admin/team" element={<TeamRoute />} />
             </Routes>
+            {quickLoading && (
+              <div className="route-quick-loader" role="status" aria-label="Abrindo página">
+                <div>
+                  <span className="material-symbols-outlined">eco</span>
+                  <i aria-hidden="true" />
+                </div>
+                <strong>Zenith</strong>
+              </div>
+            )}
           </>
-        )}
-      </AnimatePresence>
   )
 }
 

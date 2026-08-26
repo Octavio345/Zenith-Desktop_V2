@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../services/firebase"
-import { createUserWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth"
 import { doc, setDoc, addDoc, collection } from "firebase/firestore"
+import { ACCOUNT_ROLES } from "../../services/accessControl"
 import "../../styles/App/CadastroCompleto.css"
 
 const PLAN_OPTIONS = [
@@ -44,10 +45,49 @@ const PLAN_OPTIONS = [
   },
 ]
 
+const UFS_BRASIL = new Set(["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"])
+const VALID_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"])
+
+const formatCEP = (value) => value.replace(/\D/g, "").slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2")
+const formatPhone = (value) => {
+  const digits = value.replace(/\D/g, "").slice(0, 11)
+  return digits.length <= 10
+    ? digits.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2")
+    : digits.replace(/^(\d{2})(\d)/, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2")
+}
+const hasMinLetters = (value, count) => (value.match(/[a-zA-ZÀ-ÿ]/g) || []).length >= count
+const normalizeText = (value) => value.trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/\s+/g, " ").toLowerCase()
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) && !value.includes("..")
+const isValidCPF = (digits) => {
+  if (!/^\d{11}$/.test(digits) || /^(\d)\1+$/.test(digits)) return false
+  const digit = (base, factor) => { const sum = base.split("").reduce((total, number) => total + Number(number) * factor--, 0); const remainder = (sum * 10) % 11; return remainder === 10 ? 0 : remainder }
+  return digit(digits.slice(0, 9), 10) === Number(digits[9]) && digit(digits.slice(0, 10), 11) === Number(digits[10])
+}
+const isValidCNPJ = (digits) => {
+  if (!/^\d{14}$/.test(digits) || /^(\d)\1+$/.test(digits)) return false
+  const digit = (base, weights) => { const sum = base.split("").reduce((total, number, index) => total + Number(number) * weights[index], 0); const remainder = sum % 11; return remainder < 2 ? 0 : 11 - remainder }
+  return digit(digits.slice(0, 12), [5,4,3,2,9,8,7,6,5,4,3,2]) === Number(digits[12]) && digit(digits.slice(0, 13), [6,5,4,3,2,9,8,7,6,5,4,3,2]) === Number(digits[13])
+}
+const isValidPhone = (digits) => {
+  if (!/^\d{10,11}$/.test(digits) || /^(\d)\1+$/.test(digits) || !VALID_DDDS.has(digits.slice(0, 2))) return false
+  const number = digits.slice(2)
+  return digits.length === 11 ? number.startsWith("9") && !/^9(\d)\1{7}$/.test(number) : /^[2-5]/.test(number) && !/^(\d)\1{7}$/.test(number)
+}
+const getPasswordError = (password) => {
+  if (password.length < 8) return "A senha deve ter pelo menos 8 caracteres."
+  if (!/[A-Z]/.test(password)) return "Inclua ao menos uma letra maiúscula na senha."
+  if (!/[a-z]/.test(password)) return "Inclua ao menos uma letra minúscula na senha."
+  if (!/\d/.test(password)) return "Inclua ao menos um número na senha."
+  if (!/[!@#$%^&*()_+\-={}\[\]:;<>?,./]/.test(password)) return "Inclua ao menos um caractere especial na senha."
+  if (/\s/.test(password)) return "A senha não pode conter espaços."
+  return ""
+}
+
 export default function CadastroCompleto() {
   const navigate = useNavigate()
   const [etapa, setEtapa] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [cepData, setCepData] = useState(null)
   const [alertMessage, setAlertMessage] = useState({ type: "", text: "" })
   const [userId, setUserId] = useState(null)
 
@@ -66,66 +106,124 @@ export default function CadastroCompleto() {
       const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
       const data = await res.json()
       if (!data.erro) {
+        setCepData(data)
         setFarmData((prev) => ({
           ...prev,
           bairro: data.bairro || "",
           municipio: data.localidade || "",
           uf: data.uf || ""
         }))
-      }
+      } else setCepData(null)
     } catch (e) { console.error(e) }
   }
 
   const handleUserChange = (e) => {
-    setUserData({ ...userData, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    let formatted = value
+    if (name === "name") formatted = value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "").replace(/\s+/g, " ").slice(0, 80)
+    if (name === "age") formatted = value.replace(/\D/g, "").slice(0, 3)
+    if (name === "email") formatted = value.trim().toLowerCase().slice(0, 120)
+    if (name === "password") formatted = value.slice(0, 64)
+    setUserData({ ...userData, [name]: formatted, ...(name === "type" ? { document: "" } : {}) })
     setAlertMessage({ type: "", text: "" })
   }
   const handleFarmChange = (e) => {
-    setFarmData({ ...farmData, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    let formatted = value
+    if (name === "name") formatted = value.replace(/\s+/g, " ").slice(0, 80)
+    if (name === "cep") { formatted = formatCEP(value); setCepData(null) }
+    if (name === "telefone") formatted = formatPhone(value)
+    if (name === "uf") formatted = value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2)
+    if (name === "bairro" || name === "municipio") formatted = value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "").replace(/\s+/g, " ").slice(0, 80)
+    setFarmData({ ...farmData, [name]: formatted })
+    setAlertMessage({ type: "", text: "" })
   }
 
   const validateUserData = () => {
     if (!userData.name || !userData.age || !userData.type || !userData.document || !userData.email || !userData.password || !userData.plan) {
-      setAlertMessage({ type: "error", text: "Preencha todos os campos do produtor." })
+      setAlertMessage({ type: "error", text: "Preencha todos os dados obrigatórios." })
       return false
     }
-    if (userData.password.length < 6) {
-      setAlertMessage({ type: "error", text: "A senha deve ter pelo menos 6 caracteres." })
+    if (!hasMinLetters(userData.name, 3)) {
+      setAlertMessage({ type: "error", text: "Informe um nome completo válido." })
+      return false
+    }
+    const age = Number(userData.age)
+    if (!Number.isInteger(age) || age < 18 || age > 120) {
+      setAlertMessage({ type: "error", text: "Informe uma idade válida entre 18 e 120 anos." })
+      return false
+    }
+    const documentDigits = userData.document.replace(/\D/g, "")
+    if (userData.type === "CPF" && !isValidCPF(documentDigits)) {
+      setAlertMessage({ type: "error", text: "Informe um CPF válido." })
+      return false
+    }
+    if (userData.type === "PJ" && !isValidCNPJ(documentDigits)) {
+      setAlertMessage({ type: "error", text: "Informe um CNPJ válido." })
+      return false
+    }
+    if (!isValidEmail(userData.email)) {
+      setAlertMessage({ type: "error", text: "Informe um email válido." })
+      return false
+    }
+    const passwordError = getPasswordError(userData.password)
+    if (passwordError) {
+      setAlertMessage({ type: "error", text: passwordError })
       return false
     }
     return true
   }
-  const validateFarmData = () => {
+  const validateFarmData = async () => {
     const f = farmData
     if (!f.name || !f.tipo_proprietario || !f.data_aquisicao || !f.cep || !f.bairro || !f.municipio || !f.uf || !f.area_total || !f.telefone || !f.plantacao) {
       setAlertMessage({ type: "error", text: "Preencha todos os dados da fazenda." })
       return false
     }
+    if (!hasMinLetters(f.name, 3)) { setAlertMessage({ type: "error", text: "Informe um nome de fazenda válido." }); return false }
+    const cepDigits = f.cep.replace(/\D/g, "")
+    if (cepDigits.length !== 8) { setAlertMessage({ type: "error", text: "Informe um CEP válido com 8 dígitos." }); return false }
+    let validCEP = cepData
+    if (!validCEP || validCEP.cep?.replace(/\D/g, "") !== cepDigits) {
+      try { const response = await fetch(`https://viacep.com.br/ws/${cepDigits}/json/`); const data = await response.json(); validCEP = response.ok && !data.erro ? data : null; if (validCEP) setCepData(validCEP) } catch { validCEP = null }
+    }
+    if (!validCEP) { setAlertMessage({ type: "error", text: "CEP não encontrado. Confira o número informado." }); return false }
+    if (!UFS_BRASIL.has(f.uf) || (validCEP.uf && f.uf !== validCEP.uf)) { setAlertMessage({ type: "error", text: validCEP.uf ? `A UF correspondente a esse CEP é ${validCEP.uf}.` : "Informe uma UF válida." }); return false }
+    if (!hasMinLetters(f.bairro, 2) || (validCEP.bairro && normalizeText(f.bairro) !== normalizeText(validCEP.bairro))) { setAlertMessage({ type: "error", text: validCEP.bairro ? `O bairro correspondente a esse CEP é ${validCEP.bairro}.` : "Informe um bairro válido." }); return false }
+    if (!hasMinLetters(f.municipio, 2) || (validCEP.localidade && normalizeText(f.municipio) !== normalizeText(validCEP.localidade))) { setAlertMessage({ type: "error", text: validCEP.localidade ? `O município correspondente a esse CEP é ${validCEP.localidade}.` : "Informe um município válido." }); return false }
+    if (!isValidPhone(f.telefone.replace(/\D/g, ""))) { setAlertMessage({ type: "error", text: "Informe um telefone brasileiro válido com DDD." }); return false }
     return true
   }
 
   const handleCreateUser = async () => {
     if (!validateUserData()) return
     setLoading(true)
+    let createdUser = null
     try {
-      const selectedPlan = PLAN_OPTIONS.find((plan) => plan.id === userData.plan) || PLAN_OPTIONS[0]
       const userCred = await createUserWithEmailAndPassword(auth, userData.email, userData.password)
+      createdUser = userCred.user
+      const selectedPlan = PLAN_OPTIONS.find((plan) => plan.id === userData.plan) || PLAN_OPTIONS[0]
       await setDoc(doc(db, "users", userCred.user.uid), {
         name: userData.name,
         age: parseInt(userData.age),
         type: userData.type,
         document: userData.document,
         email: userData.email,
+        role: ACCOUNT_ROLES.ADMIN,
         plan: selectedPlan.id,
         planName: selectedPlan.name,
         hectares: 0,
         createdAt: new Date().toISOString(),
         profileIcon: "agriculture"
       })
+
+      localStorage.setItem("zenithAccessType", "owner")
       setUserId(userCred.user.uid)
+      setEtapa(2)
       setAlertMessage({ type: "success", text: "Conta criada. Cadastre agora sua fazenda." })
-      setTimeout(() => { setEtapa(2); setAlertMessage({ type:"", text:"" }) }, 1500)
     } catch (error) {
+      if (createdUser && auth.currentUser?.uid === createdUser.uid) {
+        try { await deleteUser(createdUser) } catch { /* Conta preservada para recuperação em caso de falha externa. */ }
+      }
       let msg = "Erro no cadastro. Tente novamente."
       if (error.code === "auth/email-already-in-use") msg = "Este email já está cadastrado."
       setAlertMessage({ type: "error", text: msg })
@@ -133,7 +231,7 @@ export default function CadastroCompleto() {
   }
 
   const handleSaveFarm = async () => {
-    if (!validateFarmData()) return
+    if (!(await validateFarmData())) return
     setLoading(true)
     try {
       await addDoc(collection(db, "farms"), {
@@ -143,8 +241,7 @@ export default function CadastroCompleto() {
         createdAt: new Date()
       })
       await setDoc(doc(db, "users", userId), { hectares: parseFloat(farmData.area_total) }, { merge: true })
-      setAlertMessage({ type: "success", text: "Fazenda cadastrada com sucesso." })
-      setTimeout(() => navigate("/home"), 2000)
+      navigate("/home", { replace: true })
     } catch (error) {
       console.error(error)
       setAlertMessage({ type: "error", text: "Erro ao cadastrar fazenda." })
@@ -175,8 +272,8 @@ export default function CadastroCompleto() {
       <div className="cc-wrap">
         <header className="cc-top">
           <div className="cc-brand">
-            <span className="cc-dot" />
-            ZENITH
+            <img src="/assets/image/Logo-redonda.webp" alt="" />
+            <span><strong>Zenith</strong><small>Agricultura inteligente</small></span>
           </div>
         </header>
 
@@ -202,11 +299,15 @@ export default function CadastroCompleto() {
           {etapa === 1 ? (
             <>
               <div className="cc-card-head">
-                <h2>Cadastre o produtor</h2>
-                <p>Informações usadas para identificar o titular da operação.</p>
+                <h2>Crie seu acesso</h2>
+                <p>Cadastre o proprietário responsável pela fazenda e pela equipe.</p>
               </div>
 
               <div className="cc-form">
+                <div className="cc-owner-notice">
+                  <span className="material-symbols-outlined">admin_panel_settings</span>
+                  <span><strong>Cadastro exclusivo do proprietário</strong><small>Logins de funcionários são criados depois, dentro do painel Equipe.</small></span>
+                </div>
                 <div className="cc-field">
                   <label>Nome completo</label>
                   <input type="text" name="name" value={userData.name} onChange={handleUserChange} placeholder="Nome completo"/>
@@ -245,7 +346,7 @@ export default function CadastroCompleto() {
                   </div>
                   <div className="cc-field">
                     <label>Senha</label>
-                    <input type="password" name="password" value={userData.password} onChange={handleUserChange} placeholder="Mínimo 6 caracteres"/>
+                    <input type="password" name="password" value={userData.password} onChange={handleUserChange} placeholder="8+ caracteres, maiúscula, número e símbolo"/>
                   </div>
                 </div>
 

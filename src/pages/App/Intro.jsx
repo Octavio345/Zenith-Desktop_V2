@@ -40,6 +40,7 @@ export default function Intro() {
   muted
   loop
   playsInline
+  preload="auto"
   disablePictureInPicture
   controls={false}
   controlsList="nodownload nofullscreen noremoteplayback"
@@ -72,19 +73,19 @@ export default function Intro() {
             </h1>
 
             <p className="logo-description">
-              Drones autonomos para detectar pragas, acompanhar saude da lavoura e transformar dados de campo em decisoes rapidas.
+              Drones autônomos para detectar pragas, acompanhar a saúde da lavoura e transformar dados de campo em decisões rápidas.
             </p>
 
             <div className="actions-section">
               <button className="btn btn-primary" onClick={() => navigate("/login")}>
                 <span className="btn-text">Acessar Plataforma</span>
-                <span className="btn-icon">→</span>
+                <span className="btn-icon material-symbols-outlined">arrow_forward</span>
                 <div className="btn-shine"></div>
               </button>
 
               <button className="btn btn-secondary" onClick={() => navigate("/register")}>
-                <span className="btn-text">Comecar Agora</span>
-                <span className="btn-icon">+</span>
+                <span className="btn-text">Começar agora</span>
+                <span className="btn-icon material-symbols-outlined">add</span>
                 <div className="btn-shine"></div>
               </button>
             </div>
@@ -94,11 +95,11 @@ export default function Intro() {
         <div className="stats-section">
           <div className="stat-item">
             <span className="stat-number">98%</span>
-            <span className="stat-label">Precisao na deteccao</span>
+            <span className="stat-label">Precisão na detecção</span>
           </div>
           <div className="stat-item">
             <span className="stat-number">24/7</span>
-            <span className="stat-label">Monitoramento continuo</span>
+            <span className="stat-label">Monitoramento contínuo</span>
           </div>
           <div className="stat-item">
             <span className="stat-number">-40%</span>
@@ -109,15 +110,15 @@ export default function Intro() {
         <div className="features-grid">
           <div className="feature-card">
             <div className="feature-content">
-              <h3 className="feature-title">Analise do Solo</h3>
-              <p className="feature-description">Umidade, nutrientes e saude do solo em tempo real.</p>
+              <h3 className="feature-title">Análise do solo</h3>
+              <p className="feature-description">Umidade, nutrientes e saúde do solo em tempo real.</p>
             </div>
             <div className="feature-hover-bg"></div>
           </div>
 
           <div className="feature-card">
             <div className="feature-content">
-              <h3 className="feature-title">Deteccao de Pragas</h3>
+              <h3 className="feature-title">Detecção de pragas</h3>
               <p className="feature-description">IA identifica sinais de risco antes do dano se espalhar.</p>
             </div>
             <div className="feature-hover-bg"></div>
@@ -125,16 +126,16 @@ export default function Intro() {
 
           <div className="feature-card">
             <div className="feature-content">
-              <h3 className="feature-title">Voo Autonomo</h3>
-              <p className="feature-description">Rotas inteligentes para mapear talhoes com consistencia.</p>
+              <h3 className="feature-title">Voo autônomo</h3>
+              <p className="feature-description">Rotas inteligentes para mapear talhões com consistência.</p>
             </div>
             <div className="feature-hover-bg"></div>
           </div>
 
           <div className="feature-card">
             <div className="feature-content">
-              <h3 className="feature-title">Relatorios</h3>
-              <p className="feature-description">Indicadores simples para orientar o proximo manejo.</p>
+              <h3 className="feature-title">Relatórios</h3>
+              <p className="feature-description">Indicadores simples para orientar o próximo manejo.</p>
             </div>
             <div className="feature-hover-bg"></div>
           </div>

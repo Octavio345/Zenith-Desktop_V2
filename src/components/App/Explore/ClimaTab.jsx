@@ -206,7 +206,7 @@ export default function ClimaTab() {
       <div style={styles.loadingContainer}>
         <div style={styles.loadingCard}>
           <div style={styles.loadingIcon}>
-            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--primary)' }}>cloud</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#2e6f46' }}>cloud</span>
           </div>
           <h3 style={styles.loadingTitle}>Buscando clima</h3>
           <p style={styles.loadingText}>
@@ -223,7 +223,7 @@ export default function ClimaTab() {
       <div style={styles.loadingContainer}>
         <div style={styles.errorCard}>
           <div style={styles.errorIcon}>
-            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: 'var(--danger)' }}>error</span>
+            <span className="material-symbols-outlined" style={{ fontSize: '48px', color: '#b45f4b' }}>error</span>
           </div>
           <h3 style={styles.errorTitle}>Ops!</h3>
           <p style={styles.errorText}>{error || "Não foi possível obter os dados"}</p>
@@ -761,9 +761,9 @@ const styles = {
     boxSizing: 'border-box',
   },
   loadingCard: {
-    background: 'rgba(18, 22, 28, 0.8)',
+    background: '#ffffff',
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255,255,255,0.05)',
+    border: '1px solid #dce7db',
     borderRadius: '28px',
     padding: '32px 24px',
     textAlign: 'center',
@@ -774,19 +774,19 @@ const styles = {
     marginBottom: '14px',
   },
   loadingTitle: {
-    color: '#fff',
+    color: '#153f2a',
     margin: '0 0 6px 0',
     fontSize: '1.2rem',
   },
   loadingText: {
-    color: '#a0a8b4',
+    color: '#748178',
     margin: 0,
     fontSize: '0.9rem',
   },
   errorCard: {
-    background: 'rgba(18, 22, 28, 0.8)',
+    background: '#ffffff',
     backdropFilter: 'blur(10px)',
-    border: '1px solid rgba(255,68,68,0.2)',
+    border: '1px solid #eadbd7',
     borderRadius: '28px',
     padding: '32px 24px',
     textAlign: 'center',
@@ -797,21 +797,21 @@ const styles = {
     marginBottom: '14px',
   },
   errorTitle: {
-    color: '#ff4d4d',
+    color: '#8c4b3f',
     margin: '0 0 6px 0',
     fontSize: '1.2rem',
   },
   errorText: {
-    color: '#a0a8b4',
+    color: '#748178',
     margin: '0 0 16px 0',
     fontSize: '0.9rem',
   },
   retryButton: {
-    background: 'rgba(255,255,255,0.05)',
-    border: '1px solid rgba(255,255,255,0.1)',
+    background: '#2e6f46',
+    border: '1px solid #2e6f46',
     borderRadius: '26px',
     padding: '10px 20px',
-    color: '#fff',
+    color: '#ffffff',
     fontWeight: '600',
     fontSize: '0.9rem',
     cursor: 'pointer',

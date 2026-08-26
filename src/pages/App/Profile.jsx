@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom"
 
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
+import AppFooter from "../../components/App/Global/AppFooter"
 import SplashScreen from "../../components/App/Global/SplashScreen"
 
 import "../../styles/App/Profile.css"
@@ -202,8 +203,8 @@ export default function Profile() {
     const unsub = auth.onAuthStateChanged(async (current) => {
       if (current) {
         setUser(current)
-        await loadUserData(current.uid)
-        await loadFarmData(current.uid)
+        const profile = await loadUserData(current.uid)
+        await loadFarmData(profile?.ownerId || profile?.teamId || current.uid)
       } else {
         navigate("/login")
       }
@@ -229,6 +230,7 @@ export default function Profile() {
           city: data.city || "",
           state: data.state || "",
         })
+        return data
       }
     } catch (e) {
       console.error(e)
@@ -431,7 +433,7 @@ export default function Profile() {
       })
       showAlert("success", "Fazenda atualizada com sucesso!")
       setEditingFarm(false)
-      await loadFarmData(user.uid)
+      await loadFarmData(userData?.ownerId || userData?.teamId || user.uid)
     } catch (e) {
       console.error(e)
       showAlert("error", "Erro ao atualizar fazenda")
@@ -583,7 +585,7 @@ export default function Profile() {
 
   return (
     <>
-      <AppHeader title="Perfil" showLogo showNotification />
+      <AppHeader />
 
       <main className="pf-page">
         <div className="pf-atmosphere" aria-hidden="true">
@@ -1262,6 +1264,7 @@ export default function Profile() {
         </div>
       </main>
 
+      <AppFooter />
       <MenuBar />
     </>
   )

@@ -1,118 +1,76 @@
-import { useState } from "react"
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react"
+import { NavLink, useNavigate } from "react-router-dom"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "../../../services/firebase"
+import { getUserAccessProfile, isOperationalRole } from "../../../services/accessControl"
 import "../../../styles/Global/AppHeader.css"
 
 const navItems = [
-  { label: "Início", href: "/home" },
-  { label: "Serviços", href: "/explore" },
-  { label: "Perfil", href: "/profile" }
+  { label: "Início", href: "/home", icon: "home" },
+  { label: "Explore", href: "/explore", icon: "explore" },
+  { label: "Equipe", href: "/equipe", icon: "groups" },
+  { label: "Perfil", href: "/profile", icon: "person" },
 ]
 
-export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false)
-  const location = useLocation()
+export default function AppHeader() {
   const navigate = useNavigate()
+  const [canManageTeam, setCanManageTeam] = useState(false)
 
-  const isActivePath = (href) => {
-    if (href === "/home") return location.pathname === "/home"
-    return location.pathname.startsWith(href)
+  useEffect(() => onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      setCanManageTeam(false)
+      return
+    }
+    try {
+      const profile = await getUserAccessProfile(user.uid)
+      setCanManageTeam(!isOperationalRole(profile?.role))
+    } catch {
+      setCanManageTeam(false)
+    }
+  }), [])
+
+  const navigateWithLoader = (path) => {
+    window.dispatchEvent(new CustomEvent("zenith:navigate"))
+    navigate(path)
   }
 
-  const handleNavigation = (event, href) => {
-    if (location.pathname === href) return
+  const goTo = (event, item) => {
     event.preventDefault()
-    window.dispatchEvent(new Event("zenith:navigate"))
-    setTimeout(() => navigate(href), 300)
+    window.dispatchEvent(new CustomEvent("zenith:navigate"))
+    navigate(item.href)
   }
 
   return (
-    <>
-      <motion.header
-        initial={{ y: -80, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="header"
-      >
-        <div className="container">
-          <Link
-            to="/home"
-            className="logo"
-            aria-label="Ir para o início"
-            onClick={(event) => handleNavigation(event, "/home")}
-          >
-            <span className="logo-text">
-              ZENI<span className="accent">TH</span>
-            </span>
-            <div className="logo-glow" />
-          </Link>
+    <header className="app-header">
+      <div className="app-header__inner">
+        <button className="app-header__brand" type="button" onClick={() => navigateWithLoader("/home")}>
+          <img src="/assets/image/Logo-redonda.webp" alt="" />
+          <span><strong>Zenith</strong><small>Agricultura inteligente</small></span>
+        </button>
 
-          <nav className="nav" aria-label="Navegação principal">
-            {navItems.map((item) => (
-              <NavLink
-                key={item.href}
-                to={item.href}
-                onClick={(event) => handleNavigation(event, item.href)}
-                className={({ isActive }) => `nav-item ${isActive || isActivePath(item.href) ? "active" : ""}`}
-              >
-                <span>{item.label}</span>
-                {isActivePath(item.href) && (
-                  <motion.div
-                    layoutId="nav-indicator"
-                    className="nav-indicator"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
-                )}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="right">
-            <button
-              className={`menu-toggle ${menuOpen ? "active" : ""}`}
-              onClick={() => setMenuOpen(!menuOpen)}
-              aria-label="Abrir menu"
-              type="button"
+        <nav className="app-header__nav" aria-label="Navegação principal">
+          {navItems.filter((item) => item.href !== "/equipe" || canManageTeam).map((item) => (
+            <NavLink
+              key={item.label}
+              to={item.href}
+              onClick={(event) => goTo(event, item)}
+              className={({ isActive }) => {
+                const active = isActive
+                return `app-header__link ${active ? "active" : ""}`
+              }}
             >
-              <span />
-              <span />
-            </button>
-          </div>
+              <span className="material-symbols-outlined" aria-hidden="true">{item.icon}</span>
+              {item.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="app-header__actions">
+          <button className="app-header__profile" type="button" onClick={() => navigateWithLoader("/profile")}>
+            <span className="material-symbols-outlined">person</span><span>Minha conta</span>
+          </button>
         </div>
-      </motion.header>
-      <div className="header-spacer" aria-hidden="true" />
-
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            className="mobile"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="mobile-panel"
-              initial={{ y: 80, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 80, opacity: 0 }}
-              transition={{ duration: 0.35 }}
-            >
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={(event) => {
-                    handleNavigation(event, item.href)
-                    setMenuOpen(false)
-                  }}
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+      </div>
+    </header>
   )
 }

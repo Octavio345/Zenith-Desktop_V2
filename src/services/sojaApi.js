@@ -9,7 +9,6 @@ function normalizeApiBaseUrl(value) {
 }
 
 const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_SOJA_API_URL)
-
 function formatApiDetail(detail) {
   if (typeof detail === "string") return detail
 

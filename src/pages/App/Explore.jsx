@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import AppHeader from "../../components/App/Global/AppHeader"
 import MenuBar from "../../components/App/Global/MenuBar"
+import AppFooter from "../../components/App/Global/AppFooter"
 import DiagnosticoTab from "../../components/App/Explore/Diagnostico/DiagnosticoTab"
 import ClimaTab from "../../components/App/Explore/ClimaTab"
 import DiarioTab from "../../components/App/Explore/DiarioTab"
@@ -17,7 +18,7 @@ import "../../styles/App/Explore.css"
 
 const tabs = [
   { id: "diagnostico", label: "Diagnóstico", icon: "eco" },
-  { id: "monitoramento", label: "Monitoramento", icon: "monitoring" },
+  { id: "monitoramento", label: "Plantio", icon: "psychiatry" },
   { id: "clima", label: "Clima", icon: "cloud" },
   { id: "diario", label: "Diário", icon: "menu_book" },
   { id: "mapa", label: "Mapa", icon: "map" },
@@ -25,31 +26,33 @@ const tabs = [
   { id: "atividades", label: "Atividades", icon: "assignment" }
 ]
 
+const tabContext = {
+  diagnostico: ["Diagnóstico inteligente", "Identifique sinais na lavoura e acompanhe o histórico das análises."],
+  monitoramento: ["Alinhamento do plantio", "Analise a uniformidade das fileiras com imagens aéreas."],
+  clima: ["Clima da fazenda", "Condições atuais e previsão para apoiar decisões no campo."],
+  diario: ["Diário de campo", "Registre ocorrências, observações e aprendizados da operação."],
+  mapa: ["Mapa da propriedade", "Visualize áreas, talhões e pontos importantes da fazenda."],
+  estoque: ["Estoque e insumos", "Controle entradas, saídas e níveis críticos com clareza."],
+  atividades: ["Atividades", "Planeje tarefas e acompanhe a execução da equipe."],
+}
+
 export default function Explore() {
   const location = useLocation()
   const [activeTab, setActiveTab] = useState(() => {
-    // Tentar recuperar do localStorage
     const savedTab = localStorage.getItem("activeExploreTab")
-    console.log("Tab salva no localStorage:", savedTab)
     return savedTab || "diagnostico"
   })
 
   // Verificar se veio uma tab específica do estado de navegação
   useEffect(() => {
-    console.log("=== EXPLORE: useEffect executando ===")
-    console.log("location.state completo:", location.state)
-    console.log("location.state?.activeTab:", location.state?.activeTab)
-    
     // Prioridade: 1. state, 2. localStorage, 3. padrão
     if (location.state?.activeTab) {
-      console.log("Mudando para tab via state:", location.state.activeTab)
       setActiveTab(location.state.activeTab)
       localStorage.setItem("activeExploreTab", location.state.activeTab)
     } else {
       // Verificar se tem uma tab salva
       const savedTab = localStorage.getItem("activeExploreTab")
       if (savedTab && savedTab !== activeTab) {
-        console.log("Mudando para tab via localStorage:", savedTab)
         setActiveTab(savedTab)
       }
     }
@@ -57,12 +60,10 @@ export default function Explore() {
 
   // Salvar tab quando mudar manualmente
   useEffect(() => {
-    console.log("Tab alterada para:", activeTab)
     localStorage.setItem("activeExploreTab", activeTab)
   }, [activeTab])
 
   const renderTab = () => {
-    console.log("Renderizando tab:", activeTab)
     switch(activeTab) {
       case "diagnostico": 
         return <DiagnosticoTab active={activeTab === "diagnostico"} />
@@ -84,7 +85,7 @@ export default function Explore() {
   }
 
   return (
-    <div className="explore-container">
+    <div className={`explore-container explore-container--${activeTab}`}>
       <div className="explore-atmosphere" aria-hidden="true">
         <div className="explore-bg-image" />
         <div className="explore-grid-overlay" />
@@ -102,7 +103,19 @@ export default function Explore() {
       </div>
       <ParticleBackground />
       <MouseGlow />
-      <AppHeader title="Explorar" showNotification={true} />
+      <AppHeader />
+
+      <section className="explore-heading">
+        <div>
+          <span><span className="material-symbols-outlined">explore</span> Central de operações</span>
+          <h1>Explore</h1>
+          <p>{tabContext[activeTab][1]}</p>
+        </div>
+        <aside>
+          <span className="material-symbols-outlined">{tabs.find((tab) => tab.id === activeTab)?.icon}</span>
+          <div><small>Área atual</small><strong>{tabContext[activeTab][0]}</strong></div>
+        </aside>
+      </section>
 
       <div className="explore-tabs-modern">
         {tabs.map((tab) => (
@@ -132,6 +145,7 @@ export default function Explore() {
         </motion.div>
       </AnimatePresence>
 
+      <AppFooter />
       <MenuBar />
     </div>
   )

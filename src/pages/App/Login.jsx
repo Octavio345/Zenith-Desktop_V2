@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
-import { auth } from "../../services/firebase"
-import { signInWithEmailAndPassword } from "firebase/auth"
-import { FaEye, FaEyeSlash } from "react-icons/fa"
+import { auth, db } from "../../services/firebase"
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth"
+import { doc, getDoc, setDoc } from "firebase/firestore"
+import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa"
+import { ACCOUNT_ROLES, isOperationalRole, normalizeRole } from "../../services/accessControl"
 import "../../styles/App/Login.css"
 
-export default function Login({ setAppLoading }) {
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+export default function Login() {
   const navigate = useNavigate()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -13,13 +17,13 @@ export default function Login({ setAppLoading }) {
   const [alertMessage, setAlertMessage] = useState({ type: "", text: "" })
   const [rememberMe, setRememberMe] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [accessType, setAccessType] = useState(() => localStorage.getItem("zenithAccessType") || "owner")
 
   useEffect(() => {
     const checkAuth = async () => {
       const user = auth.currentUser
       if (user) {
-        setAppLoading(true)
-        setTimeout(() => navigate("/home"), 2000)
+        navigate("/home", { replace: true })
       } else {
         const rememberedEmail = localStorage.getItem("rememberedEmail")
         if (rememberedEmail) {
@@ -29,24 +33,41 @@ export default function Login({ setAppLoading }) {
       }
     }
     checkAuth()
-  }, [navigate, setAppLoading])
+  }, [navigate])
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword)
+
+  const validateAccountRole = async (user) => {
+    const profileSnap = await getDoc(doc(db, "users", user.uid))
+    const actualRole = normalizeRole(profileSnap.exists() ? profileSnap.data().role : undefined)
+    const selectedEmployee = accessType === "employee"
+    if (selectedEmployee !== isOperationalRole(actualRole)) {
+      await signOut(auth)
+      const roleError = new Error("A modalidade escolhida não corresponde a esta conta.")
+      roleError.code = "auth/role-mismatch"
+      throw roleError
+    }
+    return profileSnap
+  }
 
   const handleLogin = async () => {
     if (!email || !password) {
       setAlertMessage({ type: "error", text: "Preencha todos os campos para acessar." })
       return
     }
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setAlertMessage({ type: "error", text: "Informe um email válido, como nome@empresa.com." })
+      return
+    }
     setLoading(true)
     setAlertMessage({ type: "", text: "" })
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      const credential = await signInWithEmailAndPassword(auth, email, password)
+      await validateAccountRole(credential.user)
       if (rememberMe) localStorage.setItem("rememberedEmail", email)
       else localStorage.removeItem("rememberedEmail")
-      setAlertMessage({ type: "success", text: "Acesso autorizado. Inicializando sistema..." })
-      setAppLoading(true)
-      setTimeout(() => navigate("/home"), 2000)
+      localStorage.setItem("zenithAccessType", accessType)
+      navigate("/home", { replace: true })
     } catch (error) {
       let errorMessage = "Erro na autenticação. Verifique seus dados."
       switch (error.code) {
@@ -55,9 +76,58 @@ export default function Login({ setAppLoading }) {
         case "auth/invalid-email": errorMessage = "Email inválido."; break
         case "auth/too-many-requests": errorMessage = "Muitas tentativas. Aguarde um momento."; break
         case "auth/network-request-failed": errorMessage = "Falha de conexão com o servidor."; break
+        case "auth/role-mismatch": errorMessage = "Escolha o acesso correto: proprietário/gestor ou funcionário."; break
         default: errorMessage = "Erro ao fazer login. Tente novamente."
       }
       setAlertMessage({ type: "error", text: errorMessage })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    setLoading(true)
+    setAlertMessage({ type: "", text: "" })
+    try {
+      const provider = new GoogleAuthProvider()
+      provider.setCustomParameters({ prompt: "select_account" })
+      const credential = await signInWithPopup(auth, provider)
+      const profileRef = doc(db, "users", credential.user.uid)
+      const profileSnap = await getDoc(profileRef)
+
+      if (!profileSnap.exists()) {
+        if (accessType === "employee") {
+          await signOut(auth)
+          const employeeError = new Error("Funcionário sem vínculo")
+          employeeError.code = "auth/employee-profile-required"
+          throw employeeError
+        }
+        await setDoc(profileRef, {
+          name: credential.user.displayName || "Proprietário",
+          email: credential.user.email || "",
+          role: ACCOUNT_ROLES.ADMIN,
+          plan: "agro-vision",
+          planName: "Agro Vision",
+          hectares: 0,
+          profileIcon: "agriculture",
+          provider: "google",
+          createdAt: new Date().toISOString(),
+        })
+      }
+
+      await validateAccountRole(credential.user)
+      localStorage.setItem("zenithAccessType", accessType)
+      navigate("/home", { replace: true })
+    } catch (error) {
+      if (auth.currentUser) {
+        try { await signOut(auth) } catch { /* O Firebase tentará encerrar a sessão na próxima ação. */ }
+      }
+      let message = "Não foi possível entrar com o Google. Tente novamente."
+      if (error.code === "auth/popup-closed-by-user") message = "A janela do Google foi fechada antes da conclusão."
+      if (error.code === "auth/popup-blocked") message = "O navegador bloqueou a janela do Google. Autorize pop-ups e tente novamente."
+      if (error.code === "auth/role-mismatch") message = "Escolha o acesso correto para esta conta Google."
+      if (error.code === "auth/employee-profile-required") message = "Seu email Google ainda não está vinculado a uma equipe. Peça ao gestor para cadastrar seu acesso primeiro."
+      setAlertMessage({ type: "error", text: message })
     } finally {
       setLoading(false)
     }
@@ -75,8 +145,8 @@ export default function Login({ setAppLoading }) {
       <aside className="auth-side">
         <div className="auth-brand">
           <div className="auth-brand-mark">
-            <span className="auth-brand-dot" />
-            ZENITH
+            <img src="/assets/image/Logo-redonda.webp" alt="" />
+            <span><strong>Zenith</strong><small>Agricultura inteligente</small></span>
           </div>
 
           <p className="auth-brand-tag">
@@ -99,21 +169,27 @@ export default function Login({ setAppLoading }) {
           </ul>
         </div>
 
-        <div className="auth-side-foot">
-          <div><strong>99.98%</strong><span>uptime</span></div>
-          <div><strong>12ms</strong><span>latência</span></div>
-          <div><strong>AES-256</strong><span>criptografia</span></div>
-        </div>
       </aside>
 
       <main className="auth-main">
         <div className="auth-card">
           <div className="auth-card-head">
+            <div className="auth-card-logo"><img src="/assets/image/Logo-redonda.webp" alt="" /><span>ZENITH</span></div>
             <h2>Acessar painel</h2>
             <p>Entre com suas credenciais para continuar.</p>
           </div>
 
           <div className="auth-form">
+            <div className="auth-access-switch" aria-label="Tipo de acesso">
+              <button type="button" className={accessType === "owner" ? "active" : ""} onClick={() => setAccessType("owner")}>
+                <span className="material-symbols-outlined">admin_panel_settings</span>
+                <span><strong>Proprietário / gestor</strong><small>Administração completa</small></span>
+              </button>
+              <button type="button" className={accessType === "employee" ? "active" : ""} onClick={() => setAccessType("employee")}>
+                <span className="material-symbols-outlined">badge</span>
+                <span><strong>Funcionário</strong><small>Acesso operacional</small></span>
+              </button>
+            </div>
             <div className="auth-field">
               <label>Email</label>
               <input
@@ -166,15 +242,16 @@ export default function Login({ setAppLoading }) {
 
           <div className="auth-divider"><span>OU</span></div>
 
+          <button className="auth-btn google" type="button" onClick={handleGoogleLogin} disabled={loading}>
+            <FaGoogle aria-hidden="true" />
+            Entrar com Google
+          </button>
+
           <div className="auth-footer">
-            Ainda não tem conta?
-            <a href="/register"> Criar acesso</a>
+            É proprietário e ainda não tem conta?
+            <a href="/register"> Criar cadastro</a>
           </div>
 
-          <div className="auth-status">
-            <span className="auth-pulse" />
-            Sistema online · servidores operando normalmente
-          </div>
         </div>
       </main>
     </div>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react"
+import { createPortal } from "react-dom"
 import "../../../../styles/App/BatchDiagnosis.css"
 
 function formatBytes(bytes) {
@@ -31,7 +32,7 @@ export default function BatchImagePreview({
     }
   }, [])
 
-  return (
+  return createPortal(
     <div className="batch-modal-shell" role="dialog" aria-modal="true" aria-labelledby="batch-preview-title">
       <section className="batch-preview-card">
         <header className="batch-preview-header">
@@ -136,6 +137,7 @@ export default function BatchImagePreview({
           </div>
         </footer>
       </section>
-    </div>
+    </div>,
+    document.body
   )
 }
