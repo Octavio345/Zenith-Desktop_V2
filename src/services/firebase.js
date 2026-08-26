@@ -4,7 +4,7 @@ import { getFirestore } from "firebase/firestore";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyD3t5Q0Z5m5qxaj21qNDb4he7mIolLlCOA",
-  authDomain: "Zenith-login.firebaseapp.com",
+  authDomain: "bd-tcc-test.firebaseapp.com/",
   projectId: "bd-tcc-test",
   storageBucket: "bd-tcc-test.firebasestorage.app",
   messagingSenderId: "983944576946",
