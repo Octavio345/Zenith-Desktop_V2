@@ -2486,6 +2486,22 @@ body:has(.explore-container) .header-spacer {
   height: 68px;
 }
 
+/*
+ * The footer is the final child of Explore. Desktop bottom spacing must not
+ * live on this parent, otherwise it is rendered after the footer as a light
+ * strip and makes the footer look detached from the viewport in production.
+ * Mobile keeps its own bottom reservation for the fixed navigation bar.
+ */
+@media (min-width: 761px) {
+  .explore-container[class*="explore-container--"] {
+    padding-bottom: 0 !important;
+  }
+
+  .explore-container > .zenith-footer {
+    margin-bottom: 0 !important;
+  }
+}
+
 .explore-grid-overlay {
   background-size: 46px 46px;
   opacity: 0.64;
