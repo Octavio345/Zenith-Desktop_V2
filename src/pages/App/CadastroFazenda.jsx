@@ -2,163 +2,97 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../services/firebase"
 import { addDoc, collection, query, where, getDocs } from "firebase/firestore"
+import CustomSelect from "../../components/App/Global/CustomSelect"
 import "../../styles/App/CadastrarFazenda.css"
+
+const OWNER_TYPES = [{ value: "PF", label: "Pessoa Física" }, { value: "PJ", label: "Pessoa Jurídica" }]
+const AREA_OPTIONS = [
+  { value: "1-6", label: "1 – 6 ha" }, { value: "7-12", label: "7 – 12 ha" },
+  { value: "13-20", label: "13 – 20 ha" }, { value: "21-29", label: "21 – 29 ha" },
+  { value: "30-40", label: "30 – 40 ha" }, { value: "40+", label: "Mais de 40 ha" },
+]
+const CROP_OPTIONS = ["Soja", "Tomate", "Café", "Milho", "Feijão"]
 
 export default function CadastrarFazenda() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
+  const [notice, setNotice] = useState("")
+  const [formData, setFormData] = useState({ name: "", tipo_proprietario: "", data_aquisicao: "", cep: "", bairro: "", municipio: "", uf: "", area_total: "", telefone: "", plantacao: "" })
 
-  const [formData, setFormData] = useState({
-    name: "", tipo_proprietario: "", data_aquisicao: "", cep: "",
-    bairro: "", municipio: "", uf: "", area_total: "", telefone: "", plantacao: ""
-  })
+  const handleChange = ({ target: { name, value } }) => {
+    let formatted = value
+    if (name === "cep") formatted = value.replace(/\D/g, "").slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2")
+    if (name === "telefone") {
+      const digits = value.replace(/\D/g, "").slice(0, 11)
+      formatted = digits.replace(/^(\d{2})(\d)/, "($1) $2").replace(digits.length <= 10 ? /(\d{4})(\d)/ : /(\d{5})(\d)/, "$1-$2")
+    }
+    if (name === "uf") formatted = value.replace(/[^a-z]/gi, "").toUpperCase().slice(0, 2)
+    setFormData((current) => ({ ...current, [name]: formatted }))
+    setNotice("")
+  }
 
   const buscarCEP = async (cep) => {
-    const cepLimpo = cep.replace(/\D/g, "")
-    if (cepLimpo.length !== 8) return
+    const digits = cep.replace(/\D/g, "")
+    if (digits.length !== 8) return
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`)
-      const data = await res.json()
-      if (!data.erro) {
-        setFormData((p) => ({ ...p, bairro: data.bairro || "", municipio: data.localidade || "", uf: data.uf || "" }))
-      }
-    } catch (e) { console.error(e) }
+      const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`)
+      const data = await response.json()
+      if (!data.erro) setFormData((current) => ({ ...current, bairro: data.bairro || "", municipio: data.localidade || "", uf: data.uf || "" }))
+    } catch { setNotice("Não foi possível consultar o CEP agora. Você pode preencher o endereço manualmente.") }
   }
 
-  function handleChange(e) {
-    const { name, value } = e.target
-    setFormData({ ...formData, [name]: value })
-  }
-
-  async function handleRegister(e) {
-    e.preventDefault()
+  const handleRegister = async (event) => {
+    event.preventDefault()
     const user = auth.currentUser
-    if (!user) { alert("Usuário não autenticado"); return }
+    if (!user) { navigate("/login"); return }
+    if (Object.values(formData).some((value) => !String(value).trim())) { setNotice("Preencha todos os campos da propriedade para continuar."); return }
     try {
       setLoading(true)
-      const q = query(collection(db, "farms"), where("ownerId", "==", user.uid))
-      const snapshot = await getDocs(q)
-      if (!snapshot.empty) {
-        alert("Você já possui uma fazenda cadastrada.")
-        navigate("/home"); return
-      }
-      await addDoc(collection(db, "farms"), { ...formData, ownerId: user.uid, createdAt: new Date() })
-      alert("Fazenda cadastrada com sucesso!")
+      const existing = await getDocs(query(collection(db, "farms"), where("ownerId", "==", user.uid)))
+      if (!existing.empty) { navigate("/home"); return }
+      await addDoc(collection(db, "farms"), { ...formData, ownerId: user.uid, createdAt: new Date().toISOString() })
       navigate("/home")
-    } catch (error) {
-      console.error(error)
-      alert("Erro ao cadastrar fazenda")
-    } finally { setLoading(false) }
+    } catch (error) { console.error(error); setNotice("Não foi possível salvar a fazenda. Revise os dados e tente novamente.") } finally { setLoading(false) }
   }
 
   return (
-    <div className="ff-shell">
-      <div className="ff-bg-grid" />
-      <div className="ff-bg-sphere ff-bg-sphere-1" />
-      <div className="ff-bg-sphere ff-bg-sphere-2" />
-
-      <header className="ff-header">
-        <button className="ff-back" onClick={() => navigate("/home")}>← Voltar</button>
-        <div className="ff-header-title">
-          <span className="ff-mono">// FARMS / NEW</span>
-          <h1>Cadastrar fazenda</h1>
-        </div>
-        <div className="ff-header-status">
-          <span className="ff-pulse" /> Sessão ativa
-        </div>
-      </header>
-
-      <div className="ff-grid">
-        <aside className="ff-side">
-          <div className="ff-side-block">
-            <span className="ff-mono">// OPERATION_INTEL</span>
-            <h2>Estruture sua propriedade dentro da plataforma.</h2>
-            <p>Os dados informados alimentam módulos de telemetria, previsão climática e gestão de safra.</p>
-          </div>
-          <ul className="ff-side-list">
-            <li><span /> Geolocalização automática via CEP</li>
-            <li><span /> Integração com módulos de safra</li>
-            <li><span /> Dados criptografados ponta a ponta</li>
+    <main className="farm-registration">
+      <section className="farm-registration__intro">
+        <button className="farm-registration__brand" type="button" onClick={() => navigate("/home")}>
+          <img src="/assets/image/Logo.png" alt="Zenith" />
+          <span><strong>Zenith</strong><small>Sua precisão agrícola no ponto mais alto</small></span>
+        </button>
+        <div className="farm-registration__intro-copy">
+          <span className="farm-registration__eyebrow"><i /> CONFIGURAÇÃO INICIAL</span>
+          <h1>Vamos conectar<br /><em>sua fazenda.</em></h1>
+          <p>Com esses dados, preparamos o clima, o monitoramento e a visão operacional da sua propriedade.</p>
+          <ul>
+            <li><span className="material-symbols-outlined">location_on</span> Localização automática pelo CEP</li>
+            <li><span className="material-symbols-outlined">agriculture</span> Dados organizados para a sua operação</li>
+            <li><span className="material-symbols-outlined">shield</span> Informações protegidas na sua conta</li>
           </ul>
-          <div className="ff-side-stats">
-            <div><strong>10k+</strong><span>fazendas conectadas</span></div>
-            <div><strong>27</strong><span>estados atendidos</span></div>
+        </div>
+      </section>
+      <section className="farm-registration__form-area">
+        <div className="farm-registration__form-head"><button type="button" onClick={() => navigate("/home")}><span className="material-symbols-outlined">arrow_back</span> Voltar ao painel</button><span>ETAPA 1 DE 1</span></div>
+        <form className="farm-registration__card" onSubmit={handleRegister}>
+          <div className="farm-registration__card-title"><span className="material-symbols-outlined">agriculture</span><div><h2>Cadastre sua fazenda</h2><p>Informe os dados principais da propriedade.</p></div></div>
+          <div className="farm-registration__fields">
+            <label className="farm-field farm-field--full"><span>Nome da fazenda</span><input name="name" value={formData.name} onChange={handleChange} placeholder="Ex.: Fazenda Boa Vista" /></label>
+            <label className="farm-field"><span>Tipo de proprietário</span><CustomSelect name="tipo_proprietario" value={formData.tipo_proprietario} onChange={handleChange} options={OWNER_TYPES} placeholder="Selecione" /></label>
+            <label className="farm-field"><span>Data de aquisição</span><input type="date" name="data_aquisicao" value={formData.data_aquisicao} onChange={handleChange} /></label>
+            <label className="farm-field"><span>CEP</span><input name="cep" value={formData.cep} onChange={(event) => { handleChange(event); buscarCEP(event.target.value) }} placeholder="00000-000" /></label>
+            <label className="farm-field"><span>UF</span><input name="uf" value={formData.uf} onChange={handleChange} placeholder="SP" /></label>
+            <label className="farm-field"><span>Bairro</span><input name="bairro" value={formData.bairro} onChange={handleChange} placeholder="Bairro ou distrito" /></label>
+            <label className="farm-field"><span>Município</span><input name="municipio" value={formData.municipio} onChange={handleChange} placeholder="Cidade" /></label>
+            <label className="farm-field"><span>Área total</span><CustomSelect name="area_total" value={formData.area_total} onChange={handleChange} options={AREA_OPTIONS} placeholder="Selecione a área" /></label>
+            <label className="farm-field"><span>Telefone</span><input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="(00) 00000-0000" /></label>
+            <label className="farm-field farm-field--full"><span>Principal plantação</span><CustomSelect name="plantacao" value={formData.plantacao} onChange={handleChange} options={CROP_OPTIONS} placeholder="Selecione a cultura principal" /></label>
           </div>
-        </aside>
-
-        <form className="ff-card" onSubmit={handleRegister}>
-          <div className="ff-card-head">
-            <h2>Dados da propriedade</h2>
-            <p>Preencha as informações abaixo para registrar sua fazenda.</p>
-          </div>
-
-          <div className="ff-form">
-            <div className="ff-field full">
-              <label>Nome da fazenda</label>
-              <input type="text" name="name" value={formData.name} onChange={handleChange} required placeholder="Ex: Fazenda Boa Vista"/>
-            </div>
-
-            <div className="ff-field">
-              <label>Tipo de proprietário</label>
-              <select name="tipo_proprietario" value={formData.tipo_proprietario} onChange={handleChange} required>
-                <option value="">Selecione</option>
-                <option value="PF">Pessoa Física</option>
-                <option value="PJ">Pessoa Jurídica</option>
-              </select>
-            </div>
-
-            <div className="ff-field">
-              <label>Data de aquisição</label>
-              <input type="date" name="data_aquisicao" value={formData.data_aquisicao} onChange={handleChange} required/>
-            </div>
-
-            <div className="ff-field">
-              <label>CEP</label>
-              <input type="text" name="cep" value={formData.cep}
-                onChange={(e) => { handleChange(e); buscarCEP(e.target.value) }} required placeholder="00000-000"/>
-            </div>
-
-            <div className="ff-field">
-              <label>UF</label>
-              <input type="text" name="uf" maxLength="2" value={formData.uf} onChange={handleChange} required placeholder="SP"/>
-            </div>
-
-            <div className="ff-field">
-              <label>Bairro</label>
-              <input type="text" name="bairro" value={formData.bairro} onChange={handleChange} required/>
-            </div>
-
-            <div className="ff-field">
-              <label>Município</label>
-              <input type="text" name="municipio" value={formData.municipio} onChange={handleChange} required/>
-            </div>
-
-            <div className="ff-field">
-              <label>Área total (hectares)</label>
-              <input type="number" name="area_total" value={formData.area_total} onChange={handleChange} required placeholder="Ex: 120"/>
-            </div>
-
-            <div className="ff-field">
-              <label>Telefone do proprietário</label>
-              <input type="text" name="telefone" value={formData.telefone} onChange={handleChange} required placeholder="(00) 00000-0000"/>
-            </div>
-
-            <div className="ff-field full">
-              <label>Principal plantação</label>
-              <select name="plantacao" value={formData.plantacao} onChange={handleChange} required>
-                <option value="">Selecione</option>
-                <option value="Soja">Soja</option>
-                <option value="Tomate">Tomate</option>
-                <option value="Café">Café</option>
-              </select>
-            </div>
-
-            <button type="submit" className="ff-btn primary" disabled={loading}>
-              {loading ? <><span className="ff-spinner"/> Cadastrando...</> : "Cadastrar fazenda →"}
-            </button>
-          </div>
+          {notice && <p className="farm-registration__notice">{notice}</p>}
+          <button className="farm-registration__submit" type="submit" disabled={loading}>{loading ? "Salvando dados..." : <>Concluir cadastro <span className="material-symbols-outlined">arrow_forward</span></>}</button>
         </form>
-      </div>
-    </div>
+      </section>
+    </main>
   )
 }

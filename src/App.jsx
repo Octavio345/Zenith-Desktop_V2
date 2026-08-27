@@ -1,7 +1,8 @@
 // App.jsx do PWA
 import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom"
 import { useState, useEffect, useRef } from "react"
-import { onAuthStateChanged } from "firebase/auth"
+import { onAuthStateChanged, signOut } from "firebase/auth"
+import { doc, onSnapshot } from "firebase/firestore"
 
 import Intro from "./pages/App/Intro"
 import Login from "./pages/App/Login"
@@ -12,8 +13,8 @@ import Profile from "./pages/App/Profile"
 import ForgotPassword from "./pages/App/ForgotPassword"
 import Explore from "./pages/App/Explore"
 import AdminTeamDashboard from "./pages/App/AdminTeamDashboard"
-import { auth } from "./services/firebase"
-import { getUserAccessProfile, isOperationalRole } from "./services/accessControl"
+import { auth, db } from "./services/firebase"
+import { getUserAccessProfile, isAccountBlocked, isOperationalRole } from "./services/accessControl"
 
 // Componentes
 import InstallPrompt from "./components/App/Global/InstallPrompt"
@@ -22,6 +23,61 @@ import InstallSuccess from "./components/App/Global/InstallSuccess"
 // Estilos
 import "./App.css"
 import "./styles/Global/DesktopMobileTheme.css"
+
+function AccountRoute({ children }) {
+  const [access, setAccess] = useState("loading")
+
+  useEffect(() => {
+    let stopProfileListener = null
+
+    const stopAuthListener = onAuthStateChanged(auth, (user) => {
+      if (stopProfileListener) {
+        stopProfileListener()
+        stopProfileListener = null
+      }
+
+      if (!user) {
+        setAccess("denied")
+        return
+      }
+
+      stopProfileListener = onSnapshot(doc(db, "users", user.uid), async (profileSnap) => {
+        const profile = profileSnap.exists() ? profileSnap.data() : null
+        if (!profile || isAccountBlocked(profile)) {
+          sessionStorage.setItem(
+            "zenithAccessMessage",
+            profile ? "Seu acesso foi removido pelo proprietário da fazenda." : "Seu perfil de acesso não está disponível.",
+          )
+          setAccess("denied")
+          try { await signOut(auth) } catch { /* A rota permanece bloqueada mesmo se o encerramento remoto falhar. */ }
+          return
+        }
+        setAccess("allowed")
+      }, async () => {
+        sessionStorage.setItem("zenithAccessMessage", "Não foi possível validar as permissões desta conta.")
+        setAccess("denied")
+        try { await signOut(auth) } catch { /* A rota permanece bloqueada. */ }
+      })
+    })
+
+    return () => {
+      stopAuthListener()
+      if (stopProfileListener) stopProfileListener()
+    }
+  }, [])
+
+  if (access === "loading") {
+    return (
+      <div className="access-loader" role="status">
+        <img src="/assets/image/Logo-redonda.webp" alt="" />
+        <div><strong>Verificando acesso</strong><span>Preparando sua área de trabalho</span></div>
+        <i aria-hidden="true" />
+      </div>
+    )
+  }
+
+  return access === "allowed" ? children : <Navigate to="/login" replace />
+}
 
 function TeamRoute() {
   const [access, setAccess] = useState("loading")
@@ -201,13 +257,13 @@ const handleInstall = async () => {
               <Route path="/" element={<Intro />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<CadastroCompleto />} />
-              <Route path="/cadastrar-fazenda" element={<CadastrarFazenda />} />
-              <Route path="/home" element={<Home />} />
-              <Route path="/profile" element={<Profile />} />
+              <Route path="/cadastrar-fazenda" element={<AccountRoute><CadastrarFazenda /></AccountRoute>} />
+              <Route path="/home" element={<AccountRoute><Home /></AccountRoute>} />
+              <Route path="/profile" element={<AccountRoute><Profile /></AccountRoute>} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/explore" element={<Explore />} />
-              <Route path="/equipe" element={<TeamRoute />} />
-              <Route path="/admin/team" element={<TeamRoute />} />
+              <Route path="/explore" element={<AccountRoute><Explore /></AccountRoute>} />
+              <Route path="/equipe" element={<AccountRoute><TeamRoute /></AccountRoute>} />
+              <Route path="/admin/team" element={<AccountRoute><TeamRoute /></AccountRoute>} />
             </Routes>
             {quickLoading && (
               <div className="route-quick-loader" role="status" aria-label="Abrindo página">

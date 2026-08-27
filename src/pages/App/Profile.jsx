@@ -10,7 +10,8 @@ import {
   where,
   getDocs,
 } from "firebase/firestore"
-import { useNavigate } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
+import { isOperationalRole } from "../../services/accessControl"
 
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
@@ -196,6 +197,7 @@ export default function Profile() {
   })
 
   const navigate = useNavigate()
+  const location = useLocation()
   const alertTimer = useRef(null)
 
   /* ---------- Auth & loading ---------- */
@@ -212,6 +214,10 @@ export default function Profile() {
     })
     return () => unsub()
   }, [navigate])
+
+  useEffect(() => {
+    if (location.state?.tab) setActiveTab(location.state.tab)
+  }, [location.state?.tab])
 
   const loadUserData = async (uid) => {
     try {
@@ -332,6 +338,10 @@ export default function Profile() {
 
   const handleSave = async () => {
     if (!user) return
+    if (isEmployeeAccount) {
+      showAlert("error", "Os dados do funcionário são administrados pelo proprietário.")
+      return
+    }
     const name = normalizeText(formData.name)
     const email = normalizeText(formData.email || user?.email).toLowerCase()
     const documentDigits = onlyDigits(formData.document)
@@ -399,6 +409,10 @@ export default function Profile() {
 
   const handleSaveFarm = async () => {
     if (!user || !farmData?.id) return
+    if (isEmployeeAccount) {
+      showAlert("error", "Os dados da fazenda são administrados pelo proprietário.")
+      return
+    }
     const municipio = normalizeText(farmForm.municipio)
     const farmPhoneDigits = onlyDigits(farmForm.telefone)
     const cepDigits = onlyDigits(farmForm.cep)
@@ -517,6 +531,7 @@ export default function Profile() {
   const currentPlan = getPlanByValue(
     userData?.plan || userData?.planName || userData?.plano
   )
+  const isEmployeeAccount = isOperationalRole(userData?.role)
 
   // ========== CORREÇÃO DEFINITIVA DO HEADER E MENU BAR ==========
   /*
@@ -631,7 +646,7 @@ export default function Profile() {
                 Membro há {memberTime()}
               </p>
               <div className="pf-hero-actions">
-                {!editing && activeTab === "pessoal" && (
+                {!isEmployeeAccount && !editing && activeTab === "pessoal" && (
                   <button
                     className="pf-btn pf-btn-primary"
                     onClick={() => setEditing(true)}
@@ -668,13 +683,13 @@ export default function Profile() {
               <span>Idade</span>
             </div>
           </div>
-          <div className="pf-stat pf-stat-plan">
+          {!isEmployeeAccount && <div className="pf-stat pf-stat-plan">
             <span className="material-symbols-outlined">workspace_premium</span>
             <div>
               <b>{currentPlan.name}</b>
               <span>Plano</span>
             </div>
-          </div>
+          </div>}
         </section>
 
         {/* TABS */}
@@ -713,7 +728,20 @@ export default function Profile() {
             <div className="pf-card" style={{ animationDelay: "0ms" }}>
               <div className="pf-card-header">
                 <span className="material-symbols-outlined">person</span>
-                <h2>Informações pessoais</h2>
+                <div className="pf-personal-heading"><h2>Informações pessoais</h2><p>Mantenha cidade e telefone atualizados para personalizar os recursos da plataforma.</p></div>
+                {!isEmployeeAccount && !editing && (
+                  <button
+                    className="pf-btn pf-btn-primary"
+                    type="button"
+                    onClick={() => {
+                      resetForm()
+                      setEditing(true)
+                    }}
+                  >
+                    <span className="material-symbols-outlined">edit</span>
+                    Editar informações
+                  </button>
+                )}
                 {editing && (
                   <div className="pf-card-actions">
                     <button
@@ -923,13 +951,13 @@ export default function Profile() {
               <div className="pf-card-header">
                 <span className="material-symbols-outlined">agriculture</span>
                 <h2>Dados da fazenda</h2>
-                {farmData && !editingFarm && (
+                {!isEmployeeAccount && farmData && !editingFarm && (
                   <button
                     className="pf-btn pf-btn-primary"
                     onClick={() => setEditingFarm(true)}
                   >
                     <span className="material-symbols-outlined">edit</span>
-                    Editar
+                    Editar fazenda
                   </button>
                 )}
                 {editingFarm && (
@@ -1146,7 +1174,7 @@ export default function Profile() {
           {/* ABA CONTA */}
           {activeTab === "seguranca" && (
             <>
-              <div className="pf-card pf-plan-card" style={{ animationDelay: "90ms" }}>
+              {!isEmployeeAccount && <div className="pf-card pf-plan-card" style={{ animationDelay: "90ms" }}>
                 <div className="pf-card-header pf-plan-header">
                   <span className="material-symbols-outlined">workspace_premium</span>
                   <div>
@@ -1200,7 +1228,7 @@ export default function Profile() {
                     )
                   })}
                 </div>
-              </div>
+              </div>}
 
               <div className="pf-card" style={{ animationDelay: "120ms" }}>
               <div className="pf-card-header">

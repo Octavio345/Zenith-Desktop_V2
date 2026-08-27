@@ -500,9 +500,10 @@ body:has(.pf-page) .header .nav-item.active {
   border-radius: var(--pf-radius-sm);
   font-size: 13.5px;
   font-weight: 600;
-  border: 1px solid rgba(22, 242, 154, 0.22);
-  background: rgba(8, 15, 12, 0.7);
-  backdrop-filter: blur(12px);
+  border: 1px solid #d7e5d4;
+  background: #ffffff;
+  color: #385344;
+  box-shadow: 0 12px 28px rgba(38, 79, 48, 0.09);
 }
 
 .pf-alert .material-symbols-outlined {
@@ -510,11 +511,15 @@ body:has(.pf-page) .header .nav-item.active {
 }
 
 .pf-alert-success {
-  color: var(--pf-green);
+  color: #286c44;
+  border-color: #bcdabb;
+  background: #eef7eb;
 }
 
 .pf-alert-error {
-  color: var(--pf-danger);
+  color: #a34b39;
+  border-color: #ecc9c1;
+  background: #fff3f0;
 }
 
 /* CONTENT */
@@ -580,6 +585,22 @@ body:has(.pf-page) .header .nav-item.active {
   margin: 0;
   font-size: 13px;
   color: var(--pf-text-2);
+}
+
+.pf-personal-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.pf-personal-heading h2 {
+  margin: 0;
+}
+
+.pf-personal-heading p {
+  margin: 3px 0 0;
+  color: var(--pf-text-2);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .pf-card-actions {
@@ -723,18 +744,23 @@ body:has(.pf-page) .header .nav-item.active {
 }
 
 .pf-btn-primary {
-  background: var(--pf-green);
-  color: #04100b;
-  border-color: var(--pf-green);
+  min-height: 42px;
+  padding: 0 17px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #2d7549, #24613d);
+  color: #ffffff;
+  border-color: #2d7549;
+  box-shadow: 0 9px 20px rgba(38, 103, 61, 0.18);
 }
 
 .pf-btn-primary .material-symbols-outlined {
-  color: #04100b;
+  color: #ffffff;
 }
 
 .pf-btn-primary:hover:not(:disabled) {
-  background: var(--pf-green-dark);
-  box-shadow: 0 0 24px rgba(22, 242, 154, 0.24);
+  background: linear-gradient(135deg, #24683f, #1d5434);
+  box-shadow: 0 13px 28px rgba(38, 103, 61, 0.24);
+  transform: translateY(-2px);
 }
 
 .pf-btn-ghost {

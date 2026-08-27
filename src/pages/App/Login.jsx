@@ -4,7 +4,7 @@ import { auth, db } from "../../services/firebase"
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth"
 import { doc, getDoc, setDoc } from "firebase/firestore"
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa"
-import { ACCOUNT_ROLES, isOperationalRole, normalizeRole } from "../../services/accessControl"
+import { ACCOUNT_ROLES, getUserAccessProfile, isAccountBlocked, isOperationalRole, normalizeRole } from "../../services/accessControl"
 import "../../styles/App/Login.css"
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -21,9 +21,25 @@ export default function Login() {
 
   useEffect(() => {
     const checkAuth = async () => {
+      const accessMessage = sessionStorage.getItem("zenithAccessMessage")
+      if (accessMessage) {
+        sessionStorage.removeItem("zenithAccessMessage")
+        setAlertMessage({ type: "error", text: accessMessage })
+      }
       const user = auth.currentUser
       if (user) {
-        navigate("/home", { replace: true })
+        try {
+          const profile = await getUserAccessProfile(user.uid)
+          if (isAccountBlocked(profile)) {
+            await signOut(auth)
+            setAlertMessage({ type: "error", text: "Seu acesso foi removido pelo proprietário da fazenda." })
+            return
+          }
+          navigate("/home", { replace: true })
+        } catch {
+          await signOut(auth)
+          setAlertMessage({ type: "error", text: "Não foi possível validar seu acesso. Entre novamente." })
+        }
       } else {
         const rememberedEmail = localStorage.getItem("rememberedEmail")
         if (rememberedEmail) {
@@ -39,7 +55,14 @@ export default function Login() {
 
   const validateAccountRole = async (user) => {
     const profileSnap = await getDoc(doc(db, "users", user.uid))
-    const actualRole = normalizeRole(profileSnap.exists() ? profileSnap.data().role : undefined)
+    const profile = profileSnap.exists() ? profileSnap.data() : null
+    if (isAccountBlocked(profile)) {
+      await signOut(auth)
+      const blockedError = new Error("Acesso removido pelo proprietário.")
+      blockedError.code = "auth/account-blocked"
+      throw blockedError
+    }
+    const actualRole = normalizeRole(profile?.role)
     const selectedEmployee = accessType === "employee"
     if (selectedEmployee !== isOperationalRole(actualRole)) {
       await signOut(auth)
@@ -77,6 +100,7 @@ export default function Login() {
         case "auth/too-many-requests": errorMessage = "Muitas tentativas. Aguarde um momento."; break
         case "auth/network-request-failed": errorMessage = "Falha de conexão com o servidor."; break
         case "auth/role-mismatch": errorMessage = "Escolha o acesso correto: proprietário/gestor ou funcionário."; break
+        case "auth/account-blocked": errorMessage = "Seu acesso foi removido pelo proprietário da fazenda."; break
         default: errorMessage = "Erro ao fazer login. Tente novamente."
       }
       setAlertMessage({ type: "error", text: errorMessage })
@@ -127,6 +151,7 @@ export default function Login() {
       if (error.code === "auth/popup-blocked") message = "O navegador bloqueou a janela do Google. Autorize pop-ups e tente novamente."
       if (error.code === "auth/role-mismatch") message = "Escolha o acesso correto para esta conta Google."
       if (error.code === "auth/employee-profile-required") message = "Seu email Google ainda não está vinculado a uma equipe. Peça ao gestor para cadastrar seu acesso primeiro."
+      if (error.code === "auth/account-blocked") message = "Seu acesso foi removido pelo proprietário da fazenda."
       setAlertMessage({ type: "error", text: message })
     } finally {
       setLoading(false)

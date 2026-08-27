@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { auth, db } from "../../../../services/firebase"
-import { collection, query, where, getDocs } from "firebase/firestore"
+import { collection, doc, getDoc, query, where, getDocs } from "firebase/firestore"
 
 export function useFarm() {
   const [farmData, setFarmData] = useState(null)
@@ -16,9 +16,12 @@ export function useFarm() {
       }
 
       try {
+        const profileSnap = await getDoc(doc(db, "users", user.uid))
+        const profile = profileSnap.exists() ? profileSnap.data() : {}
+        const farmOwnerId = profile.ownerId || profile.teamId || user.uid
         const q = query(
           collection(db, "farms"),
-          where("ownerId", "==", user.uid)
+          where("ownerId", "==", farmOwnerId)
         )
 
         const snapshot = await getDocs(q)

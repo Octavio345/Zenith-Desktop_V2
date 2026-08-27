@@ -2,8 +2,9 @@ const API_KEY = "d77668673cf15b7d0488f921007cbd6b"
 
 export async function getWeatherByCity(city, state) {
   try {
+    if (!city || !state) return null
     const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${city},${state},BR&appid=${API_KEY}&units=metric&lang=pt_br`
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)},${encodeURIComponent(state)},BR&appid=${API_KEY}&units=metric&lang=pt_br`
     ) 
 
     const data = await response.json()
@@ -15,7 +16,14 @@ export async function getWeatherByCity(city, state) {
 
     return {
       temperature: Math.round(data.main.temp),
-      humidity: data.main.humidity
+      feelsLike: Math.round(data.main.feels_like),
+      humidity: data.main.humidity,
+      windSpeed: Math.round((data.wind?.speed || 0) * 3.6),
+      rain: data.rain?.["1h"] || 0,
+      conditionDescription: data.weather?.[0]?.description || "Condição atual",
+      description: data.weather?.[0]?.description || "Condição atual",
+      icon: data.weather?.[0]?.icon || "",
+      updatedAt: new Date().toISOString()
     }
 
   } catch (error) {

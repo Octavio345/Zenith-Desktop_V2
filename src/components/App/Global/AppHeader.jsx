@@ -29,9 +29,9 @@ export default function AppHeader() {
     }
   }), [])
 
-  const navigateWithLoader = (path) => {
+  const navigateWithLoader = (path, state) => {
     window.dispatchEvent(new CustomEvent("zenith:navigate"))
-    navigate(path)
+    navigate(path, state ? { state } : undefined)
   }
 
   const goTo = (event, item) => {
@@ -66,7 +66,7 @@ export default function AppHeader() {
         </nav>
 
         <div className="app-header__actions">
-          <button className="app-header__profile" type="button" onClick={() => navigateWithLoader("/profile")}>
+          <button className="app-header__profile" type="button" onClick={() => navigateWithLoader("/profile", { tab: "seguranca" })}>
             <span className="material-symbols-outlined">person</span><span>Minha conta</span>
           </button>
         </div>

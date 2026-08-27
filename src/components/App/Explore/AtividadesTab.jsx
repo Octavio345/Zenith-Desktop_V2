@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+import { onAuthStateChanged } from "firebase/auth"
+import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query, updateDoc, where } from "firebase/firestore"
+import { auth, db } from "../../../services/firebase"
+import { isOperationalRole } from "../../../services/accessControl"
 import CustomSelect from "../Global/CustomSelect"
 import "../../../styles/App/AtividadesTab.css"
 
@@ -11,6 +15,10 @@ export default function AtividadesTab() {
   const [filterType, setFilterType] = useState("todas")
   const [filterStatus, setFilterStatus] = useState("todos")
   const [searchTerm, setSearchTerm] = useState("")
+  const [userProfile, setUserProfile] = useState(null)
+  const [employees, setEmployees] = useState([])
+  const [activitiesLoading, setActivitiesLoading] = useState(true)
+  const [activityMessage, setActivityMessage] = useState("")
   const [newActivity, setNewActivity] = useState({
     title: "",
     description: "",
@@ -19,7 +27,9 @@ export default function AtividadesTab() {
     priority: "media",
     date: new Date().toISOString().split("T")[0],
     time: "",
-    responsible: ""
+    responsible: "",
+    scope: "general",
+    assigneeId: ""
   })
 
   // Cores mais vibrantes para os ícones
@@ -49,58 +59,111 @@ export default function AtividadesTab() {
   const priorityOptions = priorities.map(priority => ({ value: priority.id, label: priority.name }))
   const statusOptions = statuses.map(status => ({ value: status.id, label: status.name }))
 
-  useEffect(() => {
-    const saved = localStorage.getItem("activities")
-    if (saved) {
-      setActivities(JSON.parse(saved))
-    } else {
-      const sampleActivities = [
-        { id: 1, title: "Aplicação de fungicida", description: "Aplicar fungicida na área norte da fazenda", type: "pulverizacao", status: "concluida", priority: "alta", date: "2024-03-20", time: "08:00", responsible: "João Silva", createdAt: new Date().toISOString() },
-        { id: 2, title: "Voo de mapeamento", description: "Realizar voo de mapeamento da área sul", type: "voo", status: "em_andamento", priority: "media", date: "2024-03-21", time: "14:00", responsible: "Drone Team", createdAt: new Date().toISOString() },
-        { id: 3, title: "Irrigação programada", description: "Ativar sistema de irrigação na área central", type: "irrigacao", status: "pendente", priority: "alta", date: "2024-03-22", time: "06:00", responsible: "Sistema Automático", createdAt: new Date().toISOString() },
-        { id: 4, title: "Manutenção de equipamentos", description: "Revisão dos pulverizadores", type: "manutencao", status: "pendente", priority: "media", date: "2024-03-23", time: "09:00", responsible: "Equipe Manutenção", createdAt: new Date().toISOString() }
-      ]
-      setActivities(sampleActivities)
-      localStorage.setItem("activities", JSON.stringify(sampleActivities))
+  const isEmployee = isOperationalRole(userProfile?.role)
+  const isOwner = Boolean(userProfile) && !isEmployee
+
+  useEffect(() => onAuthStateChanged(auth, async (user) => {
+    if (!user) { setUserProfile(null); setActivitiesLoading(false); return }
+    try {
+      const profileSnap = await getDoc(doc(db, "users", user.uid))
+      setUserProfile(profileSnap.exists() ? { id: user.uid, ...profileSnap.data() } : null)
+    } catch (error) {
+      console.error("Erro ao carregar acesso das atividades:", error)
+      setActivitiesLoading(false)
     }
-  }, [])
+  }), [])
 
-  const saveActivities = (newActivities) => {
-    setActivities(newActivities)
-    localStorage.setItem("activities", JSON.stringify(newActivities))
+  useEffect(() => {
+    const user = auth.currentUser
+    if (!user || !userProfile) return undefined
+    setActivitiesLoading(true)
+    const unsubscribers = []
+
+    if (!isOperationalRole(userProfile.role)) {
+      const ownerActivities = query(collection(db, "activities"), where("ownerId", "==", user.uid))
+      const teamMembers = query(collection(db, "users"), where("ownerId", "==", user.uid))
+      unsubscribers.push(onSnapshot(ownerActivities, (snapshot) => {
+        setActivities(snapshot.docs.map((activityDoc) => ({ id: activityDoc.id, ...activityDoc.data() })))
+        setActivitiesLoading(false)
+      }, (error) => { console.error("Erro ao sincronizar atividades:", error); setActivityMessage("Não foi possível carregar as atividades compartilhadas."); setActivitiesLoading(false) }))
+      unsubscribers.push(onSnapshot(teamMembers, (snapshot) => {
+        setEmployees(snapshot.docs.map((memberDoc) => ({ id: memberDoc.id, ...memberDoc.data() })).filter((member) => isOperationalRole(member.role)))
+      }))
+    } else {
+      const ownerId = userProfile.ownerId || userProfile.teamId
+      const generalActivities = query(collection(db, "activities"), where("ownerId", "==", ownerId), where("scope", "==", "general"))
+      const assignedActivities = query(collection(db, "activities"), where("assigneeId", "==", user.uid))
+      let general = []
+      let assigned = []
+      const syncVisible = () => setActivities([...new Map([...general, ...assigned].map((activity) => [activity.id, activity])).values()])
+      unsubscribers.push(onSnapshot(generalActivities, (snapshot) => { general = snapshot.docs.map((activityDoc) => ({ id: activityDoc.id, ...activityDoc.data() })); syncVisible(); setActivitiesLoading(false) }))
+      unsubscribers.push(onSnapshot(assignedActivities, (snapshot) => { assigned = snapshot.docs.map((activityDoc) => ({ id: activityDoc.id, ...activityDoc.data() })); syncVisible(); setActivitiesLoading(false) }))
+    }
+
+    return () => unsubscribers.forEach((unsubscribe) => unsubscribe())
+  }, [userProfile])
+
+  const addActivity = async () => {
+    const user = auth.currentUser
+    if (!user || !isOwner || !newActivity.title.trim()) return
+    if (newActivity.scope === "individual" && !newActivity.assigneeId) { setActivityMessage("Selecione o funcionário responsável."); return }
+    const assignee = employees.find((employee) => employee.id === newActivity.assigneeId)
+    try {
+      await addDoc(collection(db, "activities"), {
+        ...newActivity,
+        title: newActivity.title.trim(),
+        description: newActivity.description.trim(),
+        ownerId: user.uid,
+        assigneeId: newActivity.scope === "individual" ? newActivity.assigneeId : "",
+        responsible: newActivity.scope === "individual" ? assignee?.name || "Funcionário" : "Toda a fazenda",
+        createdBy: user.uid,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      setNewActivity({ title: "", description: "", type: "tarefa", status: "pendente", priority: "media", date: new Date().toISOString().split("T")[0], time: "", responsible: "", scope: "general", assigneeId: "" })
+      setActivityMessage("")
+      setShowForm(false)
+    } catch (error) { console.error("Erro ao criar atividade:", error); setActivityMessage("Não foi possível criar a atividade. Publique as regras atualizadas do Firestore.") }
   }
 
-  const addActivity = () => {
-    if (!newActivity.title.trim()) return
-    const activity = { id: Date.now(), ...newActivity, createdAt: new Date().toISOString() }
-    saveActivities([activity, ...activities])
-    setNewActivity({
-      title: "", description: "", type: "tarefa", status: "pendente",
-      priority: "media", date: new Date().toISOString().split("T")[0], time: "", responsible: ""
-    })
-    setShowForm(false)
+  const updateActivity = async () => {
+    if (!selectedActivity || !isOwner) return
+    if (selectedActivity.scope === "individual" && !selectedActivity.assigneeId) {
+      setActivityMessage("Selecione o funcionário responsável.")
+      return
+    }
+    try {
+      const { id, ...activityData } = selectedActivity
+      const assignee = employees.find((employee) => employee.id === activityData.assigneeId)
+      await updateDoc(doc(db, "activities", id), {
+        ...activityData,
+        assigneeId: activityData.scope === "individual" ? activityData.assigneeId : "",
+        responsible: activityData.scope === "individual" ? assignee?.name || "Funcionário" : "Toda a fazenda",
+        updatedAt: new Date().toISOString(),
+      })
+      setSelectedActivity(null)
+    } catch (error) { console.error("Erro ao editar atividade:", error); setActivityMessage("Não foi possível salvar a atividade.") }
   }
 
-  const updateActivity = () => {
-    if (!selectedActivity) return
-    saveActivities(activities.map(a => a.id === selectedActivity.id ? { ...selectedActivity } : a))
-    setSelectedActivity(null)
+  const deleteActivity = async (id) => {
+    if (!isOwner) return
+    try { await deleteDoc(doc(db, "activities", id)); setDeleteTarget(null) }
+    catch (error) { console.error("Erro ao excluir atividade:", error); setActivityMessage("Não foi possível excluir a atividade.") }
   }
 
-  const deleteActivity = (id) => {
-    saveActivities(activities.filter(a => a.id !== id))
-    setDeleteTarget(null)
-  }
-
-  const changeStatus = (id, newStatus) => {
-    saveActivities(activities.map(a => a.id === id ? { ...a, status: newStatus } : a))
+  const changeStatus = async (activity, newStatus) => {
+    if (!isOwner && activity.assigneeId !== auth.currentUser?.uid) return
+    const now = new Date().toISOString()
+    const payload = { status: newStatus, updatedAt: now, ...(newStatus === "em_andamento" ? { startedAt: now } : {}), ...(newStatus === "concluida" ? { completedAt: now } : {}) }
+    try { await updateDoc(doc(db, "activities", activity.id), payload) }
+    catch (error) { console.error("Erro ao atualizar atividade:", error); setActivityMessage("Não foi possível atualizar a atividade.") }
   }
 
   const filteredActivities = activities.filter(activity => {
     const matchesType = filterType === "todas" || activity.type === filterType
     const matchesStatus = filterStatus === "todos" || activity.status === filterStatus
-    const matchesSearch = activity.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          activity.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = String(activity.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          String(activity.description || "").toLowerCase().includes(searchTerm.toLowerCase())
     return matchesType && matchesStatus && matchesSearch
   })
 
@@ -138,13 +201,23 @@ export default function AtividadesTab() {
       <div className="atividades-header">
         <div>
           <h2>Atividades</h2>
-          <p>Gerencie tarefas, responsáveis e operações do campo.</p>
+          <p>{isOwner ? "Organize atividades gerais ou distribua operações para cada funcionário." : "Acompanhe as atividades gerais da fazenda e as operações atribuídas a você."}</p>
         </div>
-        <button className="add-activity-btn" onClick={() => setShowForm(true)}>
+        {isOwner && <button className="add-activity-btn" onClick={() => setShowForm(true)}>
           <span className="material-symbols-outlined">add</span>
           Nova atividade
-        </button>
+        </button>}
       </div>
+
+      {activityMessage && (
+        <div className="activity-message" role="status">
+          <span className="material-symbols-outlined">info</span>
+          <span>{activityMessage}</span>
+          <button type="button" aria-label="Fechar aviso" onClick={() => setActivityMessage("")}>
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+      )}
 
       {/* Estatísticas */}
       <div className="atividades-stats">
@@ -208,11 +281,16 @@ export default function AtividadesTab() {
 
       {/* Lista */}
       <div className="activities-list">
-        {sortedActivities.length === 0 ? (
+        {activitiesLoading ? (
+          <div className="empty-state activities-loading">
+            <span className="material-symbols-outlined">sync</span>
+            <p>Sincronizando atividades da fazenda...</p>
+          </div>
+        ) : sortedActivities.length === 0 ? (
           <div className="empty-state">
             <span className="material-symbols-outlined">assignment_turned_in</span>
             <p>Nenhuma atividade encontrada</p>
-            <button onClick={() => setShowForm(true)}>Criar atividade</button>
+            {isOwner && <button onClick={() => setShowForm(true)}>Criar atividade</button>}
           </div>
         ) : (
           sortedActivities.map((activity, index) => {
@@ -228,7 +306,7 @@ export default function AtividadesTab() {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04, duration: 0.25 }}
-                onClick={() => setSelectedActivity(activity)}
+                onClick={() => isOwner && setSelectedActivity({ ...activity, scope: activity.scope || "general", assigneeId: activity.assigneeId || "" })}
               >
                 <div className="activity-header">
                   <div className="activity-icon" style={{ background: `${typeInfo.color}1a`, color: typeInfo.color }}>
@@ -265,7 +343,7 @@ export default function AtividadesTab() {
                 <div className="activity-info-row">
                   {activity.responsible && (
                     <div className="activity-responsible">
-                      <span className="material-symbols-outlined">person</span>
+                      <span className="material-symbols-outlined">{activity.scope === "general" ? "groups" : "person"}</span>
                       <span>{activity.responsible}</span>
                     </div>
                   )}
@@ -278,30 +356,30 @@ export default function AtividadesTab() {
                 </div>
 
                 <div className="activity-actions">
-                  {activity.status === "pendente" && (
+                  {(isOwner || activity.assigneeId === auth.currentUser?.uid) && activity.status === "pendente" && (
                     <button
                       className="action-start"
-                      onClick={(e) => { e.stopPropagation(); changeStatus(activity.id, "em_andamento") }}
+                      onClick={(e) => { e.stopPropagation(); changeStatus(activity, "em_andamento") }}
                     >
                       <span className="material-symbols-outlined">play_arrow</span>
                       Iniciar
                     </button>
                   )}
-                  {activity.status === "em_andamento" && (
+                  {(isOwner || activity.assigneeId === auth.currentUser?.uid) && activity.status === "em_andamento" && (
                     <button
                       className="action-complete"
-                      onClick={(e) => { e.stopPropagation(); changeStatus(activity.id, "concluida") }}
+                      onClick={(e) => { e.stopPropagation(); changeStatus(activity, "concluida") }}
                     >
                       <span className="material-symbols-outlined">check</span>
                       Concluir
                     </button>
                   )}
-                  <button
+                  {isOwner && <button
                     className="action-delete"
                     onClick={(e) => { e.stopPropagation(); setDeleteTarget(activity) }}
                   >
                     <span className="material-symbols-outlined">delete</span>
-                  </button>
+                  </button>}
                 </div>
               </motion.div>
             )
@@ -345,6 +423,33 @@ export default function AtividadesTab() {
 
               <div className="form-row">
                 <div className="form-group">
+                  <label>Visibilidade</label>
+                  <CustomSelect
+                    value={newActivity.scope}
+                    onChange={(scope) => setNewActivity({ ...newActivity, scope, assigneeId: "" })}
+                    options={[
+                      { value: "general", label: "Toda a fazenda" },
+                      { value: "individual", label: "Funcionário específico" },
+                    ]}
+                  />
+                </div>
+                {newActivity.scope === "individual" && (
+                  <div className="form-group">
+                    <label>Funcionário responsável</label>
+                    <CustomSelect
+                      value={newActivity.assigneeId}
+                      onChange={(assigneeId) => setNewActivity({ ...newActivity, assigneeId })}
+                      options={[
+                        { value: "", label: "Selecione o funcionário" },
+                        ...employees.map((employee) => ({ value: employee.id, label: employee.name || employee.email || "Funcionário" })),
+                      ]}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
                   <label>Tipo</label>
                   <CustomSelect value={newActivity.type}
                     onChange={(type) => setNewActivity({ ...newActivity, type })}
@@ -369,13 +474,6 @@ export default function AtividadesTab() {
                   <input type="time" value={newActivity.time}
                     onChange={(e) => setNewActivity({...newActivity, time: e.target.value})} />
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label>Responsável</label>
-                <input type="text" placeholder="Nome do responsável"
-                  value={newActivity.responsible}
-                  onChange={(e) => setNewActivity({...newActivity, responsible: e.target.value})} />
               </div>
 
               <button className="submit-btn" onClick={addActivity}>Criar atividade</button>
@@ -418,6 +516,33 @@ export default function AtividadesTab() {
 
               <div className="form-row">
                 <div className="form-group">
+                  <label>Visibilidade</label>
+                  <CustomSelect
+                    value={selectedActivity.scope || "general"}
+                    onChange={(scope) => setSelectedActivity({ ...selectedActivity, scope, assigneeId: "" })}
+                    options={[
+                      { value: "general", label: "Toda a fazenda" },
+                      { value: "individual", label: "Funcionário específico" },
+                    ]}
+                  />
+                </div>
+                {selectedActivity.scope === "individual" && (
+                  <div className="form-group">
+                    <label>Funcionário responsável</label>
+                    <CustomSelect
+                      value={selectedActivity.assigneeId || ""}
+                      onChange={(assigneeId) => setSelectedActivity({ ...selectedActivity, assigneeId })}
+                      options={[
+                        { value: "", label: "Selecione o funcionário" },
+                        ...employees.map((employee) => ({ value: employee.id, label: employee.name || employee.email || "Funcionário" })),
+                      ]}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
                   <label>Tipo</label>
                   <CustomSelect value={selectedActivity.type}
                     onChange={(type) => setSelectedActivity({ ...selectedActivity, type })}
@@ -442,12 +567,6 @@ export default function AtividadesTab() {
                   <input type="time" value={selectedActivity.time || ""}
                     onChange={(e) => setSelectedActivity({...selectedActivity, time: e.target.value})} />
                 </div>
-              </div>
-
-              <div className="form-group">
-                <label>Responsável</label>
-                <input type="text" value={selectedActivity.responsible || ""}
-                  onChange={(e) => setSelectedActivity({...selectedActivity, responsible: e.target.value})} />
               </div>
 
               <button className="submit-btn" onClick={updateActivity}>Salvar alterações</button>

@@ -102,6 +102,38 @@
   .add-activity-btn { width: 100%; padding: 12px 18px; }
 }
 
+.activity-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: -8px 0 22px;
+  padding: 12px 14px;
+  color: #175b40;
+  background: #f0f8ef;
+  border: 1px solid #cfe4cb;
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(27, 77, 52, 0.08);
+  font-size: 14px;
+}
+
+.activity-message > .material-symbols-outlined {
+  color: #2d7a50;
+}
+
+.activity-message button {
+  display: inline-flex;
+  margin-left: auto;
+  padding: 3px;
+  color: #527062;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.activity-message button .material-symbols-outlined {
+  font-size: 19px;
+}
+
 /* Estatísticas */
 .atividades-stats {
   display: grid;
@@ -582,6 +614,15 @@
 }
 
 .empty-state button:hover { background: #0ea372; }
+
+.activities-loading > span {
+  color: var(--accent);
+  animation: activities-spin 0.9s linear infinite;
+}
+
+@keyframes activities-spin {
+  to { transform: rotate(360deg); }
+}
 
 /* Modal */
 .atividades-modal {

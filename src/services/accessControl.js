@@ -18,6 +18,10 @@ export function isOperationalRole(role) {
   return normalizedRole === ACCOUNT_ROLES.EMPLOYEE || normalizedRole === ACCOUNT_ROLES.COLLABORATOR
 }
 
+export function isAccountBlocked(profile) {
+  return profile?.archived === true || profile?.accessStatus === "blocked"
+}
+
 export function getRoleHomePath() {
   return "/home"
 }

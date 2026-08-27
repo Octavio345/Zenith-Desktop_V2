@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { deleteApp, initializeApp } from "firebase/app"
 import { createUserWithEmailAndPassword, deleteUser, getAuth, signOut } from "firebase/auth"
-import { addDoc, collection, doc, getDocs, setDoc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, doc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
 import { auth, db, firebaseConfig } from "../../services/firebase"
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
@@ -30,8 +30,68 @@ const statusLabels = {
   ausente: "Ausente",
 }
 
+const taskStatusMeta = {
+  pendente: { label: "Pendente", icon: "pending_actions" },
+  andamento: { label: "Em andamento", icon: "play_circle" },
+  concluida: { label: "Concluída", icon: "task_alt" },
+}
+
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 const isStrongPassword = (value) => value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value)
+const onlyDigits = (value = "") => String(value).replace(/\D/g, "")
+const VALID_BRAZILIAN_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"])
+
+function isValidCPF(digits) {
+  if (!/^\d{11}$/.test(digits) || /^(\d)\1+$/.test(digits)) return false
+  const checkDigit = (base, factor) => {
+    const sum = base.split("").reduce((total, number) => total + Number(number) * factor--, 0)
+    const remainder = (sum * 10) % 11
+    return remainder === 10 ? 0 : remainder
+  }
+  return checkDigit(digits.slice(0, 9), 10) === Number(digits[9]) && checkDigit(digits.slice(0, 10), 11) === Number(digits[10])
+}
+
+function isValidCNPJ(digits) {
+  if (!/^\d{14}$/.test(digits) || /^(\d)\1+$/.test(digits)) return false
+  const checkDigit = (base, weights) => {
+    const sum = base.split("").reduce((total, number, index) => total + Number(number) * weights[index], 0)
+    const remainder = sum % 11
+    return remainder < 2 ? 0 : 11 - remainder
+  }
+  return checkDigit(digits.slice(0, 12), [5,4,3,2,9,8,7,6,5,4,3,2]) === Number(digits[12]) && checkDigit(digits.slice(0, 13), [6,5,4,3,2,9,8,7,6,5,4,3,2]) === Number(digits[13])
+}
+
+function isValidBrazilianPhone(digits) {
+  if (!/^\d{10,11}$/.test(digits) || /^(\d)\1+$/.test(digits) || !VALID_BRAZILIAN_DDDS.has(digits.slice(0, 2))) return false
+  const number = digits.slice(2)
+  return digits.length === 11
+    ? number.startsWith("9") && !/^9(\d)\1{7}$/.test(number)
+    : /^[2-5]/.test(number) && !/^(\d)\1{7}$/.test(number)
+}
+
+function formatBrazilianPhone(value = "") {
+  const digits = onlyDigits(value).slice(0, 11)
+  if (digits.length <= 2) return digits
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
+}
+
+function formatBrazilianDocument(value = "", personType = "CPF") {
+  const limit = personType === "PJ" ? 14 : 11
+  const digits = onlyDigits(value).slice(0, limit)
+  if (personType === "PJ") {
+    return digits
+      .replace(/^(\d{2})(\d)/, "$1.$2")
+      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1/$2")
+      .replace(/(\d{4})(\d)/, "$1-$2")
+  }
+  return digits
+    .replace(/^(\d{3})(\d)/, "$1.$2")
+    .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+    .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
+}
 
 function getInitials(name = "") {
   return name
@@ -48,6 +108,16 @@ function getTaskDate(task) {
   if (!rawDate) return null
   const date = rawDate?.toDate ? rawDate.toDate() : new Date(rawDate)
   return Number.isNaN(date.getTime()) ? null : date
+}
+
+function formatTaskDate(value) {
+  if (!value) return ""
+  const date = value?.toDate ? value.toDate() : new Date(value)
+  if (Number.isNaN(date.getTime())) return ""
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit",
+  }).format(date)
 }
 
 function getCompletionRate(tasks, periodInDays = null) {
@@ -79,10 +149,31 @@ export default function AdminTeamDashboard() {
   const [showNewEmployee, setShowNewEmployee] = useState(false)
   const [isCreatingEmployee, setIsCreatingEmployee] = useState(false)
   const [employeeFormMessage, setEmployeeFormMessage] = useState({ type: "", text: "" })
+  const [isEditingEmployee, setIsEditingEmployee] = useState(false)
+  const [isSavingEmployee, setIsSavingEmployee] = useState(false)
+  const [employeeEditMessage, setEmployeeEditMessage] = useState({ type: "", text: "" })
+  const [deleteEmployeeTarget, setDeleteEmployeeTarget] = useState(null)
+  const [isDeletingEmployee, setIsDeletingEmployee] = useState(false)
+  const [deleteEmployeeError, setDeleteEmployeeError] = useState("")
+  const [employeeEdit, setEmployeeEdit] = useState({
+    name: "",
+    age: "",
+    phone: "",
+    personType: "CPF",
+    document: "",
+    employmentType: "CLT",
+    position: "",
+    sector: "",
+  })
   const [newEmployee, setNewEmployee] = useState({
     name: "",
     email: "",
     password: "",
+    age: "",
+    phone: "",
+    personType: "CPF",
+    document: "",
+    employmentType: "CLT",
     position: "",
     sector: "",
     droneModel: "",
@@ -90,28 +181,37 @@ export default function AdminTeamDashboard() {
   })
 
   useEffect(() => {
-    async function loadEmployees() {
-      try {
-        const [usersSnap, tasksSnap] = await Promise.all([
-          getDocs(collection(db, "users")),
-          getDocs(collection(db, "tasks")),
-        ])
-        const ownerId = auth.currentUser?.uid
-        const employeeDocs = usersSnap.docs.filter((docSnap) => (
-          (docSnap.data().role === ACCOUNT_ROLES.EMPLOYEE ||
-            docSnap.data().role === ACCOUNT_ROLES.COLLABORATOR) &&
-          (docSnap.data().ownerId === ownerId || docSnap.data().teamId === ownerId)
-        ))
-        const tasks = tasksSnap.docs.map((taskDoc) => ({ id: taskDoc.id, ...taskDoc.data() }))
+    const ownerId = auth.currentUser?.uid
+    if (!ownerId) {
+      setIsTeamLoading(false)
+      return undefined
+    }
 
-        if (employeeDocs.length > 0) {
-          setEmployees(employeeDocs.map((docSnap) => {
+    const employeesQuery = query(collection(db, "users"), where("ownerId", "==", ownerId))
+    const ownerTasksQuery = query(collection(db, "tasks"), where("ownerId", "==", ownerId))
+    let employeeDocs = []
+    let tasks = []
+
+    const syncTeam = () => {
+      const operationalEmployees = employeeDocs.filter((docSnap) => (
+        docSnap.data().archived !== true &&
+        (docSnap.data().role === ACCOUNT_ROLES.EMPLOYEE || docSnap.data().role === ACCOUNT_ROLES.COLLABORATOR)
+      ))
+
+      if (operationalEmployees.length > 0) {
+        setEmployees(operationalEmployees.map((docSnap) => {
             const data = docSnap.data()
             const employeeTasks = tasks.filter((task) => task.employeeId === docSnap.id)
 
             return {
               id: docSnap.id,
               name: data.name || "Funcionário",
+              email: data.email || "",
+              age: data.age || "",
+              phone: data.phone || "",
+              personType: data.type || "CPF",
+              document: data.document || "",
+              employmentType: data.employmentType || "CLT",
               position: data.position || "Funcionário de campo",
               sector: data.sector || "Campo",
               status: data.status || "offline",
@@ -132,19 +232,32 @@ export default function AdminTeamDashboard() {
               droneModel: data.droneModel || "",
             }
           }))
-          setSelectedId(employeeDocs[0].id)
-        } else {
-          setEmployees([])
-          setSelectedId("")
-        }
-      } catch (error) {
-        console.error("Erro ao carregar equipe:", error)
-      } finally {
-        setIsTeamLoading(false)
+        setSelectedId((current) => current || operationalEmployees[0].id)
+      } else {
+        setEmployees([])
+        setSelectedId("")
       }
     }
 
-    loadEmployees()
+    const handleError = (error) => {
+      console.error("Erro ao carregar equipe:", error)
+      setIsTeamLoading(false)
+    }
+    const unsubscribeEmployees = onSnapshot(employeesQuery, (snapshot) => {
+      employeeDocs = snapshot.docs
+      syncTeam()
+      setIsTeamLoading(false)
+    }, handleError)
+    const unsubscribeTasks = onSnapshot(ownerTasksQuery, (snapshot) => {
+      tasks = snapshot.docs.map((taskDoc) => ({ id: taskDoc.id, ...taskDoc.data() }))
+      syncTeam()
+      setIsTeamLoading(false)
+    }, handleError)
+
+    return () => {
+      unsubscribeEmployees()
+      unsubscribeTasks()
+    }
   }, [])
 
   const sectors = useMemo(() => ["todos", ...new Set(employees.map((employee) => employee.sector))], [employees])
@@ -250,6 +363,11 @@ export default function AdminTeamDashboard() {
     const employeePayload = {
       name: newEmployee.name.trim(),
       email: newEmployee.email.trim().toLowerCase(),
+      age: Number(newEmployee.age) || null,
+      phone: newEmployee.phone.trim(),
+      type: newEmployee.personType,
+      document: newEmployee.document.replace(/\D/g, ""),
+      employmentType: newEmployee.employmentType,
       position: newEmployee.position.trim() || (newEmployee.role === ACCOUNT_ROLES.COLLABORATOR ? "Colaborador" : "Funcionário de campo"),
       sector: newEmployee.sector.trim() || "Campo",
       droneModel: newEmployee.droneModel,
@@ -297,7 +415,7 @@ export default function AdminTeamDashboard() {
 
       setEmployees((current) => [createdEmployee, ...current])
       setSelectedId(credential.user.uid)
-      setNewEmployee({ name: "", email: "", password: "", position: "", sector: "", droneModel: "", role: ACCOUNT_ROLES.EMPLOYEE })
+      setNewEmployee({ name: "", email: "", password: "", age: "", phone: "", personType: "CPF", document: "", employmentType: "CLT", position: "", sector: "", droneModel: "", role: ACCOUNT_ROLES.EMPLOYEE })
       setEmployeeFormMessage({ type: "success", text: "Login criado. O funcionário já pode entrar com o email e a senha definidos." })
       setShowNewEmployee(false)
     } catch (error) {
@@ -335,6 +453,101 @@ export default function AdminTeamDashboard() {
       setEmployees((current) => current.map((employee) => (
         employee.id === selected.id ? { ...employee, droneModel: previousDroneModel } : employee
       )))
+    }
+  }
+
+  const startEmployeeEdit = () => {
+    if (!selected) return
+    setEmployeeEdit({
+      name: selected.name || "",
+      age: selected.age || "",
+      phone: formatBrazilianPhone(selected.phone),
+      personType: selected.personType || "CPF",
+      document: formatBrazilianDocument(selected.document, selected.personType || "CPF"),
+      employmentType: selected.employmentType || "CLT",
+      position: selected.position || "",
+      sector: selected.sector || "",
+    })
+    setEmployeeEditMessage({ type: "", text: "" })
+    setIsEditingEmployee(true)
+  }
+
+  const cancelEmployeeEdit = () => {
+    setIsEditingEmployee(false)
+    setEmployeeEditMessage({ type: "", text: "" })
+  }
+
+  const saveEmployeeEdit = async () => {
+    if (!selected || !auth.currentUser?.uid) return
+    if (!employeeEdit.name.trim()) {
+      setEmployeeEditMessage({ type: "error", text: "Informe o nome do funcionário." })
+      return
+    }
+    const phoneDigits = onlyDigits(employeeEdit.phone)
+    const documentDigits = onlyDigits(employeeEdit.document)
+    const expectedDocumentLength = employeeEdit.personType === "PJ" ? 14 : 11
+    if (phoneDigits && !isValidBrazilianPhone(phoneDigits)) {
+      setEmployeeEditMessage({ type: "error", text: "Informe um telefone brasileiro válido, com DDD." })
+      return
+    }
+    const validDocument = employeeEdit.personType === "PJ" ? isValidCNPJ(documentDigits) : isValidCPF(documentDigits)
+    if (documentDigits && (documentDigits.length !== expectedDocumentLength || !validDocument)) {
+      setEmployeeEditMessage({ type: "error", text: employeeEdit.personType === "PJ" ? "Informe um CNPJ válido." : "Informe um CPF válido." })
+      return
+    }
+
+    const payload = {
+      name: employeeEdit.name.trim(),
+      age: Number(employeeEdit.age) || null,
+      phone: phoneDigits,
+      type: employeeEdit.personType,
+      document: documentDigits,
+      employmentType: employeeEdit.employmentType,
+      position: employeeEdit.position.trim() || "Funcionário de campo",
+      sector: employeeEdit.sector.trim() || "Campo",
+      updatedAt: new Date().toISOString(),
+    }
+
+    setIsSavingEmployee(true)
+    setEmployeeEditMessage({ type: "", text: "" })
+    try {
+      await updateDoc(doc(db, "users", selected.id), payload)
+      setEmployees((current) => current.map((employee) => (
+        employee.id === selected.id
+          ? { ...employee, ...payload, personType: payload.type }
+          : employee
+      )))
+      setEmployeeEditMessage({ type: "success", text: "Cadastro do funcionário atualizado com sucesso." })
+      setIsEditingEmployee(false)
+    } catch (error) {
+      console.error("Erro ao editar funcionário:", error)
+      setEmployeeEditMessage({ type: "error", text: "Não foi possível salvar as alterações do funcionário." })
+    } finally {
+      setIsSavingEmployee(false)
+    }
+  }
+
+  const archiveEmployeeFromDashboard = async () => {
+    if (!deleteEmployeeTarget || isDeletingEmployee) return
+    setIsDeletingEmployee(true)
+    setDeleteEmployeeError("")
+    try {
+      await updateDoc(doc(db, "users", deleteEmployeeTarget.id), {
+        archived: true,
+        accessStatus: "blocked",
+        archivedAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })
+      setEmployees((current) => current.filter((employee) => employee.id !== deleteEmployeeTarget.id))
+      setSelectedId("")
+      setIsEditingEmployee(false)
+      setDeleteEmployeeTarget(null)
+      setEmployeeFormMessage({ type: "success", text: "Funcionário removido e acesso bloqueado com sucesso." })
+    } catch (error) {
+      console.error("Erro ao remover funcionário do painel:", error)
+      setDeleteEmployeeError("Não foi possível remover e bloquear o acesso do funcionário.")
+    } finally {
+      setIsDeletingEmployee(false)
     }
   }
 
@@ -441,6 +654,32 @@ export default function AdminTeamDashboard() {
                 autoComplete="new-password"
               />
               <input
+                value={newEmployee.age}
+                onChange={(event) => setNewEmployee((current) => ({ ...current, age: event.target.value.replace(/\D/g, "").slice(0, 3) }))}
+                placeholder="Idade"
+                inputMode="numeric"
+              />
+              <input
+                value={newEmployee.phone}
+                onChange={(event) => setNewEmployee((current) => ({ ...current, phone: event.target.value }))}
+                placeholder="Telefone com DDD"
+                inputMode="tel"
+              />
+              <select value={newEmployee.personType} onChange={(event) => setNewEmployee((current) => ({ ...current, personType: event.target.value }))} aria-label="Tipo de pessoa">
+                <option value="CPF">Pessoa física (CPF)</option>
+                <option value="PJ">Pessoa jurídica (CNPJ)</option>
+              </select>
+              <input
+                value={newEmployee.document}
+                onChange={(event) => setNewEmployee((current) => ({ ...current, document: event.target.value }))}
+                placeholder={newEmployee.personType === "PJ" ? "CNPJ" : "CPF ou documento de identidade"}
+                inputMode="numeric"
+              />
+              <select value={newEmployee.employmentType} onChange={(event) => setNewEmployee((current) => ({ ...current, employmentType: event.target.value }))} aria-label="Vínculo de trabalho">
+                <option value="CLT">Contratação CLT</option>
+                <option value="PJ">Prestador PJ</option>
+              </select>
+              <input
                 value={newEmployee.position}
                 onChange={(event) => setNewEmployee((current) => ({ ...current, position: event.target.value }))}
                 placeholder="Cargo"
@@ -478,7 +717,7 @@ export default function AdminTeamDashboard() {
               <button
                 key={employee.id}
                 className={`employee-row ${selected?.id === employee.id ? "active" : ""}`}
-                onClick={() => setSelectedId(employee.id)}
+                onClick={() => { setSelectedId(employee.id); setIsEditingEmployee(false); setEmployeeEditMessage({ type: "", text: "" }) }}
               >
                 <span className={`status-dot ${employee.status}`}></span>
                 <span className="employee-list-avatar">{getInitials(employee.name)}</span>
@@ -522,6 +761,33 @@ export default function AdminTeamDashboard() {
               <article><span className="material-symbols-outlined">calendar_today</span><div><small>Atrasos</small><strong>{selected.delays}</strong></div></article>
               <article><span className="material-symbols-outlined">event_busy</span><div><small>Faltas</small><strong>{selected.absences}</strong></div></article>
               <article><span className="material-symbols-outlined">map</span><div><small>Setor</small><strong>{selected.sector}</strong></div></article>
+            </div>
+
+            <div className="employee-record">
+              <div className="employee-record__head"><span className="material-symbols-outlined">badge</span><div><small>Cadastro administrado pelo proprietário</small><strong>Dados do vínculo</strong></div>{!isEditingEmployee && <span className="employee-record__actions"><button type="button" className="employee-record__edit" onClick={startEmployeeEdit}><span className="material-symbols-outlined">edit</span>Editar</button><button type="button" className="employee-record__delete" onClick={() => { setDeleteEmployeeTarget(selected); setDeleteEmployeeError("") }}><span className="material-symbols-outlined">person_remove</span>Remover</button></span>}</div>
+              {employeeEditMessage.text && <p className={`employee-edit-message ${employeeEditMessage.type}`}>{employeeEditMessage.text}</p>}
+              {isEditingEmployee ? (
+                <div className="employee-edit-form">
+                  <label className="employee-edit-field employee-edit-field--wide"><span>Nome completo</span><input value={employeeEdit.name} onChange={(event) => setEmployeeEdit((current) => ({ ...current, name: event.target.value }))} /></label>
+                  <label className="employee-edit-field"><span>Idade</span><input inputMode="numeric" value={employeeEdit.age} onChange={(event) => setEmployeeEdit((current) => ({ ...current, age: event.target.value.replace(/\D/g, "").slice(0, 3) }))} placeholder="Idade" /></label>
+                  <label className="employee-edit-field"><span>Telefone</span><input type="tel" inputMode="numeric" maxLength={15} value={employeeEdit.phone} onChange={(event) => setEmployeeEdit((current) => ({ ...current, phone: formatBrazilianPhone(event.target.value) }))} placeholder="(00) 00000-0000" /></label>
+                  <label className="employee-edit-field"><span>Tipo de pessoa</span><select value={employeeEdit.personType} onChange={(event) => setEmployeeEdit((current) => ({ ...current, personType: event.target.value, document: "" }))}><option value="CPF">Pessoa física</option><option value="PJ">Pessoa jurídica</option></select></label>
+                  <label className="employee-edit-field"><span>Documento</span><input inputMode="numeric" maxLength={employeeEdit.personType === "PJ" ? 18 : 14} value={employeeEdit.document} onChange={(event) => setEmployeeEdit((current) => ({ ...current, document: formatBrazilianDocument(event.target.value, current.personType) }))} placeholder={employeeEdit.personType === "PJ" ? "00.000.000/0000-00" : "000.000.000-00"} /></label>
+                  <label className="employee-edit-field"><span>Vínculo</span><select value={employeeEdit.employmentType} onChange={(event) => setEmployeeEdit((current) => ({ ...current, employmentType: event.target.value }))}><option value="CLT">Contratação CLT</option><option value="PJ">Prestador PJ</option></select></label>
+                  <label className="employee-edit-field"><span>Cargo</span><input value={employeeEdit.position} onChange={(event) => setEmployeeEdit((current) => ({ ...current, position: event.target.value }))} placeholder="Funcionário de campo" /></label>
+                  <label className="employee-edit-field"><span>Setor</span><input value={employeeEdit.sector} onChange={(event) => setEmployeeEdit((current) => ({ ...current, sector: event.target.value }))} placeholder="Campo" /></label>
+                  <div className="employee-edit-actions"><button type="button" className="employee-edit-cancel" onClick={cancelEmployeeEdit} disabled={isSavingEmployee}>Cancelar</button><button type="button" className="employee-edit-save" onClick={saveEmployeeEdit} disabled={isSavingEmployee}><span className="material-symbols-outlined">save</span>{isSavingEmployee ? "Salvando..." : "Salvar alterações"}</button></div>
+                </div>
+              ) : (
+                <div className="employee-record__grid">
+                  <span><small>Vínculo</small><strong>{selected.employmentType === "PJ" ? "Prestador PJ" : "Contratação CLT"}</strong></span>
+                  <span><small>Tipo de pessoa</small><strong>{selected.personType === "PJ" ? "Pessoa jurídica" : "Pessoa física"}</strong></span>
+                  <span><small>Documento</small><strong>{selected.document ? formatBrazilianDocument(selected.document, selected.personType) : "Não informado"}</strong></span>
+                  <span><small>Telefone</small><strong>{selected.phone ? formatBrazilianPhone(selected.phone) : "Não informado"}</strong></span>
+                  <span><small>Idade</small><strong>{selected.age ? `${selected.age} anos` : "Não informada"}</strong></span>
+                  <span><small>Email</small><strong>{selected.email || "Não informado"}</strong></span>
+                </div>
+              )}
             </div>
 
             <div className="last-activity">
@@ -577,6 +843,35 @@ export default function AdminTeamDashboard() {
               <button onClick={assignTask}>Atribuir tarefa</button>
             </div>
 
+            <section className="owner-task-board">
+              <div className="owner-task-board__header">
+                <div><span className="material-symbols-outlined">fact_check</span><span><small>ATUALIZAÇÃO EM TEMPO REAL</small><h3>Acompanhamento de tarefas</h3></span></div>
+                <strong>{selected.tasks?.length || 0} no total</strong>
+              </div>
+              <div className="owner-task-board__summary">
+                <article className="pending"><span className="material-symbols-outlined">pending_actions</span><span><small>Pendentes</small><strong>{selected.pending}</strong></span></article>
+                <article className="progress"><span className="material-symbols-outlined">play_circle</span><span><small>Em andamento</small><strong>{selected.active}</strong></span></article>
+                <article className="done"><span className="material-symbols-outlined">task_alt</span><span><small>Concluídas</small><strong>{selected.done}</strong></span></article>
+              </div>
+              <div className="owner-task-board__list">
+                {selected.tasks?.length ? [...selected.tasks]
+                  .sort((a, b) => String(b.completedAt || b.updatedAt || b.createdAt || "").localeCompare(String(a.completedAt || a.updatedAt || a.createdAt || "")))
+                  .map((task) => {
+                    const status = taskStatusMeta[task.status] || taskStatusMeta.pendente
+                    return (
+                      <article className={`owner-task-item ${task.status || "pendente"}`} key={task.id}>
+                        <span className="material-symbols-outlined owner-task-item__icon">{status.icon}</span>
+                        <div className="owner-task-item__content">
+                          <div><strong>{task.title || "Tarefa sem título"}</strong><span className={`owner-task-item__status ${task.status || "pendente"}`}>{status.label}</span></div>
+                          <p>{task.status === "concluida" && task.completedAt ? `Concluída em ${formatTaskDate(task.completedAt)}` : task.status === "andamento" && task.startedAt ? `Iniciada em ${formatTaskDate(task.startedAt)}` : `Atribuída em ${formatTaskDate(task.createdAt) || "data não informada"}`}</p>
+                        </div>
+                        <span className="owner-task-item__due"><small>Prazo</small><strong>{task.due || "Sem prazo"}</strong></span>
+                      </article>
+                    )
+                  }) : <div className="owner-task-board__empty"><span className="material-symbols-outlined">assignment_add</span><div><strong>Nenhuma tarefa atribuída</strong><p>Use o campo acima para enviar a primeira tarefa a este funcionário.</p></div></div>}
+              </div>
+            </section>
+
           </aside>
         )}
         {!selected && !isTeamLoading && (
@@ -586,6 +881,17 @@ export default function AdminTeamDashboard() {
           </aside>
         )}
       </section>
+
+      {deleteEmployeeTarget && (
+        <div className="employee-delete-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget && !isDeletingEmployee) setDeleteEmployeeTarget(null) }}>
+          <section className="employee-delete-dialog" role="alertdialog" aria-modal="true" aria-labelledby="employee-delete-title">
+            <div className="employee-delete-dialog__icon"><span className="material-symbols-outlined">person_remove</span></div>
+            <div className="employee-delete-dialog__copy"><small>REMOVER FUNCIONÁRIO</small><h2 id="employee-delete-title">Remover {deleteEmployeeTarget.name}?</h2></div>
+            {deleteEmployeeError && <p className="employee-delete-dialog__error"><span className="material-symbols-outlined">error</span>{deleteEmployeeError}</p>}
+            <div className="employee-delete-dialog__actions"><button type="button" className="employee-delete-dialog__cancel" onClick={() => setDeleteEmployeeTarget(null)} disabled={isDeletingEmployee}>Manter funcionário</button><button type="button" className="employee-delete-dialog__confirm" onClick={archiveEmployeeFromDashboard} disabled={isDeletingEmployee}><span className="material-symbols-outlined">person_remove</span>{isDeletingEmployee ? "Removendo..." : "Remover da equipe"}</button></div>
+          </section>
+        </div>
+      )}
 
       </main>
       <AppFooter />
