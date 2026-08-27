@@ -417,6 +417,24 @@ body{background:#f4f8ef!important;color:#173326!important}
 .auth-side{justify-content:flex-start!important}.auth-side-info{margin:auto 0!important}
 .auth-main{padding-left:32px!important;background:radial-gradient(circle at 4% 50%,rgba(100,157,105,.12),transparent 30%),linear-gradient(135deg,#f8faf5,#eef5e9)!important}
 @media(max-width:960px){.auth-shell{grid-template-columns:1fr!important}.auth-main{padding-left:24px!important}.auth-side::after{display:none!important}}
+.auth-shell{background:#dde1de!important}
+.auth-side::after{display:none!important}
+.auth-main{
+  isolation:isolate;
+  overflow:hidden;
+  background:linear-gradient(135deg,#e4e7e4 0%,#d7dcd8 100%)!important;
+}
+.auth-main::after{
+  display:none!important;
+}
+.auth-card{z-index:1;background:#f0f2ef!important;border-color:#aeb8b0!important;box-shadow:0 24px 58px rgba(24,39,29,.2)!important}
+.auth-card::before{display:none!important}
+.auth-brand-mark strong{position:static;display:inline;color:#fff!important;text-shadow:none!important}
+.auth-brand-mark strong::after{display:none!important}
+.auth-brand-mark small{color:rgba(255,255,255,.76)!important}
+.auth-brand-tag{display:none!important}
+.cc-shell{background:linear-gradient(135deg,#e4e7e4,#d7dcd8)!important}
+@media(max-width:960px){.auth-side::after{display:none!important}.auth-main{background:#dde1de!important}}
 .auth-access-switch,.cc-role-picker{display:grid;grid-template-columns:1fr 1fr;gap:9px}.auth-access-switch{margin-bottom:3px}.auth-access-switch button,.cc-role-picker button{min-height:72px;padding:12px;display:flex;align-items:center;gap:10px;text-align:left;border:1px solid #dce7da;border-radius:15px;background:#f8faf5;color:#617067;cursor:pointer;transition:.2s ease}.auth-access-switch button:hover,.cc-role-picker button:hover{transform:translateY(-1px);border-color:#b9d2b7}.auth-access-switch button.active,.cc-role-picker button.active{border-color:#4c9464;background:#eaf4e6;color:#235d3a;box-shadow:0 8px 20px rgba(39,108,71,.1)}.auth-access-switch .material-symbols-outlined,.cc-role-picker .material-symbols-outlined{width:35px;height:35px;display:grid;place-items:center;flex:0 0 auto;border-radius:11px;background:#e4efe1;color:#397b51;font-size:20px}.auth-access-switch button.active .material-symbols-outlined,.cc-role-picker button.active .material-symbols-outlined{background:#2e6f46;color:#fff}.auth-access-switch button>span:last-child,.cc-role-picker button>span:last-child{display:grid;gap:2px}.auth-access-switch strong,.cc-role-picker strong{color:#244b34;font-size:.68rem}.auth-access-switch small,.cc-role-picker small{color:#7b887f;font-size:.58rem}
 .auth-btn.google{width:100%;min-height:48px;border:1px solid #d6e2d3!important;border-radius:14px!important;background:#fff!important;color:#244b34!important;box-shadow:0 8px 22px rgba(31,70,41,.07)!important}.auth-btn.google:hover{transform:translateY(-1px);border-color:#aac8aa!important;box-shadow:0 12px 28px rgba(31,70,41,.11)!important}.auth-btn.google svg{font-size:17px;color:#4285f4}
 .auth-footer{margin-top:18px}

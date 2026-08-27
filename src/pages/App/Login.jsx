@@ -173,10 +173,6 @@ export default function Login() {
             <img src="/assets/image/Logo-redonda.webp" alt="" />
             <span><strong>Zenith</strong><small>Sua precisão agrícola no ponto mais alto</small></span>
           </div>
-
-          <p className="auth-brand-tag">
-            Sua precisão agrícola no ponto mais alto
-          </p>
         </div>
 
         <div className="auth-side-info">
