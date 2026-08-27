@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { createPortal } from "react-dom"
+import { motion } from "framer-motion"
 import CustomSelect from "../Global/CustomSelect"
 import "../../../styles/App/DiarioTab.css"
 
 const entryTypes = {
   observacao: { name: "Observação", icon: "edit_note", color: "#8b9eb0" },
-  tratamento: { name: "Tratamento", icon: "science", color: "#00ff88" },
-  irrigacao: { name: "Irrigação", icon: "water_drop", color: "#00ccff" },
+  tratamento: { name: "Tratamento", icon: "science", color: "#3f7f56" },
+  irrigacao: { name: "Irrigação", icon: "water_drop", color: "#39708a" },
   alerta: { name: "Alerta", icon: "warning", color: "#ffaa00" }
 }
 
@@ -158,8 +159,7 @@ export default function DiarioTab() {
         ))}
       </div>
 
-      <AnimatePresence>
-        {showForm && (
+        {showForm && createPortal((
           <motion.div className="diario-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.div className="diario-form" initial={{ scale: 0.94, y: 18 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.94, y: 18 }}>
               <div className="diario-form-header">
@@ -201,8 +201,7 @@ export default function DiarioTab() {
               <button className="submit-btn" onClick={addEntry}>Salvar entrada</button>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
 
       <div className="diario-list">
         {filteredEntries.length === 0 ? (
@@ -254,8 +253,7 @@ export default function DiarioTab() {
         )}
       </div>
 
-      <AnimatePresence>
-        {selectedEntry && (
+        {selectedEntry && createPortal((
           <motion.div className="diario-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSelectedEntry(null)}>
             <motion.div className="diario-detail" initial={{ scale: 0.94, y: 18 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.94, y: 18 }} onClick={(e) => e.stopPropagation()}>
               <button className="close-btn" onClick={() => setSelectedEntry(null)}>
@@ -279,11 +277,9 @@ export default function DiarioTab() {
               <p className="detail-description">{selectedEntry.description}</p>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
 
-      <AnimatePresence>
-        {deleteTarget && (
+        {deleteTarget && createPortal((
           <motion.div className="diario-modal" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setDeleteTarget(null)}>
             <motion.div className="diario-detail" initial={{ scale: 0.94, y: 18 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.94, y: 18 }} onClick={(e) => e.stopPropagation()}>
               <button className="close-btn" onClick={() => setDeleteTarget(null)}>
@@ -305,8 +301,7 @@ export default function DiarioTab() {
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
     </div>
   )
 }

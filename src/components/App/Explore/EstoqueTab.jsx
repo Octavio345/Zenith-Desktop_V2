@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { createPortal } from "react-dom"
+import { motion } from "framer-motion"
 import CustomSelect from "../Global/CustomSelect"
 import "../../../styles/App/EstoqueTab.css"
 
@@ -372,8 +373,7 @@ export default function EstoqueTab() {
       </div>
 
       {/* Modal Novo Produto */}
-      <AnimatePresence>
-        {showForm && (
+        {showForm && createPortal((
           <motion.div
             className="estoque-modal"
             initial={{ opacity: 0 }}
@@ -481,12 +481,10 @@ export default function EstoqueTab() {
               </button>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
 
       {/* Modal Editar Produto */}
-      <AnimatePresence>
-        {selectedProduct && (
+        {selectedProduct && createPortal((
           <motion.div
             className="estoque-modal"
             initial={{ opacity: 0 }}
@@ -589,11 +587,9 @@ export default function EstoqueTab() {
               </button>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
 
-      <AnimatePresence>
-        {deleteTarget && (
+        {deleteTarget && createPortal((
           <motion.div
             className="estoque-modal"
             initial={{ opacity: 0 }}
@@ -627,8 +623,7 @@ export default function EstoqueTab() {
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
     </div>
   )
 }

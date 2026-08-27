@@ -400,6 +400,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 /* 2026 polish: clean page transitions, role access and serious visual hierarchy */
 html{scroll-behavior:auto!important}
 body{background:#f4f8ef!important;color:#173326!important}
+#root{width:100%;min-height:100vh;display:flex;flex-direction:column}
+.zenith-home,.explore-container{width:100%;min-height:100vh!important;display:flex!important;flex-direction:column!important}.zenith-home__content,.explore-container>.tab-content{flex:1 0 auto}.explore-container>.app-header,.explore-container>.explore-heading,.explore-container>.explore-tabs-modern,.explore-container>.zenith-footer,.explore-container>.mobile-menu-bar{flex:0 0 auto!important}.explore-container>.explore-tabs-modern{height:auto!important;min-height:62px!important;align-items:center!important;overflow-y:hidden!important}.explore-container>.explore-tabs-modern>.explore-tab{height:48px!important;min-height:48px!important;flex:1 0 auto!important}
+@media(min-width:761px){.explore-container{padding-bottom:0!important}}
 
 .route-quick-loader{position:fixed!important;inset:0!important;z-index:9000!important;display:grid!important;place-content:center!important;justify-items:center!important;gap:13px!important;background:rgba(244,248,239,.94)!important;backdrop-filter:blur(12px)!important;color:#18432c!important;animation:routeLoaderIn .18s ease-out both!important}
 .route-quick-loader>div{position:relative!important;width:76px!important;height:76px!important;display:grid!important;place-items:center!important;border:1px solid #cee0ca!important;border-radius:24px!important;background:#fff!important;box-shadow:0 18px 45px rgba(31,76,43,.14)!important}
@@ -458,7 +461,7 @@ body{background:#f4f8ef!important;color:#173326!important}
 @media(prefers-reduced-motion:reduce){.zenith-home__greeting,.zenith-home__hero-grid,.zenith-section,.home-operation-grid,.weather-hero-card>img,.analysis-loader__rings,.analysis-loader__scan{animation:none!important}}
 
 /* Full-width institutional footer */
-.zenith-footer{margin:0!important;padding:0!important;background:#103c26!important;color:#fff!important}
+.zenith-footer{flex:0 0 auto;margin-top:auto!important;padding:0!important;background:#103c26!important;color:#fff!important}
 .zenith-footer__surface{width:100%!important;max-width:none!important;margin:0!important;overflow:visible!important;border:0!important;border-radius:0!important;background:radial-gradient(circle at 8% 0%,rgba(129,190,120,.13),transparent 30%),linear-gradient(115deg,#0d3621,#174b2e 66%,#123e27)!important;box-shadow:none!important}
 .zenith-footer__main{width:min(1380px,calc(100% - 68px))!important;min-height:270px!important;margin:0 auto!important;padding:48px 0 42px!important;display:grid!important;grid-template-columns:1.25fr .72fr 1.05fr!important;gap:68px!important;background:transparent!important;color:#fff!important}
 .zenith-footer__brand-line img{border-color:rgba(255,255,255,.18)!important;box-shadow:0 10px 28px rgba(0,0,0,.2)!important}.zenith-footer__brand-line strong{color:#fff!important}.zenith-footer__brand-line span{color:#b8d0be!important}.zenith-footer__brand>p{max-width:500px!important;color:rgba(255,255,255,.67)!important;font-size:.8rem!important;line-height:1.65!important}.zenith-footer__capabilities>span{border-color:rgba(255,255,255,.12)!important;background:rgba(255,255,255,.055)!important;color:#d9e9dc!important}.zenith-footer__capabilities .material-symbols-outlined{color:#9ad19a!important}
@@ -469,6 +472,40 @@ body{background:#f4f8ef!important;color:#173326!important}
 
 /* Owner registration is the only public registration path. */
 .cc-owner-notice{min-height:76px;padding:14px 16px;display:flex;align-items:center;gap:13px;border:1px solid #cfe1cc;border-radius:16px;background:linear-gradient(135deg,#edf6e9,#f8fbf5);color:#245f3c}.cc-owner-notice>.material-symbols-outlined{width:42px;height:42px;display:grid;place-items:center;flex:0 0 auto;border-radius:13px;background:#2e6f46;color:#fff;font-size:22px}.cc-owner-notice>span:last-child{display:grid;gap:3px}.cc-owner-notice strong{font-size:.75rem}.cc-owner-notice small{color:#6d7d73;font-size:.65rem}
+.cc-password-field{position:relative}.cc-password-field input{width:100%;padding-right:46px!important}.cc-password-field>button{position:absolute;right:7px;top:50%;width:34px;height:34px;display:grid;place-items:center;transform:translateY(-50%);border:0;border-radius:10px;background:transparent;color:#52665a;cursor:pointer;transition:.18s ease}.cc-password-field>button:hover{background:#e1ebe0;color:#245f3c}.cc-password-field>button .material-symbols-outlined{font-size:19px}
+.email-verification-gate{width:100%;min-height:calc(100vh - 78px);padding:44px 24px;display:grid;place-items:center;background:linear-gradient(180deg,#f6f9f3,#edf4e8)}.email-verification-gate>section{width:min(620px,100%);padding:42px;display:grid;justify-items:start;border:1px solid #d2e1d0;border-radius:28px;background:#fff;box-shadow:0 24px 60px rgba(30,70,40,.12)}.email-verification-gate>section>.material-symbols-outlined{width:58px;height:58px;display:grid;place-items:center;margin-bottom:19px;border-radius:18px;background:#e5f1e1;color:#2e7549;font-size:29px}.email-verification-gate small{color:#3f7e55;font-size:.62rem;font-weight:900;letter-spacing:.13em}.email-verification-gate h1{max-width:500px;margin:8px 0 11px;color:#193d2a;font:800 clamp(1.75rem,4vw,2.45rem)/1.04 Georgia,'Times New Roman',serif}.email-verification-gate p{max-width:520px;margin:0;color:#66776d;font-size:.8rem;line-height:1.65}.email-verification-gate>section>strong{margin-top:16px;padding:11px 13px;border-radius:11px;background:#edf5e9;color:#2b6842;font-size:.7rem}.email-verification-gate>section>div{width:100%;margin-top:24px;display:flex;gap:10px}.email-verification-gate button{min-height:45px;padding:0 17px;border:1px solid #c8dac5;border-radius:12px;background:#fff;color:#2b6842;font-weight:800;cursor:pointer}.email-verification-gate button:first-child{border-color:#2f7549;background:#2f7549;color:#fff}.email-verification-gate button:hover{transform:translateY(-1px)}
+
+/* Dialogs must always cover the sticky Explore navigation. */
+.atividades-modal,.estoque-modal,.diario-modal{z-index:7000!important}
+
+/* Explore: consistent contrast without neon/aqua accents. */
+.explore-tab:hover:not(.active){border-color:#8eb397!important;background:#e9f1e7!important;color:#1f5735!important}
+.option-card.drag-active{border-color:#397f52!important;background:#edf5e9!important;box-shadow:0 18px 42px rgba(34,81,47,.14)!important}.option-card.drag-active .option-icon{border-color:#8fbb96!important;background:#dcebd9!important;color:#285f3d!important;box-shadow:none!important}
+.diario-search span,.diario-filter span,.diario-summary-card>span,.estoque-container .search-bar span,.estoque-container .stat-card>span,.product-icon span,.price-value,.atividades-container .stat-card.completed>span,.activities-loading>span{color:#2e6f46!important}
+.diario-summary-card>span,.estoque-container .stat-card>span,.product-icon{border-color:#c9ddc7!important;background:#e4efe1!important}
+.diario-card,.product-card,.activity-card{background:#fff!important;border-color:#d9e5d7!important;color:#173326!important;box-shadow:0 10px 28px rgba(38,76,47,.07)!important}
+.diario-card:hover,.product-card:hover,.activity-card:hover{border-color:#94b99a!important;background:#f7faf5!important;box-shadow:0 16px 36px rgba(34,75,46,.12)!important}
+.diario-card-date{background:#dfeadf!important;border-color:#b9d0ba!important}.diario-card-date .day{color:#1f5134!important}.diario-card-date .time{color:#50675a!important;font-weight:750!important}
+.diario-card-header h3,.product-info h3,.activity-info h3,.quantity-value{color:#183f2a!important}.diario-card-content p,.product-category,.quantity-unit,.activity-description{color:#62746a!important}
+.product-actions,.qty-btn{border-color:#cbdccc!important;background:#eef4eb!important;color:#2e6f46!important}.product-actions:hover,.qty-btn:hover{border-color:#78a985!important;background:#dfece0!important;color:#174d30!important}
+.category-filters{border-color:#d3e0d2!important;background:#eef3ec!important}.filter-chip{border-color:#ceddcd!important;background:#f8faf6!important;color:#4a6153!important}.filter-chip:hover{border-color:#87ad8e!important;background:#dfeadf!important;color:#174d30!important}.filter-chip.active{border-color:#285f3d!important;background:#285f3d!important;color:#fff!important}
+.activity-form,.product-form,.diario-form,.diario-detail{border-color:#cbdaca!important;background:#fff!important;box-shadow:0 26px 70px rgba(12,38,23,.24)!important}.activity-form .form-header,.product-form .form-header,.diario-form .form-header{border-color:#e0e9de!important}.activity-form label,.product-form label,.diario-form label{color:#506458!important}.activity-form input,.activity-form textarea,.product-form input,.product-form textarea,.diario-form input,.diario-form textarea{background:#f4f7f2!important;border-color:#d3dfd2!important;color:#173326!important}.activity-form input:focus,.activity-form textarea:focus,.product-form input:focus,.product-form textarea:focus,.diario-form input:focus,.diario-form textarea:focus{border-color:#4f8d63!important;box-shadow:0 0 0 3px rgba(55,122,77,.1)!important}
+.atividades-modal,.estoque-modal,.diario-modal{background:rgba(15,32,22,.64)!important;backdrop-filter:blur(9px)!important}
+.custom-select-option:hover,.custom-select-option.active,.custom-select-option[aria-selected="true"]{background:#dfeadf!important;color:#194d30!important}.custom-select-trigger:hover{border-color:#85a98c!important;background:#eef4eb!important}
+.explore-container--monitoramento [class*="_uploadVisual_"]{background:#eef3eb url('/assets/image/drone-alinhamento-aereo-2026.webp') center/contain no-repeat!important}
+.explore-container--monitoramento [class*="_imagemWrapper_"]{background:#eef3eb!important}.explore-container--monitoramento [class*="_imagemDisplay_"]{object-fit:contain!important}
+
+/* Owner dashboard: expanded, scannable employee registration workspace. */
+.admin-page .team-roster-panel:has(.new-employee-form){grid-column:1/-1!important}.admin-page .team-roster-panel:has(.new-employee-form)+.employee-detail{grid-column:1/-1!important}
+.admin-page .new-employee-form{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;padding:20px!important;border:1px solid #cfe0cd!important;border-radius:20px!important;background:linear-gradient(145deg,#edf5e9,#f8faf5)!important;box-shadow:inset 0 1px #fff!important}
+.employee-form-heading{grid-column:1/-1;min-height:58px;padding-bottom:14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #d9e5d7}.employee-form-heading>.material-symbols-outlined{width:42px;height:42px;display:grid;place-items:center;border-radius:13px;background:#2e6f46;color:#fff;font-size:22px}.employee-form-heading>span:last-child{display:grid;gap:3px}.employee-form-heading strong{color:#1f4d32;font-size:.8rem}.employee-form-heading small{color:#708077;font-size:.64rem}.admin-page .new-employee-form input,.admin-page .new-employee-form select{border:1px solid #d3e0d1!important}.admin-page .new-employee-form input:focus,.admin-page .new-employee-form select:focus{outline:0;border-color:#4f8d63!important;box-shadow:0 0 0 3px rgba(55,122,77,.1)!important}.admin-page .employee-login-note{grid-column:span 2!important}.admin-page .new-employee-form>.employee-form-message{grid-column:1/-1!important}.admin-page .new-employee-form>button{grid-column:3!important;min-height:48px!important;background:#285f3d!important;transition:.2s ease!important}.admin-page .new-employee-form>button:hover{transform:translateY(-1px);background:#1f5134!important;box-shadow:0 10px 23px rgba(35,91,56,.2)!important}
+@media(max-width:1180px){.admin-page .new-employee-form{grid-template-columns:repeat(2,minmax(0,1fr))!important}.admin-page .new-employee-form>button{grid-column:2!important}.diario-container,.estoque-container,.atividades-container,.farm-map-shell,.explore-tabs-modern,.diagnostic-container,.clima-premium-dashboard{width:min(100% - 36px,1240px)!important}.diagnostic-main-grid{grid-template-columns:1fr 1fr!important}.products-list{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:900px){.admin-page .new-employee-form{grid-template-columns:1fr!important}.admin-page .employee-login-note,.admin-page .new-employee-form>button{grid-column:1!important}.diagnostic-main-grid{grid-template-columns:1fr!important}.diario-list,.activities-list,.products-list{grid-template-columns:1fr!important}.diario-summary-grid,.atividades-stats{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+
+/* Final brand color tokens: muted agricultural green, never neon aqua. */
+:root{--primary:#2e6f46;--primary-dark:#245c39;--primary-glow:rgba(46,111,70,.2);--primary-soft:rgba(46,111,70,.1);--primary-border:rgba(46,111,70,.25);--accent:#2e6f46;--accent-soft:rgba(46,111,70,.1);--accent-border:rgba(46,111,70,.25);--success:#3f7f56;--info:#39708a}
+.explore-container--monitoramento [class*="_container_"]{--g4:#397b51!important;--g5:#34764c!important;--g6:#3f7f56!important;--g7:#83b391!important;--n-secondary:#39708a!important;--n-secondary-glow:rgba(57,112,138,.18)!important;--n-success:#3f7f56!important;--n-info:#39708a!important}
+.diagnostic-main-grid .gallery-card{background:linear-gradient(105deg,#fff 0%,#fff 67%,rgba(225,238,220,.72) 100%)!important}.diagnostic-main-grid .gallery-card .option-icon{background:#dfece0!important;color:#285f3d!important}.diagnostic-main-grid .gallery-card:hover .option-icon{background:#cee2cf!important;transform:scale(1.04)}
 
 /* Executive team dashboard */
 .team-page.admin-page{padding:34px max(34px,calc((100vw - 1380px)/2)) 90px!important;background:radial-gradient(circle at 50% 0%,rgba(203,230,197,.48),transparent 32%),linear-gradient(180deg,#f7faf3,#eef5e9)!important}
@@ -499,3 +536,454 @@ html,body,button,input,select,textarea,h1,h2,h3,h4,h5,h6,p,a,label,strong,small,
 .intro-classic-refresh .intro-card{min-height:570px!important}.intro-classic-refresh .logo-section{min-height:544px!important;padding:42px!important}.intro-classic-refresh .logo-wrapper{gap:16px!important}.intro-classic-refresh .logo-title{font-size:clamp(2.75rem,3.7vw,3.65rem)!important;line-height:.97!important;letter-spacing:-.045em!important}.intro-classic-refresh .logo-description{max-width:470px!important;font-size:.86rem!important}.intro-overview{padding:38px 36px!important}.intro-overview__header{margin-bottom:24px!important}.intro-overview__header h2{max-width:560px!important;font-size:clamp(1.65rem,2.15vw,2.25rem)!important;line-height:1.08!important}.intro-overview__header p{max-width:570px;font-size:.72rem!important}.intro-overview .features-grid{gap:11px!important}.intro-overview .feature-card{min-height:128px!important;padding:17px!important}.intro-overview .feature-title{font-size:.8rem!important}.intro-overview .feature-description{font-size:.65rem!important}.intro-overview .trust-section{margin-top:24px!important}.intro-overview .footer{margin-top:13px!important}
 @media(max-width:1050px){.intro-classic-refresh .logo-section{min-height:auto!important}.intro-classic-refresh .intro-card{min-height:auto!important}.intro-classic-refresh .logo-title{font-size:3rem!important}}
 @media(max-width:620px){.intro-classic-refresh .logo-section{padding:25px!important}.intro-classic-refresh .logo-title{font-size:2.35rem!important}.intro-overview{padding:26px 18px!important}.intro-overview__header h2{font-size:1.7rem!important}.intro-overview .feature-card{min-height:110px!important}}
+
+/*
+ * Global scroll layer contract.
+ * Feature canvases (especially Leaflet) render several internal panes with
+ * their own z-index values. Keep those panes inside the content layer and
+ * reserve the upper layers for the application header, Explore navigation
+ * and dialogs. The header is intentionally opaque so content never shows
+ * through it while scrolling.
+ */
+.app-header {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 6000 !important;
+  height: 84px !important;
+  isolation: isolate !important;
+  background: #f8faf5 !important;
+  border-bottom: 1px solid #d8e4d6 !important;
+  box-shadow: 0 8px 26px rgba(24, 65, 39, .09) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.explore-container {
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+}
+
+.explore-container > .explore-heading,
+.explore-container > .tab-content,
+.explore-container > .zenith-footer {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.explore-container > .explore-tabs-modern {
+  position: sticky !important;
+  top: 84px !important;
+  z-index: 5000 !important;
+  isolation: isolate !important;
+  background: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.farm-map-shell,
+.farm-map-workspace,
+.farm-map-canvas-card {
+  position: relative !important;
+  z-index: 0 !important;
+  isolation: isolate !important;
+}
+
+.farm-map-canvas,
+.farm-map-canvas.leaflet-container {
+  position: relative !important;
+  z-index: 0 !important;
+}
+
+@media(max-width:760px) {
+  .app-header {
+    position: relative !important;
+    z-index: 6000 !important;
+    height: 68px !important;
+  }
+
+  .explore-container > .explore-tabs-modern {
+    top: 0 !important;
+  }
+}
+
+/* Activity, stock and diary dialogs: readable headings and close control inside the card. */
+.activity-form,
+.product-form,
+.diario-form,
+.diario-detail {
+  position: relative !important;
+}
+
+.activity-form > .form-header,
+.product-form > .form-header,
+.diario-form > .form-header,
+.diario-detail > .form-header {
+  position: relative !important;
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 18px !important;
+}
+
+.activity-form .form-header h3,
+.product-form .form-header h3,
+.diario-form .form-header h3,
+.diario-detail .form-header h3 {
+  margin: 0 !important;
+  color: #193f2a !important;
+  font-size: 1.08rem !important;
+  font-weight: 850 !important;
+}
+
+.activity-form .close-btn,
+.product-form .close-btn,
+.diario-form .close-btn,
+.diario-detail .close-btn {
+  position: static !important;
+  inset: auto !important;
+  flex: 0 0 38px !important;
+  width: 38px !important;
+  height: 38px !important;
+  padding: 0 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border: 1px solid #d3dfd2 !important;
+  border-radius: 11px !important;
+  background: #f2f6f0 !important;
+  color: #52665a !important;
+  box-shadow: none !important;
+}
+
+.activity-form .close-btn:hover,
+.product-form .close-btn:hover,
+.diario-form .close-btn:hover,
+.diario-detail .close-btn:hover {
+  border-color: #d6aaa0 !important;
+  background: #fff1ee !important;
+  color: #a54839 !important;
+}
+
+/* Diagnosis palette: agricultural green instead of neon aqua. */
+.diagnostic-container {
+  --primary: #2e6f46 !important;
+  --primary-dark: #245c39 !important;
+  --primary-glow: rgba(46, 111, 70, .20) !important;
+  --primary-soft: rgba(46, 111, 70, .10) !important;
+  --primary-border: rgba(46, 111, 70, .26) !important;
+  --success: #3f7f56 !important;
+  --info: #39708a !important;
+}
+
+.diagnostic-container :where(
+  .option-icon span,
+  .history-icon span,
+  .empty-icon span,
+  .section-link,
+  .confidence-value,
+  .probability-value,
+  .result-disease
+) {
+  color: #2e6f46 !important;
+}
+
+.diagnostic-container .option-card:hover .option-icon {
+  border-color: #88ad8f !important;
+  background: #dfece0 !important;
+  box-shadow: 0 10px 24px rgba(46, 111, 70, .12) !important;
+}
+
+.diagnostic-container .card-action .arrow {
+  flex: 0 0 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  margin: 0 0 0 6px !important;
+  padding: 0 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border-radius: 50% !important;
+  background: #2e6f46 !important;
+  color: #ffffff !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+}
+
+.batch-modal-shell,
+.batch-result-shell {
+  --batch-green: #2e6f46 !important;
+  --batch-green-dark: #245c39 !important;
+  --batch-green-soft: rgba(46, 111, 70, .10) !important;
+}
+
+/* Climate palette: sober brand green, with blue reserved only for information. */
+.clima-premium-dashboard .clima-location-icon,
+.clima-premium-dashboard .clima-section-title > .material-symbols-outlined,
+.clima-premium-dashboard .clima-metric-card > .material-symbols-outlined {
+  border-color: #c7dac5 !important;
+  background: #e3eee0 !important;
+  color: #2e6f46 !important;
+}
+
+.clima-premium-dashboard .clima-refresh-btn:hover {
+  border-color: #82aa8a !important;
+  background: #e4eee1 !important;
+  color: #245c39 !important;
+}
+
+.clima-premium-dashboard .clima-rec-card.type-success {
+  border-left-color: #4f8d63 !important;
+}
+
+.clima-premium-dashboard .clima-rec-card.type-success > .material-symbols-outlined {
+  color: #3f7f56 !important;
+}
+
+.clima-premium-dashboard .clima-rec-card.type-info {
+  border-left-color: #56778a !important;
+}
+
+.clima-premium-dashboard .clima-rec-card.type-info > .material-symbols-outlined {
+  color: #48697b !important;
+}
+
+/* Map dashboard: high-contrast operational panel and consistent brand colors. */
+.farm-map-header .farm-map-summary-item {
+  min-height: 104px !important;
+  border: 1px solid rgba(255, 255, 255, .20) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, .11) !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+.farm-map-header .farm-map-summary-item > .material-symbols-outlined {
+  color: #bfe2bb !important;
+}
+
+.farm-map-header .farm-map-summary-item strong {
+  color: #ffffff !important;
+}
+
+.farm-map-header .farm-map-summary-item small {
+  color: rgba(255, 255, 255, .68) !important;
+}
+
+.farm-map-workspace {
+  grid-template-columns: 350px minmax(0, 1fr) !important;
+  gap: 18px !important;
+}
+
+.farm-map-panel,
+.farm-map-canvas-card {
+  border: 1px solid #d7e4d5 !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  box-shadow: 0 14px 36px rgba(34, 75, 46, .10) !important;
+}
+
+.farm-map-panel {
+  padding: 20px !important;
+}
+
+.farm-map-search label,
+.farm-map-section-title {
+  color: #234d34 !important;
+}
+
+.farm-map-section-title .material-symbols-outlined {
+  color: #2e6f46 !important;
+}
+
+.farm-map-search input {
+  border-color: #d4e1d2 !important;
+  background: #f5f8f3 !important;
+  color: #193f2a !important;
+}
+
+.farm-map-search input::placeholder {
+  color: #7a8980 !important;
+}
+
+.farm-map-search input:focus {
+  border-color: #568f67 !important;
+  box-shadow: 0 0 0 3px rgba(46, 111, 70, .11) !important;
+}
+
+.farm-map-search button {
+  background: #2e6f46 !important;
+  color: #ffffff !important;
+}
+
+.farm-map-button.secondary {
+  border-color: #b9d0ba !important;
+  background: #e7f0e4 !important;
+  color: #245c39 !important;
+}
+
+.farm-map-button.muted {
+  border-color: #d5e0d4 !important;
+  background: #eef3eb !important;
+  color: #435b4c !important;
+}
+
+.farm-map-empty {
+  border-color: #cfddce !important;
+  background: #f7f9f5 !important;
+  color: #63766a !important;
+}
+
+.farm-map-selected-card {
+  border-color: #c9d9b9 !important;
+  background: #f0f5e9 !important;
+}
+
+.farm-map-selected-card strong,
+.farm-map-area-item strong {
+  color: #1c462f !important;
+}
+
+.farm-map-selected-card small,
+.farm-map-area-item small {
+  color: #6a7c70 !important;
+}
+
+.farm-map-area-item {
+  border-color: #dae5d8 !important;
+  background: #f8faf6 !important;
+  color: #1c462f !important;
+}
+
+.farm-map-area-item:hover,
+.farm-map-area-item.active {
+  border-color: #91b398 !important;
+  background: #e7f0e4 !important;
+}
+
+.farm-map-name-input {
+  border-color: #b8cfb9 !important;
+  background: #ffffff !important;
+  color: #1c462f !important;
+}
+
+.farm-map-name-edit,
+.farm-map-name-save {
+  border-color: #adc8b0 !important;
+  background: #e3eee0 !important;
+  color: #245c39 !important;
+  box-shadow: none !important;
+}
+
+.farm-map-clear {
+  border-color: #e4c0b8 !important;
+  background: #fff2ef !important;
+  color: #a34b3d !important;
+}
+
+@media(max-width:980px) {
+  .farm-map-workspace {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Unified work-item states: accessible contrast without aqua/neon green. */
+.employee-task-action button,
+.atividades-container .action-start,
+.atividades-container .action-complete,
+.atividades-container .action-confirm {
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  border: 1px solid #285f3d !important;
+  border-radius: 10px !important;
+  background: #285f3d !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 7px 16px rgba(35, 91, 56, .16) !important;
+}
+
+.employee-task-action button:hover,
+.atividades-container .action-start:hover,
+.atividades-container .action-complete:hover,
+.atividades-container .action-confirm:hover {
+  border-color: #1c4b2f !important;
+  background: #1c4b2f !important;
+}
+
+.employee-task-action i {
+  padding: 5px 8px !important;
+  border: 1px solid #b8d0ba !important;
+  border-radius: 999px !important;
+  background: #e1ece0 !important;
+  color: #245c39 !important;
+  font-size: .58rem !important;
+  font-style: normal !important;
+  font-weight: 850 !important;
+}
+
+.atividades-container .status-badge.concluida {
+  border-color: #2d6844 !important;
+  background: #326f49 !important;
+  color: #ffffff !important;
+}
+
+.atividades-container .priority-badge.baixa {
+  border-color: #afcbb2 !important;
+  background: #e2ebe1 !important;
+  color: #245c39 !important;
+}
+
+.atividades-container .activity-card.concluida {
+  border-left-color: #3f7f56 !important;
+  opacity: 1 !important;
+}
+
+.owner-task-item__confirm {
+  grid-column: 2 / -1 !important;
+  min-height: 34px !important;
+  padding: 0 11px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-self: end !important;
+  gap: 6px !important;
+  border: 1px solid #285f3d !important;
+  border-radius: 10px !important;
+  background: #285f3d !important;
+  color: #ffffff !important;
+  font-size: .58rem !important;
+  font-weight: 850 !important;
+  cursor: pointer !important;
+}
+
+.owner-task-item__confirm:hover {
+  background: #1c4b2f !important;
+}
+
+.owner-task-item__confirm .material-symbols-outlined {
+  font-size: 16px !important;
+}
+
+.owner-task-item__status.concluida,
+.owner-task-item.concluida .owner-task-item__icon {
+  border-color: #2d6844 !important;
+  background: #326f49 !important;
+  color: #ffffff !important;
+}
+
+/* The same substantial header dimensions on every authenticated desktop page. */
+@media(min-width:761px) {
+  body .app-header {
+    width: 100% !important;
+    height: 84px !important;
+    min-height: 84px !important;
+    padding: 0 34px !important;
+    box-sizing: border-box !important;
+  }
+
+  body .app-header__inner {
+    height: 84px !important;
+    min-height: 84px !important;
+  }
+}

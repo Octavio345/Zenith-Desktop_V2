@@ -4,6 +4,7 @@ import { deleteApp, initializeApp } from "firebase/app"
 import { createUserWithEmailAndPassword, deleteUser, getAuth, signOut } from "firebase/auth"
 import { addDoc, collection, doc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
 import { auth, db, firebaseConfig } from "../../services/firebase"
+import { isAwaitingOwnerConfirmation, isConfirmedWorkItemExpired } from "../../services/workItemLifecycle"
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
 import AppFooter from "../../components/App/Global/AppFooter"
@@ -33,6 +34,7 @@ const statusLabels = {
 const taskStatusMeta = {
   pendente: { label: "Pendente", icon: "pending_actions" },
   andamento: { label: "Em andamento", icon: "play_circle" },
+  em_andamento: { label: "Em andamento", icon: "play_circle" },
   concluida: { label: "Concluída", icon: "task_alt" },
 }
 
@@ -189,10 +191,24 @@ export default function AdminTeamDashboard() {
 
     const employeesQuery = query(collection(db, "users"), where("ownerId", "==", ownerId))
     const ownerTasksQuery = query(collection(db, "tasks"), where("ownerId", "==", ownerId))
+    const ownerActivitiesQuery = query(collection(db, "activities"), where("ownerId", "==", ownerId))
     let employeeDocs = []
     let tasks = []
+    let activities = []
 
     const syncTeam = () => {
+      const allWorkItems = [
+        ...tasks.map((task) => ({ ...task, workCollection: "tasks" })),
+        ...activities
+          .filter((activity) => activity.scope === "individual" && activity.assigneeId)
+          .map((activity) => ({
+            ...activity,
+            employeeId: activity.assigneeId,
+            due: activity.date || "Sem prazo",
+            workCollection: "activities",
+          })),
+      ]
+      const visibleTasks = allWorkItems.filter((task) => !isConfirmedWorkItemExpired(task))
       const operationalEmployees = employeeDocs.filter((docSnap) => (
         docSnap.data().archived !== true &&
         (docSnap.data().role === ACCOUNT_ROLES.EMPLOYEE || docSnap.data().role === ACCOUNT_ROLES.COLLABORATOR)
@@ -201,7 +217,8 @@ export default function AdminTeamDashboard() {
       if (operationalEmployees.length > 0) {
         setEmployees(operationalEmployees.map((docSnap) => {
             const data = docSnap.data()
-            const employeeTasks = tasks.filter((task) => task.employeeId === docSnap.id)
+            const employeeTasks = visibleTasks.filter((task) => task.employeeId === docSnap.id)
+            const employeeHistory = allWorkItems.filter((task) => task.employeeId === docSnap.id)
 
             return {
               id: docSnap.id,
@@ -219,12 +236,12 @@ export default function AdminTeamDashboard() {
               exit: data.exit || "--:--",
               hours: Number(data.hours) || 0,
               pending: employeeTasks.filter((task) => task.status === "pendente").length,
-              active: employeeTasks.filter((task) => task.status === "andamento").length,
-              done: employeeTasks.filter((task) => task.status === "concluida").length,
-              productivity: getCompletionRate(employeeTasks),
-              daily: getCompletionRate(employeeTasks, 1),
-              weekly: getCompletionRate(employeeTasks, 7),
-              monthly: getCompletionRate(employeeTasks, 30),
+              active: employeeTasks.filter((task) => task.status === "andamento" || task.status === "em_andamento").length,
+              done: employeeHistory.filter((task) => task.status === "concluida").length,
+              productivity: getCompletionRate(employeeHistory),
+              daily: getCompletionRate(employeeHistory, 1),
+              weekly: getCompletionRate(employeeHistory, 7),
+              monthly: getCompletionRate(employeeHistory, 30),
               tasks: employeeTasks,
               delays: Number(data.delays) || 0,
               absences: Number(data.absences) || 0,
@@ -253,10 +270,18 @@ export default function AdminTeamDashboard() {
       syncTeam()
       setIsTeamLoading(false)
     }, handleError)
+    const unsubscribeActivities = onSnapshot(ownerActivitiesQuery, (snapshot) => {
+      activities = snapshot.docs.map((activityDoc) => ({ id: activityDoc.id, ...activityDoc.data() }))
+      syncTeam()
+      setIsTeamLoading(false)
+    }, handleError)
+    const lifecycleTimer = window.setInterval(syncTeam, 60000)
 
     return () => {
       unsubscribeEmployees()
       unsubscribeTasks()
+      unsubscribeActivities()
+      window.clearInterval(lifecycleTimer)
     }
   }, [])
 
@@ -320,23 +345,7 @@ export default function AdminTeamDashboard() {
         ownerId: auth.currentUser?.uid || "",
         createdAt: new Date().toISOString(),
       }
-      const taskRef = await addDoc(collection(db, "tasks"), taskPayload)
-      setEmployees((current) => current.map((employee) => {
-        if (employee.id !== selected.id) return employee
-
-        const employeeTasks = [...(employee.tasks || []), { id: taskRef.id, ...taskPayload }]
-        return {
-          ...employee,
-          tasks: employeeTasks,
-          pending: employeeTasks.filter((task) => task.status === "pendente").length,
-          active: employeeTasks.filter((task) => task.status === "andamento").length,
-          done: employeeTasks.filter((task) => task.status === "concluida").length,
-          productivity: getCompletionRate(employeeTasks),
-          daily: getCompletionRate(employeeTasks, 1),
-          weekly: getCompletionRate(employeeTasks, 7),
-          monthly: getCompletionRate(employeeTasks, 30),
-        }
-      }))
+      await addDoc(collection(db, "tasks"), taskPayload)
       setTaskTitle("")
     } catch (error) {
       console.error("Erro ao atribuir tarefa:", error)
@@ -394,26 +403,6 @@ export default function AdminTeamDashboard() {
       const credential = await createUserWithEmailAndPassword(secondaryAuth, employeePayload.email, newEmployee.password)
       createdAuthUser = credential.user
       await setDoc(doc(db, "users", credential.user.uid), employeePayload)
-      const createdEmployee = {
-        id: credential.user.uid,
-        ...employeePayload,
-        entry: employeePayload.entry,
-        exit: employeePayload.exit,
-        hours: employeePayload.hours,
-        pending: 0,
-        active: 0,
-        done: 0,
-        productivity: null,
-        daily: null,
-        weekly: null,
-        monthly: null,
-        tasks: [],
-        delays: 0,
-        absences: 0,
-        lastActivity: employeePayload.lastActivity,
-      }
-
-      setEmployees((current) => [createdEmployee, ...current])
       setSelectedId(credential.user.uid)
       setNewEmployee({ name: "", email: "", password: "", age: "", phone: "", personType: "CPF", document: "", employmentType: "CLT", position: "", sector: "", droneModel: "", role: ACCOUNT_ROLES.EMPLOYEE })
       setEmployeeFormMessage({ type: "success", text: "Login criado. O funcionário já pode entrar com o email e a senha definidos." })
@@ -453,6 +442,20 @@ export default function AdminTeamDashboard() {
       setEmployees((current) => current.map((employee) => (
         employee.id === selected.id ? { ...employee, droneModel: previousDroneModel } : employee
       )))
+    }
+  }
+
+  const confirmTaskCompletion = async (task) => {
+    if (!task?.id || task.status !== "concluida" || !auth.currentUser?.uid) return
+    const now = new Date().toISOString()
+    try {
+      await updateDoc(doc(db, task.workCollection || "tasks", task.id), {
+        ownerConfirmedAt: now,
+        ownerConfirmedBy: auth.currentUser.uid,
+        updatedAt: now,
+      })
+    } catch (error) {
+      console.error("Erro ao confirmar conclusão da tarefa:", error)
     }
   }
 
@@ -634,6 +637,10 @@ export default function AdminTeamDashboard() {
 
           {showNewEmployee && (
             <div className="new-employee-form" ref={newEmployeeFormRef}>
+              <div className="employee-form-heading">
+                <span className="material-symbols-outlined">person_add</span>
+                <span><strong>Criar acesso do funcionário</strong><small>Dados pessoais, vínculo profissional e credenciais em um único cadastro.</small></span>
+              </div>
               <input
                 ref={newEmployeeNameRef}
                 value={newEmployee.name}
@@ -859,13 +866,14 @@ export default function AdminTeamDashboard() {
                   .map((task) => {
                     const status = taskStatusMeta[task.status] || taskStatusMeta.pendente
                     return (
-                      <article className={`owner-task-item ${task.status || "pendente"}`} key={task.id}>
+                      <article className={`owner-task-item ${task.status || "pendente"}`} key={`${task.workCollection || "tasks"}:${task.id}`}>
                         <span className="material-symbols-outlined owner-task-item__icon">{status.icon}</span>
                         <div className="owner-task-item__content">
                           <div><strong>{task.title || "Tarefa sem título"}</strong><span className={`owner-task-item__status ${task.status || "pendente"}`}>{status.label}</span></div>
-                          <p>{task.status === "concluida" && task.completedAt ? `Concluída em ${formatTaskDate(task.completedAt)}` : task.status === "andamento" && task.startedAt ? `Iniciada em ${formatTaskDate(task.startedAt)}` : `Atribuída em ${formatTaskDate(task.createdAt) || "data não informada"}`}</p>
+                          <p>{task.status === "concluida" && task.completedAt ? `Concluída em ${formatTaskDate(task.completedAt)}` : (task.status === "andamento" || task.status === "em_andamento") && task.startedAt ? `Iniciada em ${formatTaskDate(task.startedAt)}` : `Atribuída em ${formatTaskDate(task.createdAt) || "data não informada"}`}</p>
                         </div>
                         <span className="owner-task-item__due"><small>Prazo</small><strong>{task.due || "Sem prazo"}</strong></span>
+                        {isAwaitingOwnerConfirmation(task) && <button type="button" className="owner-task-item__confirm" onClick={() => confirmTaskCompletion(task)}><span className="material-symbols-outlined">verified</span>Confirmar finalização</button>}
                       </article>
                     )
                   }) : <div className="owner-task-board__empty"><span className="material-symbols-outlined">assignment_add</span><div><strong>Nenhuma tarefa atribuída</strong><p>Use o campo acima para enviar a primeira tarefa a este funcionário.</p></div></div>}

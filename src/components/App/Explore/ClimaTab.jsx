@@ -268,7 +268,7 @@ export default function ClimaTab() {
 
         .clima-panel {
           background: linear-gradient(145deg, rgba(9, 24, 17, 0.98), rgba(7, 14, 20, 0.96));
-          border: 1px solid rgba(0, 255, 170, 0.16);
+          border: 1px solid rgba(46, 111, 70, 0.18);
           border-radius: 18px;
           box-shadow: 0 18px 45px rgba(0, 0, 0, 0.42);
           overflow: hidden;
@@ -280,7 +280,7 @@ export default function ClimaTab() {
           position: absolute;
           inset: 0;
           pointer-events: none;
-          background: linear-gradient(135deg, rgba(0, 255, 170, 0.08), transparent 34%, rgba(0, 102, 255, 0.06));
+          background: linear-gradient(135deg, rgba(46, 111, 70, 0.08), transparent 34%, rgba(57, 112, 138, 0.05));
           opacity: 0.8;
         }
 
@@ -325,9 +325,9 @@ export default function ClimaTab() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          color: #00ffaa;
-          background: rgba(0, 255, 170, 0.08);
-          border: 1px solid rgba(0, 255, 170, 0.24);
+          color: #2e6f46;
+          background: rgba(46, 111, 70, 0.10);
+          border: 1px solid rgba(46, 111, 70, 0.24);
           flex-shrink: 0;
         }
 
@@ -362,8 +362,8 @@ export default function ClimaTab() {
         }
 
         .clima-refresh-btn:hover {
-          color: #00ffaa;
-          border-color: rgba(0, 255, 170, 0.42);
+          color: #245c39;
+          border-color: rgba(46, 111, 70, 0.42);
           transform: rotate(45deg);
         }
 
@@ -381,8 +381,8 @@ export default function ClimaTab() {
           gap: 0.15rem;
           padding: 1.15rem 1.35rem;
           border-radius: 18px;
-          background: linear-gradient(135deg, #00ffaa, #00b8ff);
-          box-shadow: 0 22px 42px rgba(0, 255, 170, 0.16);
+          background: linear-gradient(135deg, #347b4e, #235f3d);
+          box-shadow: 0 22px 42px rgba(39, 108, 71, 0.20);
         }
 
         .clima-temperature-block strong {
@@ -491,7 +491,7 @@ export default function ClimaTab() {
         }
 
         .clima-section-title span {
-          color: #00ffaa;
+          color: #2e6f46;
         }
 
         .clima-rec-list {
@@ -509,20 +509,20 @@ export default function ClimaTab() {
           border-radius: 14px;
           background: rgba(5, 10, 7, 0.72);
           border: 1px solid rgba(255, 255, 255, 0.07);
-          border-left: 4px solid #38bdf8;
+          border-left: 4px solid #56778a;
         }
 
-        .clima-rec-card.type-success { border-left-color: #00ffaa; }
+        .clima-rec-card.type-success { border-left-color: #4f8d63; }
         .clima-rec-card.type-warning { border-left-color: #facc15; }
         .clima-rec-card.type-danger { border-left-color: #f87171; }
-        .clima-rec-card.type-info { border-left-color: #38bdf8; }
+        .clima-rec-card.type-info { border-left-color: #56778a; }
 
         .clima-rec-card > span {
-          color: #38bdf8;
+          color: #56778a;
           margin-top: 0.1rem;
         }
 
-        .clima-rec-card.type-success > span { color: #00ffaa; }
+        .clima-rec-card.type-success > span { color: #3f7f56; }
         .clima-rec-card.type-warning > span { color: #facc15; }
         .clima-rec-card.type-danger > span { color: #f87171; }
 
@@ -561,12 +561,12 @@ export default function ClimaTab() {
           padding: 1rem;
           border-radius: 14px;
           background: #0a1810;
-          border: 1px solid rgba(0, 255, 170, 0.14);
+          border: 1px solid rgba(46, 111, 70, 0.16);
           transition: all 0.2s ease;
         }
 
         .clima-metric-card:hover {
-          border-color: rgba(0, 255, 170, 0.38);
+          border-color: rgba(46, 111, 70, 0.38);
           transform: translateY(-2px);
         }
 
@@ -577,8 +577,8 @@ export default function ClimaTab() {
           align-items: center;
           justify-content: center;
           border-radius: 10px;
-          color: #00ffaa;
-          background: rgba(0, 255, 170, 0.08);
+          color: #2e6f46;
+          background: rgba(46, 111, 70, 0.10);
           flex-shrink: 0;
         }
 

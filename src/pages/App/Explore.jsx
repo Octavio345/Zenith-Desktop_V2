@@ -63,6 +63,14 @@ export default function Explore() {
     localStorage.setItem("activeExploreTab", activeTab)
   }, [activeTab])
 
+  const selectTab = (tabId) => {
+    localStorage.setItem("activeExploreTab", tabId)
+    setActiveTab(tabId)
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
+
   const renderTab = () => {
     switch(activeTab) {
       case "diagnostico": 
@@ -122,7 +130,7 @@ export default function Explore() {
           <button
             key={tab.id}
             className={`explore-tab ${activeTab === tab.id ? "active" : ""}`}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => selectTab(tab.id)}
           >
             <span className="explore-tab-icon material-symbols-outlined">
               {tab.icon}

@@ -4,7 +4,7 @@
   --batch-surface-strong: #0d1c14;
   --batch-border: rgba(255, 255, 255, 0.08);
   --batch-muted: #8fa3b8;
-  --batch-green: #00ffaa;
+  --batch-green: #2e6f46;
   --batch-blue: #3b82f6;
   --batch-amber: #f5b942;
   --batch-red: #fb7185;
@@ -229,14 +229,14 @@
 }
 
 .batch-button-primary {
-  border: 1px solid #00ffaa;
-  color: #03130c;
-  background: linear-gradient(135deg, #00ffaa, #2eeaa2);
-  box-shadow: 0 10px 25px rgba(0, 255, 170, 0.15);
+  border: 1px solid #2e6f46;
+  color: #ffffff;
+  background: linear-gradient(135deg, #347b4e, #245c39);
+  box-shadow: 0 10px 25px rgba(46, 111, 70, 0.18);
 }
 
 .batch-button-primary:hover:not(:disabled) {
-  box-shadow: 0 13px 32px rgba(0, 255, 170, 0.27);
+  box-shadow: 0 13px 32px rgba(46, 111, 70, 0.27);
 }
 
 .batch-button-secondary,
@@ -795,7 +795,7 @@
 }
 
 .batch-condition-healthy .batch-condition-bar span {
-  background: linear-gradient(90deg, #00cc88, #00ffaa);
+  background: linear-gradient(90deg, #245c39, #4f8d63);
 }
 
 .batch-condition-pest .batch-condition-icon,
@@ -852,7 +852,7 @@
 }
 
 .batch-probability-track span {
-  background: linear-gradient(90deg, #00cc88, #00ffaa);
+  background: linear-gradient(90deg, #245c39, #4f8d63);
 }
 
 .batch-guidance-list {

@@ -31,8 +31,16 @@ service cloud.firestore {
       return perfilExiste() && perfilEstaAtivo(perfilAtual());
     }
 
+    function emailConfirmado() {
+      return estaLogado() && request.auth.token.email_verified == true;
+    }
+
     function ehAdministrador() {
       return contaAtiva() && perfilEhAdministrador(perfilAtual());
+    }
+
+    function administradorConfirmado() {
+      return ehAdministrador() && emailConfirmado();
     }
 
     function pertenceAoProprietario(ownerId) {
@@ -70,7 +78,7 @@ service cloud.firestore {
           )
         ) ||
         (
-          ehAdministrador() &&
+          administradorConfirmado() &&
           request.resource.data.role in ["employee", "collaborator"] &&
           request.resource.data.ownerId == request.auth.uid &&
           request.resource.data.teamId == request.auth.uid
@@ -118,7 +126,7 @@ service cloud.firestore {
         ]);
 
       // Proprietário administra os dados cadastrais e trabalhistas de sua equipe.
-      allow update: if ehAdministrador() &&
+      allow update: if administradorConfirmado() &&
         resource.data.ownerId == request.auth.uid &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           "name",
@@ -182,7 +190,7 @@ service cloud.firestore {
 
     match /tasks/{taskId} {
 
-      allow create: if ehAdministrador()
+      allow create: if administradorConfirmado()
                     && request.resource.data.ownerId == request.auth.uid
                     && ehFuncionarioDoAdministrador(request.resource.data.employeeId);
 
@@ -192,7 +200,7 @@ service cloud.firestore {
       );
 
       // Proprietário administra tarefas de sua equipe.
-      allow update: if ehAdministrador()
+      allow update: if administradorConfirmado()
                     && resource.data.ownerId == request.auth.uid
                     && request.resource.data.ownerId == resource.data.ownerId
                     && request.resource.data.employeeId == resource.data.employeeId;
@@ -212,7 +220,7 @@ service cloud.firestore {
                         "updatedAt"
                       ]);
 
-      allow delete: if ehAdministrador()
+      allow delete: if administradorConfirmado()
                     && resource.data.ownerId == request.auth.uid;
     }
 
@@ -220,7 +228,7 @@ service cloud.firestore {
 
       // O proprietário publica uma atividade para toda a fazenda ou para um
       // funcionário que pertença à própria equipe.
-      allow create: if ehAdministrador()
+      allow create: if administradorConfirmado()
                     && request.resource.data.ownerId == request.auth.uid
                     && (
                       request.resource.data.scope == "general" ||
@@ -241,7 +249,7 @@ service cloud.firestore {
         resource.data.assigneeId == request.auth.uid
       );
 
-      allow update: if ehAdministrador()
+      allow update: if administradorConfirmado()
                     && resource.data.ownerId == request.auth.uid
                     && request.resource.data.ownerId == resource.data.ownerId
                     && (
@@ -267,7 +275,7 @@ service cloud.firestore {
                         "updatedAt"
                       ]);
 
-      allow delete: if ehAdministrador()
+      allow delete: if administradorConfirmado()
                     && resource.data.ownerId == request.auth.uid;
     }
 

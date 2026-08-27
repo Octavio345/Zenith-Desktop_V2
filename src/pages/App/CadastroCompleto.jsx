@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../services/firebase"
-import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth"
+import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification } from "firebase/auth"
 import { doc, setDoc, addDoc, collection } from "firebase/firestore"
 import { ACCOUNT_ROLES } from "../../services/accessControl"
 import CustomSelect from "../../components/App/Global/CustomSelect"
@@ -92,13 +92,15 @@ const isValidPhone = (digits) => {
   return digits.length === 11 ? number.startsWith("9") && !/^9(\d)\1{7}$/.test(number) : /^[2-5]/.test(number) && !/^(\d)\1{7}$/.test(number)
 }
 const getPasswordError = (password) => {
-  if (password.length < 8) return "A senha deve ter pelo menos 8 caracteres."
-  if (!/[A-Z]/.test(password)) return "Inclua ao menos uma letra maiúscula na senha."
-  if (!/[a-z]/.test(password)) return "Inclua ao menos uma letra minúscula na senha."
-  if (!/\d/.test(password)) return "Inclua ao menos um número na senha."
-  if (!/[!@#$%^&*()_+\-={}\[\]:;<>?,./]/.test(password)) return "Inclua ao menos um caractere especial na senha."
-  if (/\s/.test(password)) return "A senha não pode conter espaços."
-  return ""
+  const isValid = password.length >= 8
+    && /[A-Z]/.test(password)
+    && /[a-z]/.test(password)
+    && /\d/.test(password)
+    && /[!@#$%^&*()_+\-={}\[\]:;<>?,./]/.test(password)
+    && !/\s/.test(password)
+  return isValid
+    ? ""
+    : "A senha precisa ter pelo menos 8 caracteres, uma letra maiúscula, uma letra minúscula, um número e um caractere especial, sem espaços."
 }
 
 export default function CadastroCompleto() {
@@ -108,6 +110,8 @@ export default function CadastroCompleto() {
   const [cepData, setCepData] = useState(null)
   const [alertMessage, setAlertMessage] = useState({ type: "", text: "" })
   const [userId, setUserId] = useState(null)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   const [userData, setUserData] = useState({
     name: "", age: "", type: "", document: "", email: "", password: "", confirmPassword: "", plan: "agro-vision"
@@ -238,10 +242,24 @@ export default function CadastroCompleto() {
         profileIcon: "agriculture"
       })
 
+      let verificationSent = true
+      try {
+        auth.languageCode = "pt-BR"
+        await sendEmailVerification(userCred.user)
+      } catch (verificationError) {
+        verificationSent = false
+        console.error("Não foi possível enviar a verificação de email:", verificationError)
+      }
+
       localStorage.setItem("zenithAccessType", "owner")
       setUserId(userCred.user.uid)
       setEtapa(2)
-      setAlertMessage({ type: "success", text: "Conta criada. Cadastre agora sua fazenda." })
+      setAlertMessage({
+        type: "success",
+        text: verificationSent
+          ? "Conta criada. Enviamos um link de confirmação para seu email. Você já pode cadastrar sua fazenda."
+          : "Conta criada. Cadastre sua fazenda; você poderá reenviar a confirmação de email antes de acessar a equipe.",
+      })
     } catch (error) {
       if (createdUser && auth.currentUser?.uid === createdUser.uid) {
         try { await deleteUser(createdUser) } catch { /* Conta preservada para recuperação em caso de falha externa. */ }
@@ -372,11 +390,17 @@ export default function CadastroCompleto() {
                 <div className="cc-row">
                   <div className="cc-field">
                     <label>Senha</label>
-                    <input type="password" name="password" value={userData.password} onChange={handleUserChange} placeholder="Crie uma senha segura" autoComplete="new-password"/>
+                    <div className="cc-password-field">
+                      <input type={showPassword ? "text" : "password"} name="password" value={userData.password} onChange={handleUserChange} placeholder="Crie uma senha segura" autoComplete="new-password"/>
+                      <button type="button" onClick={() => setShowPassword((current) => !current)} aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}><span className="material-symbols-outlined">{showPassword ? "visibility_off" : "visibility"}</span></button>
+                    </div>
                   </div>
                   <div className="cc-field">
                     <label>Confirmar senha</label>
-                    <input type="password" name="confirmPassword" value={userData.confirmPassword} onChange={handleUserChange} placeholder="Digite a senha novamente" autoComplete="new-password"/>
+                    <div className="cc-password-field">
+                      <input type={showConfirmPassword ? "text" : "password"} name="confirmPassword" value={userData.confirmPassword} onChange={handleUserChange} placeholder="Digite a senha novamente" autoComplete="new-password"/>
+                      <button type="button" onClick={() => setShowConfirmPassword((current) => !current)} aria-label={showConfirmPassword ? "Ocultar confirmação da senha" : "Mostrar confirmação da senha"}><span className="material-symbols-outlined">{showConfirmPassword ? "visibility_off" : "visibility"}</span></button>
+                    </div>
                   </div>
                 </div>
 

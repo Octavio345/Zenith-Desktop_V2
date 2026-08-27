@@ -390,7 +390,7 @@ export default function DiagnosticoTab() {
             <p>Capture uma folha no campo e adicione a imagem ao lote.</p>
             <div className="card-action">
               <span>Usar câmera</span>
-              <span className="arrow">→</span>
+              <span className="material-symbols-outlined arrow" aria-hidden="true">arrow_forward</span>
             </div>
           </button>
         )}
@@ -414,7 +414,7 @@ export default function DiagnosticoTab() {
           <p>Selecione várias imagens de uma vez ou arraste o lote completo para esta área.</p>
           <div className="card-action">
             <span>Selecionar imagens</span>
-            <span className="arrow">→</span>
+            <span className="material-symbols-outlined arrow" aria-hidden="true">arrow_forward</span>
           </div>
         </button>
 

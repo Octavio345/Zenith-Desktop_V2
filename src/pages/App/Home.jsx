@@ -5,6 +5,7 @@ import { collection, doc, getDoc, getDocs, onSnapshot, query, updateDoc, where }
 import { auth, db } from "../../services/firebase"
 import { isOperationalRole } from "../../services/accessControl"
 import { getWeatherByCity } from "../../services/weatherService"
+import { isConfirmedWorkItemExpired } from "../../services/workItemLifecycle"
 import AppHeader from "../../components/App/Global/AppHeader"
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppFooter from "../../components/App/Global/AppFooter"
@@ -19,6 +20,12 @@ export default function Home() {
   const [assignedTasks, setAssignedTasks] = useState([])
   const [employeeAction, setEmployeeAction] = useState("")
   const [employeeActionError, setEmployeeActionError] = useState("")
+  const [lifecycleNow, setLifecycleNow] = useState(Date.now())
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setLifecycleNow(Date.now()), 60000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => onAuthStateChanged(auth, async (user) => {
     if (!user) return
@@ -92,12 +99,27 @@ export default function Home() {
   const isEmployee = isOperationalRole(userData?.role)
   const hasFarm = Boolean(farmData)
   const temperature = hasFarm && weather?.temperature !== undefined ? Math.round(weather.temperature) : "--"
+  const visibleActivities = useMemo(
+    () => activities.filter((activity) => !isConfirmedWorkItemExpired(activity, lifecycleNow)),
+    [activities, lifecycleNow],
+  )
+  const employeeWorkItems = useMemo(() => {
+    if (!isEmployee || !userData?.uid) return []
+    const taskItems = assignedTasks.map((task) => ({ ...task, workCollection: "tasks", progressStatus: "andamento" }))
+    const activityItems = visibleActivities
+      .filter((activity) => activity.scope === "individual" && activity.assigneeId === userData.uid)
+      .map((activity) => ({ ...activity, workCollection: "activities", progressStatus: "em_andamento", due: activity.date || "Sem prazo" }))
+
+    return [...taskItems, ...activityItems]
+      .filter((item) => !isConfirmedWorkItemExpired(item, lifecycleNow))
+      .sort((a, b) => String(b.createdAt || b.date || "").localeCompare(String(a.createdAt || a.date || "")))
+  }, [assignedTasks, isEmployee, lifecycleNow, userData?.uid, visibleActivities])
   const summary = useMemo(() => [
     { icon: "eco", label: "Saúde da lavoura", value: hasFarm ? "Pronta para análise" : "Cadastre a fazenda", tab: "diagnostico" },
     { icon: "cloud", label: "Condição do clima", value: weather?.conditionDescription || "Sem dados agora", tab: "clima" },
-    { icon: "task_alt", label: "Atividades", value: `${activities.length} registradas`, tab: "atividades" },
+    { icon: "task_alt", label: "Atividades", value: `${visibleActivities.length} registradas`, tab: "atividades" },
     { icon: "monitoring", label: "Monitoramento", value: hasFarm ? "Área conectada" : "Aguardando dados", tab: "monitoramento" },
-  ], [activities.length, hasFarm, weather])
+  ], [hasFarm, visibleActivities.length, weather])
 
   const openExplore = (tab) => {
     localStorage.setItem("activeExploreTab", tab)
@@ -131,14 +153,21 @@ export default function Home() {
 
   const updateAssignedTask = async (task, status) => {
     const now = new Date().toISOString()
+    const workCollection = task.workCollection || "tasks"
     setEmployeeActionError("")
-    setEmployeeAction(task.id)
+    setEmployeeAction(`${workCollection}:${task.id}`)
     try {
       const payload = status === "andamento"
         ? { status, startedAt: now, updatedAt: now }
+        : status === "em_andamento"
+          ? { status, startedAt: now, updatedAt: now }
         : { status, completedAt: now, updatedAt: now }
-      await updateDoc(doc(db, "tasks", task.id), payload)
-      setAssignedTasks((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
+      await updateDoc(doc(db, workCollection, task.id), payload)
+      if (workCollection === "tasks") {
+        setAssignedTasks((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
+      } else {
+        setActivities((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
+      }
     } catch (error) {
       console.error("Erro ao atualizar tarefa:", error)
       setEmployeeActionError("Não foi possível atualizar a tarefa. Verifique a permissão do Firestore.")
@@ -210,16 +239,16 @@ export default function Home() {
 
         <section className="home-operation-grid">
           <article className="home-operation-card home-operation-card--feature">
-            <div><span className="card-label card-label--light"><span className="material-symbols-outlined">flight</span> Inteligência aérea</span><h2>Veja sua lavoura por uma nova perspectiva.</h2><p>Envie imagens do drone para diagnóstico e acompanhamento do alinhamento da plantação.</p><button type="button" onClick={() => openExplore("monitoramento")}>Iniciar monitoramento <span className="material-symbols-outlined">arrow_forward</span></button></div>
+            <div><span className="card-label card-label--light"><span className="material-symbols-outlined">flight</span> Inteligência aérea</span><h2>Veja sua lavoura por uma nova perspectiva.</h2><p>Envie imagens do drone para diagnóstico e acompanhamento do alinhamento da plantação.</p><button type="button" onClick={() => openExplore("diagnostico")}>Iniciar monitoramento <span className="material-symbols-outlined">arrow_forward</span></button></div>
             <img src="/assets/image/drone-plantio.webp" alt="Drone sobrevoando a plantação" />
           </article>
           <article className="home-activity-card">
             <div className="home-activity-card__head"><span><span className="material-symbols-outlined">{isEmployee ? "assignment" : "history"}</span><strong>{isEmployee ? "Minha jornada e tarefas" : "Atividades recentes"}</strong></span>{!isEmployee && <button type="button" onClick={() => openExplore("atividades")}>Ver todas</button>}</div>
             {isEmployee && <div className="employee-shift-card"><div><span className={`employee-shift-card__dot ${userData?.status === "trabalhando" ? "active" : ""}`} /><span><small>Jornada de hoje</small><strong>{userData?.status === "trabalhando" ? `Em campo desde ${userData?.entry || "agora"}` : "Aguardando entrada"}</strong></span></div><button type="button" disabled={Boolean(employeeAction)} onClick={() => updateWorkShift(userData?.status === "trabalhando" ? "end" : "start")}>{employeeAction === "start" || employeeAction === "end" ? "Salvando..." : userData?.status === "trabalhando" ? "Registrar saída" : "Registrar entrada"}</button></div>}
             {isEmployee && employeeActionError && <p className="employee-action-error">{employeeActionError}</p>}
-            {isEmployee && assignedTasks.length ? assignedTasks.slice(0, 3).map((task) => (
-              <div className="home-activity-row home-activity-row--task" key={task.id}><span className="material-symbols-outlined">assignment_turned_in</span><span><strong>{task.title || "Tarefa da equipe"}</strong><small>{task.due && task.due !== "Sem prazo" ? `Prazo: ${task.due}` : "Sem prazo definido"}</small></span><div className="employee-task-action">{task.status === "pendente" ? <button type="button" disabled={Boolean(employeeAction)} onClick={() => updateAssignedTask(task, "andamento")}>{employeeAction === task.id ? "..." : "Iniciar"}</button> : task.status === "andamento" ? <button type="button" disabled={Boolean(employeeAction)} onClick={() => updateAssignedTask(task, "concluida")}>{employeeAction === task.id ? "..." : "Concluir"}</button> : <i>Concluída</i>}</div></div>
-            )) : !isEmployee && activities.length ? activities.slice(0, 3).map((activity, index) => (
+            {isEmployee && employeeWorkItems.length ? employeeWorkItems.slice(0, 3).map((task) => (
+              <div className="home-activity-row home-activity-row--task" key={`${task.workCollection}:${task.id}`}><span className="material-symbols-outlined">assignment_turned_in</span><span><strong>{task.title || "Tarefa da equipe"}</strong><small>{task.due && task.due !== "Sem prazo" ? `Prazo: ${task.due}` : "Sem prazo definido"}</small></span><div className="employee-task-action">{task.status === "pendente" ? <button type="button" disabled={Boolean(employeeAction)} onClick={() => updateAssignedTask(task, task.progressStatus)}>{employeeAction === `${task.workCollection}:${task.id}` ? "..." : "Iniciar"}</button> : task.status === "andamento" || task.status === "em_andamento" ? <button type="button" disabled={Boolean(employeeAction)} onClick={() => updateAssignedTask(task, "concluida")}>{employeeAction === `${task.workCollection}:${task.id}` ? "..." : "Finalizar tarefa"}</button> : <i>{task.ownerConfirmedAt ? "Finalização confirmada" : "Aguardando confirmação"}</i>}</div></div>
+            )) : !isEmployee && visibleActivities.length ? visibleActivities.slice(0, 3).map((activity, index) => (
               <div className="home-activity-row" key={activity.id || index}><span className="material-symbols-outlined">task_alt</span><span><strong>{activity.title || activity.name || "Atividade da fazenda"}</strong><small>{activity.date || "Registro recente"}</small></span><i>{activity.status || "Pendente"}</i></div>
             )) : <div className="home-activity-empty"><span className="material-symbols-outlined">event_available</span><div><strong>{isEmployee ? "Nenhuma tarefa recebida" : "Sua rotina começa aqui"}</strong><p>{isEmployee ? "As novas tarefas enviadas pelo responsável aparecerão aqui." : "Crie tarefas e acompanhe a operação da fazenda."}</p></div><button type="button" onClick={() => openExplore("atividades")}>Abrir atividades</button></div>}
           </article>

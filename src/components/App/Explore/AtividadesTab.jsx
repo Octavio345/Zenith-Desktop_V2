@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { createPortal } from "react-dom"
+import { motion } from "framer-motion"
 import { onAuthStateChanged } from "firebase/auth"
 import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query, updateDoc, where } from "firebase/firestore"
 import { auth, db } from "../../../services/firebase"
 import { isOperationalRole } from "../../../services/accessControl"
+import { isAwaitingOwnerConfirmation, isConfirmedWorkItemExpired } from "../../../services/workItemLifecycle"
 import CustomSelect from "../Global/CustomSelect"
 import "../../../styles/App/AtividadesTab.css"
 
@@ -19,6 +21,7 @@ export default function AtividadesTab() {
   const [employees, setEmployees] = useState([])
   const [activitiesLoading, setActivitiesLoading] = useState(true)
   const [activityMessage, setActivityMessage] = useState("")
+  const [lifecycleNow, setLifecycleNow] = useState(Date.now())
   const [newActivity, setNewActivity] = useState({
     title: "",
     description: "",
@@ -34,24 +37,24 @@ export default function AtividadesTab() {
 
   // Cores mais vibrantes para os ícones
   const activityTypes = [
-    { id: "tarefa", name: "Tarefa", icon: "assignment", color: "#2ecc71" },
-    { id: "voo", name: "Voo de Drone", icon: "flight", color: "#3498db" },
-    { id: "irrigacao", name: "Irrigação", icon: "water_drop", color: "#1abc9c" },
+    { id: "tarefa", name: "Tarefa", icon: "assignment", color: "#347b4e" },
+    { id: "voo", name: "Voo de Drone", icon: "flight", color: "#426b87" },
+    { id: "irrigacao", name: "Irrigação", icon: "water_drop", color: "#39708a" },
     { id: "pulverizacao", name: "Pulverização", icon: "spray", color: "#f39c12" },
-    { id: "colheita", name: "Colheita", icon: "agriculture", color: "#27ae60" },
+    { id: "colheita", name: "Colheita", icon: "agriculture", color: "#2e6f46" },
     { id: "manutencao", name: "Manutenção", icon: "handyman", color: "#e74c3c" }
   ]
 
   const priorities = [
     { id: "alta", name: "Alta", icon: "priority_high", color: "#e74c3c" },
     { id: "media", name: "Média", icon: "drag_handle", color: "#f39c12" },
-    { id: "baixa", name: "Baixa", icon: "low_priority", color: "#2ecc71" }
+    { id: "baixa", name: "Baixa", icon: "low_priority", color: "#4f8d63" }
   ]
 
   const statuses = [
     { id: "pendente", name: "Pendente", icon: "pending", color: "#f39c12" },
     { id: "em_andamento", name: "Em andamento", icon: "play_circle", color: "#3498db" },
-    { id: "concluida", name: "Concluída", icon: "check_circle", color: "#2ecc71" },
+    { id: "concluida", name: "Concluída", icon: "check_circle", color: "#3f7f56" },
     { id: "cancelada", name: "Cancelada", icon: "cancel", color: "#e74c3c" }
   ]
 
@@ -61,6 +64,11 @@ export default function AtividadesTab() {
 
   const isEmployee = isOperationalRole(userProfile?.role)
   const isOwner = Boolean(userProfile) && !isEmployee
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setLifecycleNow(Date.now()), 60000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   useEffect(() => onAuthStateChanged(auth, async (user) => {
     if (!user) { setUserProfile(null); setActivitiesLoading(false); return }
@@ -159,7 +167,23 @@ export default function AtividadesTab() {
     catch (error) { console.error("Erro ao atualizar atividade:", error); setActivityMessage("Não foi possível atualizar a atividade.") }
   }
 
-  const filteredActivities = activities.filter(activity => {
+  const confirmCompletion = async (activity) => {
+    if (!isOwner || !isAwaitingOwnerConfirmation(activity) || !auth.currentUser?.uid) return
+    const now = new Date().toISOString()
+    try {
+      await updateDoc(doc(db, "activities", activity.id), {
+        ownerConfirmedAt: now,
+        ownerConfirmedBy: auth.currentUser.uid,
+        updatedAt: now,
+      })
+    } catch (error) {
+      console.error("Erro ao confirmar conclusão da atividade:", error)
+      setActivityMessage("Não foi possível confirmar a finalização da atividade.")
+    }
+  }
+
+  const visibleActivities = activities.filter((activity) => !isConfirmedWorkItemExpired(activity, lifecycleNow))
+  const filteredActivities = visibleActivities.filter(activity => {
     const matchesType = filterType === "todas" || activity.type === filterType
     const matchesStatus = filterStatus === "todos" || activity.status === filterStatus
     const matchesSearch = String(activity.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -171,10 +195,10 @@ export default function AtividadesTab() {
     return new Date(b.date + " " + b.time) - new Date(a.date + " " + a.time)
   })
 
-  const totalActivities = activities.length
-  const pendingActivities = activities.filter(a => a.status === "pendente").length
-  const completedActivities = activities.filter(a => a.status === "concluida").length
-  const inProgressActivities = activities.filter(a => a.status === "em_andamento").length
+  const totalActivities = visibleActivities.length
+  const pendingActivities = visibleActivities.filter(a => a.status === "pendente").length
+  const completedActivities = visibleActivities.filter(a => a.status === "concluida").length
+  const inProgressActivities = visibleActivities.filter(a => a.status === "em_andamento").length
 
   const getTypeInfo = (typeId) => activityTypes.find(t => t.id === typeId) || activityTypes[0]
   const getPriorityInfo = (priorityId) => priorities.find(p => p.id === priorityId) || priorities[1]
@@ -374,6 +398,15 @@ export default function AtividadesTab() {
                       Concluir
                     </button>
                   )}
+                  {isOwner && isAwaitingOwnerConfirmation(activity) && (
+                    <button
+                      className="action-confirm"
+                      onClick={(e) => { e.stopPropagation(); confirmCompletion(activity) }}
+                    >
+                      <span className="material-symbols-outlined">verified</span>
+                      Confirmar finalização
+                    </button>
+                  )}
                   {isOwner && <button
                     className="action-delete"
                     onClick={(e) => { e.stopPropagation(); setDeleteTarget(activity) }}
@@ -388,8 +421,7 @@ export default function AtividadesTab() {
       </div>
 
       {/* Modal Nova */}
-      <AnimatePresence>
-        {showForm && (
+        {showForm && createPortal((
           <motion.div
             className="atividades-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -479,12 +511,10 @@ export default function AtividadesTab() {
               <button className="submit-btn" onClick={addActivity}>Criar atividade</button>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
 
       {/* Modal Editar */}
-      <AnimatePresence>
-        {selectedActivity && (
+        {selectedActivity && createPortal((
           <motion.div
             className="atividades-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -572,12 +602,10 @@ export default function AtividadesTab() {
               <button className="submit-btn" onClick={updateActivity}>Salvar alterações</button>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
 
       {/* Modal Excluir */}
-      <AnimatePresence>
-        {deleteTarget && (
+        {deleteTarget && createPortal((
           <motion.div
             className="atividades-modal"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -607,8 +635,7 @@ export default function AtividadesTab() {
               </div>
             </motion.div>
           </motion.div>
-        )}
-      </AnimatePresence>
+        ), document.body)}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 // App.jsx do PWA
 import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom"
-import { useState, useEffect, useRef } from "react"
-import { onAuthStateChanged, signOut } from "firebase/auth"
+import { useState, useEffect, useLayoutEffect, useRef } from "react"
+import { onAuthStateChanged, reload, sendEmailVerification, signOut } from "firebase/auth"
 import { doc, onSnapshot } from "firebase/firestore"
 
 import Intro from "./pages/App/Intro"
@@ -81,10 +81,15 @@ function AccountRoute({ children }) {
 
 function TeamRoute() {
   const [access, setAccess] = useState("loading")
+  const [verificationMessage, setVerificationMessage] = useState("")
 
   useEffect(() => onAuthStateChanged(auth, async (user) => {
     if (!user) {
       setAccess("denied")
+      return
+    }
+    if (!user.emailVerified) {
+      setAccess("unverified")
       return
     }
     try {
@@ -104,7 +109,55 @@ function TeamRoute() {
       </div>
     )
   }
+  if (access === "unverified") {
+    const resendVerification = async () => {
+      if (!auth.currentUser) return
+      try {
+        auth.languageCode = "pt-BR"
+        await sendEmailVerification(auth.currentUser)
+        setVerificationMessage("Novo link enviado. Confira também a caixa de spam.")
+      } catch {
+        setVerificationMessage("Não foi possível reenviar agora. Aguarde alguns minutos e tente novamente.")
+      }
+    }
+    const refreshVerification = async () => {
+      if (!auth.currentUser) return
+      try {
+        await reload(auth.currentUser)
+        if (!auth.currentUser.emailVerified) {
+          setVerificationMessage("O email ainda não foi confirmado. Abra o link recebido e tente novamente.")
+          return
+        }
+        await auth.currentUser.getIdToken(true)
+        window.location.reload()
+      } catch {
+        setVerificationMessage("Não foi possível atualizar a confirmação agora. Tente novamente em instantes.")
+      }
+    }
+    return (
+      <main className="email-verification-gate">
+        <section>
+          <span className="material-symbols-outlined">mark_email_unread</span>
+          <small>SEGURANÇA DA CONTA</small>
+          <h1>Confirme seu email para gerenciar a equipe</h1>
+          <p>Você pode usar a plataforma normalmente. Para cadastrar funcionários e administrar tarefas, confirme o link enviado ao seu email.</p>
+          {verificationMessage && <strong>{verificationMessage}</strong>}
+          <div><button type="button" onClick={resendVerification}>Reenviar confirmação</button><button type="button" onClick={refreshVerification}>Já confirmei</button></div>
+        </section>
+      </main>
+    )
+  }
   return access === "allowed" ? <AdminTeamDashboard /> : <Navigate to="/home" replace />
+}
+
+const resetPageScroll = () => {
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  document.documentElement.scrollTop = 0
+  document.body.scrollTop = 0
+  document.querySelectorAll(".zenith-home, .explore-container, .team-page, .pf-page, .farm-registration").forEach((page) => {
+    page.scrollTop = 0
+    page.scrollLeft = 0
+  })
 }
 
 function AppShell() {
@@ -121,6 +174,7 @@ function AppShell() {
   useEffect(() => {
     let timeout
     const showQuickLoader = () => {
+      resetPageScroll()
       setQuickLoading(true)
       window.clearTimeout(timeout)
       timeout = window.setTimeout(() => setQuickLoading(false), 850)
@@ -132,8 +186,19 @@ function AppShell() {
     }
   }, [])
 
+  useLayoutEffect(() => {
+    const previousRestoration = window.history.scrollRestoration
+    window.history.scrollRestoration = "manual"
+    resetPageScroll()
+    const frame = window.requestAnimationFrame(resetPageScroll)
+
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.history.scrollRestoration = previousRestoration
+    }
+  }, [location.key])
+
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
     if (firstRoute.current) {
       firstRoute.current = false
       return
@@ -141,7 +206,7 @@ function AppShell() {
     setQuickLoading(true)
     const routeTimeout = window.setTimeout(() => setQuickLoading(false), 900)
     return () => window.clearTimeout(routeTimeout)
-  }, [location.pathname])
+  }, [location.key])
 
   
   
