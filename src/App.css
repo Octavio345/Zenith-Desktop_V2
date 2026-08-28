@@ -2166,3 +2166,22 @@ body {
     padding-left: 0 !important;
   }
 }
+
+/* Introdução: durante o carregamento não há foto, drone ou camada escura. */
+.intro-container.intro-classic-refresh {
+  background: #f2f6ef !important;
+}
+
+.intro-container.intro-classic-refresh::before {
+  display: none !important;
+  background: none !important;
+}
+
+.intro-container.intro-classic-refresh .intro-video-bg {
+  opacity: 0 !important;
+  transition: opacity .45s ease-out !important;
+}
+
+.intro-container.intro-classic-refresh.is-video-ready .intro-video-bg {
+  opacity: 1 !important;
+}
