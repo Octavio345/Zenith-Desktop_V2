@@ -8,6 +8,7 @@ export default function Intro() {
   const navigate = useNavigate()
   const containerRef = useRef(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [isVideoReady, setIsVideoReady] = useState(false)
 
   useEffect(() => {
     const handleMouseMove = (event) => {
@@ -26,7 +27,7 @@ export default function Intro() {
   return (
     <div
     
-      className="intro-container intro-classic-refresh"
+      className={`intro-container intro-classic-refresh ${isVideoReady ? "is-video-ready" : ""}`}
       ref={containerRef}
       style={{
         "--mouse-x": `${mousePosition.x}px`,
@@ -44,6 +45,9 @@ export default function Intro() {
   disablePictureInPicture
   controls={false}
   controlsList="nodownload nofullscreen noremoteplayback"
+  poster="/assets/image/drone-alinhamento-aereo-2026.webp"
+  onLoadedData={() => setIsVideoReady(true)}
+  onCanPlay={() => setIsVideoReady(true)}
 >
   <source src="/assets/video/intro-bg.mp4" type="video/mp4" />
 </video>

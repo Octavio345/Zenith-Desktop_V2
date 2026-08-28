@@ -528,6 +528,29 @@ body,
   transform: scale(1);
 }
 
+/* Fundo de espera: aparece instantaneamente e o vídeo entra suavemente quando tiver o primeiro frame. */
+html,
+body,
+#root {
+  background: #edf5e9 !important;
+}
+
+.intro-container.intro-classic-refresh {
+  min-height: 100vh;
+  background:
+    linear-gradient(112deg, rgba(247, 250, 241, .95) 0%, rgba(232, 244, 217, .80) 46%, rgba(48, 104, 65, .45) 100%),
+    url('/assets/image/drone-alinhamento-aereo-2026.webp') center / cover no-repeat !important;
+}
+
+.intro-video-bg {
+  opacity: 0 !important;
+  transition: opacity .45s ease-out;
+}
+
+.intro-container.is-video-ready .intro-video-bg {
+  opacity: 1 !important;
+}
+
 /* TRUST SECTION */
 .trust-section {
   display: flex;
@@ -818,5 +841,4 @@ body,
     animation: none !important;
   }
 }
-
 
