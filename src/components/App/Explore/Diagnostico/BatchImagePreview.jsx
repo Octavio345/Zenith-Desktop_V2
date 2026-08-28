@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { createPortal } from "react-dom"
+import FieldAreaPicker from "./FieldAreaPicker"
 import "../../../../styles/App/BatchDiagnosis.css"
 
 function formatBytes(bytes) {
@@ -10,6 +11,11 @@ function formatBytes(bytes) {
 export default function BatchImagePreview({
   images,
   notice,
+  fieldAreas = [],
+  fieldAreaId,
+  fieldAreaName,
+  onFieldAreaChange,
+  onFieldAreaNameChange,
   onAddImages,
   onRemoveImage,
   onBack,
@@ -71,6 +77,25 @@ export default function BatchImagePreview({
             <span>{notice.text}</span>
           </div>
         )}
+
+        <section className="batch-field-context" aria-labelledby="batch-field-context-title">
+          <div className="batch-field-context__icon"><span className="material-symbols-outlined">location_on</span></div>
+          <div className="batch-field-context__copy">
+            <span className="batch-eyebrow">IDENTIFICAÇÃO DO LEVANTAMENTO</span>
+            <h2 id="batch-field-context-title">Em qual talhão foram tiradas estas fotos?</h2>
+            <p>Você pode selecionar um talhão já desenhado no mapa ou apenas digitar o nome para identificar esta análise.</p>
+          </div>
+          <div className="batch-field-context__controls">
+            <FieldAreaPicker
+              areas={fieldAreas}
+              selectedAreaId={fieldAreaId}
+              customName={fieldAreaName}
+              onSelect={onFieldAreaChange}
+              onCustomNameChange={onFieldAreaNameChange}
+              className="batch-field-select"
+            />
+          </div>
+        </section>
 
         <div className="batch-preview-toolbar">
           <div>

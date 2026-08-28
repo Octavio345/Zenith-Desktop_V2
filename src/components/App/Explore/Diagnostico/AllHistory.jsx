@@ -108,6 +108,12 @@ export default function AllHistory({ onBack }) {
                 ) : (
                   <h3 className="disease-name">{formatDiagnosisName(item.disease)}</h3>
                 )}
+                {item.fieldAreaName && item.fieldAreaName !== "Talhão não informado" && (
+                  <div className="history-field-area">
+                    <span className="material-symbols-outlined">landscape</span>
+                    {item.fieldAreaName}
+                  </div>
+                )}
                 {item.type === "batch" && (
                   <div className="batch-history-meta">
                     <span><strong>{item.imageCount || 0}</strong> fotos</span>
@@ -262,6 +268,20 @@ export default function AllHistory({ onBack }) {
           gap: 0.45rem;
           margin: -0.1rem 0 0.85rem;
         }
+        .history-field-area {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          margin: -0.1rem 0 0.8rem;
+          padding: 0.38rem 0.6rem;
+          border: 1px solid rgba(0, 255, 170, 0.18);
+          border-radius: 999px;
+          color: #b8ead0;
+          background: rgba(0, 255, 170, 0.07);
+          font-size: 0.69rem;
+          font-weight: 700;
+        }
+        .history-field-area .material-symbols-outlined { font-size: 15px; }
         .batch-history-meta span {
           padding: 0.38rem 0.58rem;
           border: 1px solid rgba(0, 255, 170, 0.14);

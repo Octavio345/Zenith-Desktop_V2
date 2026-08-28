@@ -6,6 +6,7 @@ import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query, updateDo
 import { auth, db } from "../../../services/firebase"
 import { isOperationalRole } from "../../../services/accessControl"
 import { isAwaitingOwnerConfirmation, isConfirmedWorkItemExpired } from "../../../services/workItemLifecycle"
+import { clearActivityDraft, getActivityDraft } from "../../../services/fieldOperations"
 import CustomSelect from "../Global/CustomSelect"
 import "../../../styles/App/AtividadesTab.css"
 
@@ -70,6 +71,13 @@ export default function AtividadesTab() {
     return () => window.clearInterval(timer)
   }, [])
 
+  useEffect(() => {
+    const draft = getActivityDraft()
+    if (!draft) return
+    setNewActivity((current) => ({ ...current, ...draft, status: "pendente", date: current.date, time: "" }))
+    setShowForm(true)
+  }, [])
+
   useEffect(() => onAuthStateChanged(auth, async (user) => {
     if (!user) { setUserProfile(null); setActivitiesLoading(false); return }
     try {
@@ -129,6 +137,7 @@ export default function AtividadesTab() {
         updatedAt: new Date().toISOString(),
       })
       setNewActivity({ title: "", description: "", type: "tarefa", status: "pendente", priority: "media", date: new Date().toISOString().split("T")[0], time: "", responsible: "", scope: "general", assigneeId: "" })
+      clearActivityDraft()
       setActivityMessage("")
       setShowForm(false)
     } catch (error) { console.error("Erro ao criar atividade:", error); setActivityMessage("Não foi possível criar a atividade. Publique as regras atualizadas do Firestore.") }

@@ -666,3 +666,8 @@
   background: #f87171;
   box-shadow: 0 10px 24px rgba(239, 68, 68, 0.22);
 }
+.farm-map-occurrences { margin-top: 18px; padding-top: 18px; border-top: 1px solid rgba(22, 78, 52, .12); }
+.farm-map-occurrence-list { display: grid; gap: 8px; }
+.farm-map-occurrence { display: flex; align-items: center; gap: 9px; padding: 10px; border-radius: 11px; background: rgba(229, 148, 46, .09); }
+.farm-map-occurrence > .material-symbols-outlined { color: #bd7420; font-size: 20px; }
+.farm-map-occurrence strong, .farm-map-occurrence small { display: block; }.farm-map-occurrence strong { color: #244638; font-size: .8rem; text-transform: capitalize; }.farm-map-occurrence small { margin-top: 2px; color: #6c8277; font-size: .72rem; }

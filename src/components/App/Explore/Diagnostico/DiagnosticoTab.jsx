@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from "react"
-import { useLocation } from "react-router-dom"
+import { useLocation, useNavigate } from "react-router-dom"
 import CameraView from "./CameraView"
 import BatchImagePreview from "./BatchImagePreview"
 import BatchDiagnosisResult from "./BatchDiagnosisResult"
 import AnalysisLoader from "./AnalysisLoader"
 import DiagnosisResult from "./DiagnosisResult"
 import AllHistory from "./AllHistory"
+import FieldAreaPicker from "./FieldAreaPicker"
 import { formatDiagnosisName } from "./diagnosisLabels"
 import { diagnosticarLote } from "../../../../services/sojaApi"
+import { createOccurrenceFromAnalysis, saveActivityDraft } from "../../../../services/fieldOperations"
 import "../../../../styles/App/Diagnostico.css"
 import "../../../../styles/App/BatchDiagnosis.css"
 
@@ -38,6 +40,7 @@ export default function DiagnosticoTab() {
   const selectedImagesRef = useRef([])
   const requestControllerRef = useRef(null)
   const location = useLocation()
+  const navigate = useNavigate()
 
   const [step, setStep] = useState("start")
   const [selectedImages, setSelectedImages] = useState([])
@@ -47,6 +50,9 @@ export default function DiagnosticoTab() {
   const [isMobile, setIsMobile] = useState(checkIsMobile)
   const [isDraggingImage, setIsDraggingImage] = useState(false)
   const [selectionNotice, setSelectionNotice] = useState(null)
+  const [fieldAreas, setFieldAreas] = useState([])
+  const [selectedFieldAreaId, setSelectedFieldAreaId] = useState("")
+  const [customFieldAreaName, setCustomFieldAreaName] = useState("")
 
   useEffect(() => {
     selectedImagesRef.current = selectedImages
@@ -56,6 +62,15 @@ export default function DiagnosticoTab() {
     const handleResize = () => setIsMobile(checkIsMobile())
     window.addEventListener("resize", handleResize)
     return () => window.removeEventListener("resize", handleResize)
+  }, [])
+
+  useEffect(() => {
+    try {
+      const areas = JSON.parse(localStorage.getItem("farmPolygons") || "[]")
+      setFieldAreas(Array.isArray(areas) ? areas : [])
+    } catch {
+      setFieldAreas([])
+    }
   }, [])
 
   useEffect(() => {
@@ -111,6 +126,7 @@ export default function DiagnosticoTab() {
     else if (conditions.length === 1) title = formatDiagnosisName(conditions[0].classe)
     else if (general.condicao_predominante) title = formatDiagnosisName(general.condicao_predominante)
 
+    const fieldArea = getFieldAreaContext()
     persistHistoryItem({
       id: Date.now(),
       type: "batch",
@@ -120,8 +136,39 @@ export default function DiagnosticoTab() {
       imageCount: Number(general.total_recebidas) || selectedImages.length,
       reliableCount: Number(general.resultados_confiaveis) || 0,
       conditionCount: conditions.length,
-      status: general.status
+      status: general.status,
+      fieldAreaId: fieldArea?.id || "",
+      fieldAreaName: fieldArea?.name || "Talhão não informado"
     })
+  }
+
+  const getFieldAreaContext = () => {
+    if (selectedFieldAreaId === "__custom__") {
+      const name = customFieldAreaName.trim()
+      return name ? { id: "", name } : null
+    }
+    return fieldAreas.find((area) => area.id === selectedFieldAreaId) || null
+  }
+
+  const createInspectionTask = () => {
+    const fieldArea = getFieldAreaContext()
+    const occurrence = createOccurrenceFromAnalysis({
+      result,
+      fieldArea,
+      imageCount: selectedImages.length
+    })
+    const condition = String(occurrence.condition || "ocorrência identificada").replace(/_/g, " ")
+    saveActivityDraft({
+      title: `Vistoriar: ${condition}`,
+      description: `Ocorrência gerada pelo diagnóstico por IA. Talhão: ${occurrence.fieldAreaName}. Confiança: ${occurrence.confidence}%. Verificar no campo e registrar a ação tomada.`,
+      type: "tarefa",
+      priority: occurrence.confidence >= 75 ? "alta" : "media",
+      source: "diagnostico_ia",
+      fieldAreaId: occurrence.fieldAreaId,
+      fieldAreaName: occurrence.fieldAreaName,
+      occurrenceId: occurrence.id
+    })
+    navigate("/explore", { state: { activeTab: "atividades" } })
   }
 
   const stopCamera = () => {
@@ -340,6 +387,14 @@ export default function DiagnosticoTab() {
         <BatchImagePreview
           images={selectedImages}
           notice={selectionNotice}
+          fieldAreas={fieldAreas}
+          fieldAreaId={selectedFieldAreaId}
+          fieldAreaName={customFieldAreaName}
+          onFieldAreaChange={(value) => {
+            setSelectedFieldAreaId(value)
+            if (value !== "__custom__") setCustomFieldAreaName("")
+          }}
+          onFieldAreaNameChange={setCustomFieldAreaName}
           onAddImages={openGallery}
           onRemoveImage={removeSelectedImage}
           onBack={reset}
@@ -351,10 +406,10 @@ export default function DiagnosticoTab() {
   }
   if (step === "analysis") return <AnalysisLoader imageCount={selectedImages.length} />
   if (step === "result" && result?.resultado_geral) {
-    return <BatchDiagnosisResult result={result} selectedImages={selectedImages} onRestart={reset} />
+    return <BatchDiagnosisResult result={result} selectedImages={selectedImages} onRestart={reset} onCreateInspection={createInspectionTask} />
   }
   if (step === "result" && selectedImages.length > 0) {
-    return <BatchDiagnosisResult result={result} selectedImages={selectedImages} onRestart={reset} />
+    return <BatchDiagnosisResult result={result} selectedImages={selectedImages} onRestart={reset} onCreateInspection={createInspectionTask} />
   }
   if (step === "result") return <DiagnosisResult result={result} onRestart={reset} />
 
@@ -369,6 +424,22 @@ export default function DiagnosticoTab() {
           sem perder o resultado individual de cada imagem.
         </p>
       </div>
+
+      <section className="diagnostic-field-context" aria-labelledby="diagnostic-field-context-title">
+        <span className="material-symbols-outlined">location_on</span>
+        <div>
+          <strong id="diagnostic-field-context-title">Talhão do levantamento <em>opcional</em></strong>
+          <small>Selecione o Talhão 1 criado no mapa ou escolha a opção para digitar outro nome. Você poderá revisar isso novamente depois de selecionar as fotos.</small>
+        </div>
+        <FieldAreaPicker
+          areas={fieldAreas}
+          selectedAreaId={selectedFieldAreaId}
+          customName={customFieldAreaName}
+          onSelect={setSelectedFieldAreaId}
+          onCustomNameChange={setCustomFieldAreaName}
+          className="diagnostic-field-select"
+        />
+      </section>
 
       {selectionNotice?.text && (
         <div className="batch-start-notice" role="status">

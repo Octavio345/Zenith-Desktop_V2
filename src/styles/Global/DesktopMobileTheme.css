@@ -520,6 +520,17 @@ body{background:#f4f8ef!important;color:#173326!important}
 
 /* One typography system across the entire product: same family used by Home. */
 html,body,button,input,select,textarea,h1,h2,h3,h4,h5,h6,p,a,label,strong,small,em,li,span,div{font-family:Inter,"Segoe UI",sans-serif!important}
+
+/* Títulos operacionais seguem a mesma família da Home, Explore e Diagnóstico. */
+.diario-header h2,
+.estoque-header h2,
+.atividades-header h2,
+.farm-map-header h2,
+.farm-map-header h1,
+.pf-hero-name {
+  font-family: Inter, "Segoe UI", sans-serif !important;
+  letter-spacing: -.045em;
+}
 .material-symbols-outlined,.material-icons,.material-icons-outlined{font-family:"Material Symbols Outlined"!important}
 
 /* Intro redesign: one cohesive product story instead of a collection of floating boxes. */

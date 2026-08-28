@@ -8,6 +8,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
 import markerIcon from "leaflet/dist/images/marker-icon.png"
 import markerShadow from "leaflet/dist/images/marker-shadow.png"
 import "../../../styles/App/MapaTab.css"
+import { getFieldOccurrences } from "../../../services/fieldOperations"
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -258,6 +259,7 @@ export default function MapaTab() {
   const selectedAreaIdRef = useRef(null)
 
   const [areas, setAreas] = useState([])
+  const [occurrences, setOccurrences] = useState([])
   const [selectedAreaId, setSelectedAreaId] = useState(null)
   const [activeMode, setActiveMode] = useState("idle")
   const [searchAddress, setSearchAddress] = useState("")
@@ -279,6 +281,17 @@ export default function MapaTab() {
   useEffect(() => {
     areasRef.current = areas
   }, [areas])
+
+  useEffect(() => {
+    const syncOccurrences = () => setOccurrences(getFieldOccurrences())
+    syncOccurrences()
+    window.addEventListener("focus", syncOccurrences)
+    window.addEventListener("storage", syncOccurrences)
+    return () => {
+      window.removeEventListener("focus", syncOccurrences)
+      window.removeEventListener("storage", syncOccurrences)
+    }
+  }, [])
 
   useEffect(() => {
     selectedAreaIdRef.current = selectedAreaId
@@ -926,6 +939,23 @@ export default function MapaTab() {
             <button className="farm-map-clear" type="button" onClick={clearAllAreas} disabled={areas.length === 0}>
               Limpar todas
             </button>
+          </div>
+
+          <div className="farm-map-occurrences">
+            <div className="farm-map-section-title">
+              <span className="material-symbols-outlined">crisis_alert</span>
+              Ocorrências da IA
+            </div>
+            {occurrences.filter((item) => !selectedArea || item.fieldAreaId === selectedArea.id).length ? (
+              <div className="farm-map-occurrence-list">
+                {occurrences.filter((item) => !selectedArea || item.fieldAreaId === selectedArea.id).slice(0, 4).map((item) => (
+                  <div className="farm-map-occurrence" key={item.id}>
+                    <span className="material-symbols-outlined">{item.source === "monitoramento" ? "satellite_alt" : "biotech"}</span>
+                    <div><strong>{String(item.condition || "Ocorrência").replace(/_/g, " ")}</strong><small>{item.fieldAreaName} · {item.confidence}%</small></div>
+                  </div>
+                ))}
+              </div>
+            ) : <p className="farm-map-empty">Nenhuma ocorrência vinculada {selectedArea ? "a este talhão" : "ao mapa"}.</p>}
           </div>
         </aside>
 

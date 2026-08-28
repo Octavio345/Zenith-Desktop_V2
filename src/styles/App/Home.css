@@ -4070,3 +4070,128 @@ body {
     gap: 8px;
   }
 }
+/* Central de operação: dados existentes transformados em uma rotina de decisão. */
+.farm-command-center {
+  margin: 34px 0;
+  padding: clamp(22px, 3vw, 38px);
+  border: 1px solid rgba(117, 183, 132, .22);
+  border-radius: 28px;
+  color: #edf7ed;
+  background:
+    radial-gradient(circle at 94% 8%, rgba(114, 205, 143, .18), transparent 27%),
+    linear-gradient(135deg, #102f27 0%, #10231f 100%);
+  box-shadow: 0 22px 50px rgba(16, 47, 39, .17);
+}
+
+.farm-command-center__head {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.farm-command-center .zenith-kicker { color: #a9edbd; }
+.farm-command-center__head h2 { margin: 7px 0 6px; color: #fff; font-size: clamp(1.55rem, 2.5vw, 2.25rem); letter-spacing: -.04em; }
+.farm-command-center__head p { margin: 0; color: #b8d0c0; }
+.farm-command-center__head > button,
+.farm-command-center__next-step button {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border: 0; border-radius: 12px; padding: 12px 15px; cursor: pointer;
+  color: #0f2d22; background: #d5f8d5; font: inherit; font-weight: 750;
+}
+.farm-command-center__metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.farm-command-center__metrics article { min-height: 124px; padding: 17px; border: 1px solid rgba(217, 255, 225, .13); border-radius: 17px; background: rgba(255,255,255,.055); }
+.farm-command-center__metrics article.is-alert { border-color: rgba(255, 193, 91, .38); background: rgba(238, 161, 44, .11); }
+.farm-command-center__metrics .material-symbols-outlined { color: #a9edbd; font-size: 22px; }
+.farm-command-center__metrics article.is-alert .material-symbols-outlined { color: #ffd08a; }
+.farm-command-center__metrics small { display: block; margin-top: 14px; color: #b7ccbd; font-size: .78rem; }
+.farm-command-center__metrics strong { display: block; margin-top: 3px; color: #fff; font-size: 1.75rem; }
+.farm-command-center__body { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(250px, .85fr); gap: 15px; margin-top: 15px; }
+.farm-command-center__timeline, .farm-command-center__next-step { padding: 21px; border-radius: 19px; background: rgba(4, 20, 16, .32); border: 1px solid rgba(217, 255, 225, .1); }
+.farm-command-center__section-title { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+.farm-command-center__section-title > .material-symbols-outlined { padding: 9px; border-radius: 11px; color: #b1f6c4; background: rgba(112, 218, 145, .15); }
+.farm-command-center__section-title small, .farm-command-center__next-step small { color: #95b6a0; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; }
+.farm-command-center__section-title h3, .farm-command-center__next-step h3 { margin: 2px 0 0; color: #fff; font-size: 1.04rem; }
+.operation-event { width: 100%; display: flex; align-items: center; gap: 11px; padding: 12px 0; border: 0; border-top: 1px solid rgba(217,255,225,.1); background: transparent; color: inherit; cursor: pointer; text-align: left; }
+.operation-event__icon { padding: 8px; border-radius: 10px; color: #9eeab2; background: rgba(110, 219, 145, .13); }
+.operation-event > span:nth-child(2) { min-width: 0; flex: 1; }
+.operation-event strong, .operation-event small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.operation-event strong { color: #fff; font-size: .9rem; }.operation-event small { margin-top: 3px; color: #aac1b1; font-size: .77rem; }
+.operation-event__state { color: #ffd194; font-size: .74rem; font-weight: 700; }
+.farm-command-center__empty { display: flex; align-items: center; gap: 10px; min-height: 82px; color: #b5cbbc; font-size: .85rem; }.farm-command-center__empty .material-symbols-outlined { color: #9eeab2; }.farm-command-center__empty p { margin: 0; }
+.farm-command-center__next-step > .material-symbols-outlined { color: #b1f6c4; font-size: 28px; }.farm-command-center__next-step h3 { margin-top: 14px; font-size: 1.2rem; }.farm-command-center__next-step p { color: #b6cabc; line-height: 1.5; font-size: .87rem; }.farm-command-center__next-step button { margin-top: 6px; width: 100%; }
+@media (max-width: 850px) { .farm-command-center__head, .farm-command-center__body { grid-template-columns: 1fr; display: grid; }.farm-command-center__head { align-items: start; }.farm-command-center__head > button { width: 100%; }.farm-command-center__metrics { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .farm-command-center { border-radius: 20px; margin: 24px 0; }.farm-command-center__metrics { gap: 8px; }.farm-command-center__metrics article { min-height: 104px; padding: 13px; }.farm-command-center__metrics small { margin-top: 8px; }.farm-command-center__metrics strong { font-size: 1.4rem; } }
+
+/* Ajuste visual: a central segue a identidade neon preta/verde/azul do Zenith. */
+.farm-command-center {
+  border-color: rgba(0, 255, 136, .18);
+  background:
+    radial-gradient(circle at 96% 7%, rgba(0, 102, 255, .16), transparent 28%),
+    radial-gradient(circle at 2% 100%, rgba(0, 255, 136, .10), transparent 30%),
+    linear-gradient(135deg, rgba(18, 22, 28, .92), rgba(10, 12, 14, .88));
+  box-shadow: var(--card-shadow), 0 0 32px rgba(0, 255, 136, .05);
+}
+.farm-command-center .zenith-kicker,
+.farm-command-center__metrics .material-symbols-outlined,
+.farm-command-center__section-title > .material-symbols-outlined,
+.farm-command-center__next-step > .material-symbols-outlined,
+.farm-command-center__empty .material-symbols-outlined,
+.operation-event__icon { color: var(--primary); }
+.farm-command-center__head p,
+.farm-command-center__metrics small,
+.operation-event small,
+.farm-command-center__empty,
+.farm-command-center__next-step p { color: var(--text-secondary); }
+.farm-command-center__head > button,
+.farm-command-center__next-step button { color: #04130b; background: linear-gradient(135deg, var(--primary), #54ffc0); box-shadow: 0 0 20px rgba(0, 255, 136, .15); }
+.farm-command-center__metrics article,
+.farm-command-center__timeline,
+.farm-command-center__next-step { border-color: var(--glass-border); background: rgba(255,255,255,.025); }
+.farm-command-center__metrics article.is-alert { border-color: rgba(255, 170, 0, .35); background: rgba(255, 170, 0, .07); }
+.farm-command-center__metrics article.is-alert .material-symbols-outlined,
+.operation-event__state { color: var(--warning); }
+.farm-command-center__section-title > .material-symbols-outlined,
+.operation-event__icon { background: var(--primary-soft); }
+
+/* Central da fazenda alinhada ao tema real da Home (papel claro e verde agrícola). */
+.zenith-home .farm-command-center {
+  color: var(--zenith-ink);
+  border-color: var(--zenith-line);
+  background:
+    radial-gradient(circle at 96% 0%, rgba(223, 243, 223, .88), transparent 27%),
+    linear-gradient(135deg, rgba(255,255,255,.97), rgba(247,250,241,.98));
+  box-shadow: var(--zenith-shadow);
+}
+.zenith-home .farm-command-center .zenith-kicker,
+.zenith-home .farm-command-center__metrics .material-symbols-outlined,
+.zenith-home .farm-command-center__section-title > .material-symbols-outlined,
+.zenith-home .farm-command-center__next-step > .material-symbols-outlined,
+.zenith-home .farm-command-center__empty .material-symbols-outlined,
+.zenith-home .operation-event__icon { color: var(--zenith-green); }
+.zenith-home .farm-command-center__head h2,
+.zenith-home .farm-command-center__metrics strong,
+.zenith-home .farm-command-center__section-title h3,
+.zenith-home .farm-command-center__next-step h3,
+.zenith-home .operation-event strong { color: var(--zenith-ink); }
+.zenith-home .farm-command-center__head p,
+.zenith-home .farm-command-center__metrics small,
+.zenith-home .operation-event small,
+.zenith-home .farm-command-center__empty,
+.zenith-home .farm-command-center__next-step p,
+.zenith-home .farm-command-center__section-title small,
+.zenith-home .farm-command-center__next-step small { color: var(--zenith-muted); }
+.zenith-home .farm-command-center__head > button,
+.zenith-home .farm-command-center__next-step button { color: #fff; background: var(--zenith-green); box-shadow: 0 8px 20px rgba(39,108,71,.2); }
+.zenith-home .farm-command-center__head > button:hover,
+.zenith-home .farm-command-center__next-step button:hover { background: var(--zenith-green-2); }
+.zenith-home .farm-command-center__metrics article,
+.zenith-home .farm-command-center__timeline,
+.zenith-home .farm-command-center__next-step { border-color: var(--zenith-line); background: rgba(255,255,255,.84); }
+.zenith-home .farm-command-center__metrics article.is-alert { border-color: #efd7ae; background: #fff9ec; }
+.zenith-home .farm-command-center__metrics article.is-alert .material-symbols-outlined,
+.zenith-home .operation-event__state { color: #b97824; }
+.zenith-home .farm-command-center__section-title > .material-symbols-outlined,
+.zenith-home .operation-event__icon { background: #e6f2e4; }
+.zenith-home .operation-event { border-top-color: #edf1ea; }

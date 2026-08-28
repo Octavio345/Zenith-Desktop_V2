@@ -158,7 +158,7 @@ function MetricCard({ icon, value, label, tone = "default" }) {
   )
 }
 
-export default function BatchDiagnosisResult({ result, selectedImages = [], onRestart }) {
+export default function BatchDiagnosisResult({ result, selectedImages = [], onRestart, onCreateInspection }) {
   const [imageFilter, setImageFilter] = useState("all")
   const general = result?.resultado_geral || null
   const conditions = useMemo(() => {
@@ -432,10 +432,18 @@ export default function BatchDiagnosisResult({ result, selectedImages = [], onRe
           <span className="material-symbols-outlined">clinical_notes</span>
           <p>{result?.aviso || "Este resultado apoia a triagem e não substitui a confirmação de um engenheiro agrônomo."}</p>
         </div>
-        <button type="button" className="batch-button batch-button-primary" onClick={onRestart}>
-          <span className="material-symbols-outlined">refresh</span>
-          Nova análise
-        </button>
+        <div className="batch-result-footer-actions">
+          {onCreateInspection && presentation.tone !== "danger" && (
+            <button type="button" className="batch-button batch-button-secondary" onClick={onCreateInspection}>
+              <span className="material-symbols-outlined">assignment_add</span>
+              Criar vistoria
+            </button>
+          )}
+          <button type="button" className="batch-button batch-button-primary" onClick={onRestart}>
+            <span className="material-symbols-outlined">refresh</span>
+            Nova análise
+          </button>
+        </div>
       </footer>
     </div>
   )

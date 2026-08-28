@@ -1,20 +1,36 @@
 import { useMemo } from "react"
+import { useNavigate } from "react-router-dom"
 import { useMonitoramento } from "../hooks/useMonitoramento"
 import { interpretar } from "../../utils/Interpretations"
 import AlertBanner from "./AlertBanner"
 import MetricsPanel from "./MetricsPanel"
 import OverlayResult from "./OverlayResult"
 import UploadImage from "./UploadImage"
+import { createOccurrenceFromAnalysis, saveActivityDraft } from "../../../../services/fieldOperations"
 import styles from "../../../../styles/App/MonitoramentoView.module.css"
 
 export default function MonitoramentoView() {
   const { analisar, resetar, result, loading, error, preview } = useMonitoramento()
+  const navigate = useNavigate()
 
   const interpretacao = useMemo(() => {
     return result ? interpretar(result) : null
   }, [result])
 
   const mostrarResultados = result && !loading && !error && interpretacao
+
+  const createFieldInspection = () => {
+    const occurrence = createOccurrenceFromAnalysis({ result, source: "monitoramento" })
+    saveActivityDraft({
+      title: "Vistoriar alinhamento do plantio",
+      description: `Ocorrência criada pelo monitoramento aéreo. ${occurrence.fieldAreaName}. Revisar a imagem analisada, verificar a área no campo e registrar a ação tomada.`,
+      type: "tarefa",
+      priority: "media",
+      source: "monitoramento_aereo",
+      occurrenceId: occurrence.id
+    })
+    navigate("/explore", { state: { activeTab: "atividades" } })
+  }
 
   return (
     <div className={styles.container}>
@@ -111,6 +127,10 @@ export default function MonitoramentoView() {
             onClick={resetar}
           >
             Analisar nova imagem
+          </button>
+          <button type="button" className={styles.botaoVistoria} onClick={createFieldInspection}>
+            <span className="material-symbols-outlined">assignment_add</span>
+            Criar vistoria de campo
           </button>
         </div>
       )}

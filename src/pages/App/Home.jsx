@@ -9,6 +9,7 @@ import { isConfirmedWorkItemExpired } from "../../services/workItemLifecycle"
 import AppHeader from "../../components/App/Global/AppHeader"
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppFooter from "../../components/App/Global/AppFooter"
+import FarmCommandCenter from "../../components/App/Home/FarmCommandCenter"
 import "../../styles/App/Home.css"
 
 export default function Home() {
@@ -236,6 +237,8 @@ export default function Home() {
             ))}
           </div>
         </section>
+
+        <FarmCommandCenter activities={visibleActivities} onOpen={openExplore} />
 
         <section className="home-operation-grid">
           <article className="home-operation-card home-operation-card--feature">
