@@ -17,7 +17,7 @@ export default function Intro() {
     if (isVideoReady) return
     setIsVideoReady(true)
     window.clearTimeout(fallbackTimerRef.current)
-    revealTimerRef.current = window.setTimeout(() => setIsIntroVisible(true), 1500)
+    revealTimerRef.current = window.setTimeout(() => setIsIntroVisible(true), 350)
   }
 
   useEffect(() => {
@@ -36,7 +36,7 @@ export default function Intro() {
 
   useEffect(() => {
     // Se a conexão estiver lenta ou o vídeo falhar, a pessoa ainda consegue entrar.
-    fallbackTimerRef.current = window.setTimeout(() => setIsIntroVisible(true), 4000)
+    fallbackTimerRef.current = window.setTimeout(() => setIsIntroVisible(true), 1200)
 
     return () => {
       window.clearTimeout(revealTimerRef.current)

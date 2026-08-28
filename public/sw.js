@@ -1,4 +1,4 @@
-const CACHE_NAME = "zenith-cache-v2"
+const CACHE_NAME = "zenith-cache-v3"
 
 const urlsToCache = [
   "/",
@@ -12,7 +12,7 @@ self.addEventListener("install", (event) => {
 
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache)
+      return cache.addAll(urlsToCache).then(() => self.skipWaiting())
     })
   )
 })
