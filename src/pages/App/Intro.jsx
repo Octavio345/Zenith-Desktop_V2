@@ -7,8 +7,18 @@ import Logo from "/public/assets/image/Logo.png"
 export default function Intro() {
   const navigate = useNavigate()
   const containerRef = useRef(null)
+  const revealTimerRef = useRef(null)
+  const fallbackTimerRef = useRef(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isVideoReady, setIsVideoReady] = useState(false)
+  const [isIntroVisible, setIsIntroVisible] = useState(false)
+
+  const revealAfterVideo = () => {
+    if (isVideoReady) return
+    setIsVideoReady(true)
+    window.clearTimeout(fallbackTimerRef.current)
+    revealTimerRef.current = window.setTimeout(() => setIsIntroVisible(true), 1500)
+  }
 
   useEffect(() => {
     const handleMouseMove = (event) => {
@@ -22,6 +32,16 @@ export default function Intro() {
 
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
+  }, [])
+
+  useEffect(() => {
+    // Se a conexão estiver lenta ou o vídeo falhar, a pessoa ainda consegue entrar.
+    fallbackTimerRef.current = window.setTimeout(() => setIsIntroVisible(true), 4000)
+
+    return () => {
+      window.clearTimeout(revealTimerRef.current)
+      window.clearTimeout(fallbackTimerRef.current)
+    }
   }, [])
 
   return (
@@ -45,9 +65,7 @@ export default function Intro() {
   disablePictureInPicture
   controls={false}
   controlsList="nodownload nofullscreen noremoteplayback"
-  poster="/assets/image/drone-alinhamento-aereo-2026.webp"
-  onLoadedData={() => setIsVideoReady(true)}
-  onCanPlay={() => setIsVideoReady(true)}
+  onLoadedData={revealAfterVideo}
 >
   <source src="/assets/video/intro-bg.mp4" type="video/mp4" />
 </video>
@@ -56,7 +74,7 @@ export default function Intro() {
       <div className="background-overlay"></div>
       <div className="grid-pattern"></div>
 
-      <section className="intro-card">
+      <section className={`intro-card ${isIntroVisible ? "is-visible" : ""}`}>
         <div className="card-glow"></div>
         <div className="card-pattern"></div>
 

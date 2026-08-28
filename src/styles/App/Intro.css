@@ -528,18 +528,10 @@ body,
   transform: scale(1);
 }
 
-/* Fundo de espera: aparece instantaneamente e o vídeo entra suavemente quando tiver o primeiro frame. */
-html,
-body,
-#root {
-  background: #edf5e9 !important;
-}
-
+/* O vídeo não recebe poster: antes do primeiro frame, a tela usa apenas a base clara do site. */
 .intro-container.intro-classic-refresh {
   min-height: 100vh;
-  background:
-    linear-gradient(112deg, rgba(247, 250, 241, .95) 0%, rgba(232, 244, 217, .80) 46%, rgba(48, 104, 65, .45) 100%),
-    url('/assets/image/drone-alinhamento-aereo-2026.webp') center / cover no-repeat !important;
+  background: linear-gradient(135deg, #fafbf8 0%, #edf3e9 55%, #e6f0e3 100%) !important;
 }
 
 .intro-video-bg {
@@ -842,3 +834,34 @@ body,
   }
 }
 
+/* Abertura: base neutra até o vídeo carregar, sem imagem de drone ou verde escuro. */
+html,
+body,
+#root {
+  background: #f2f6ef !important;
+}
+
+.intro-container.intro-classic-refresh {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 82% 15%, rgba(218, 235, 215, .92), transparent 30%),
+    linear-gradient(135deg, #fafbf8 0%, #edf3e9 55%, #e6f0e3 100%) !important;
+}
+
+.intro-card {
+  opacity: 0 !important;
+  transform: translateY(10px) scale(.985) !important;
+  pointer-events: none;
+  animation: none !important;
+  transition: opacity .48s ease, transform .48s ease !important;
+}
+
+.intro-card.is-visible {
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-card { transition: none !important; }
+}
