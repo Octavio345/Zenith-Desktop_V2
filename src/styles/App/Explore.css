@@ -2502,6 +2502,12 @@ body:has(.explore-container) .header-spacer {
   }
 }
 
+/* The module selector belongs to the page flow; it must not follow scrolling. */
+.explore-container > .explore-tabs-modern {
+  position: relative !important;
+  top: auto !important;
+}
+
 .explore-grid-overlay {
   background-size: 46px 46px;
   opacity: 0.64;

@@ -351,7 +351,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .diario-container,.estoque-container,.atividades-container,.farm-map-shell { width:min(1240px,calc(100% - 68px))!important;max-width:none!important;margin:0 auto 50px!important;padding:28px!important;border:1px solid #dde8da!important;border-radius:28px!important;background:rgba(255,255,255,.72)!important;box-shadow:0 18px 48px rgba(39,78,48,.08)!important;color:#173326!important; }
 .diario-header,.estoque-header,.atividades-header,.farm-map-header { margin:-28px -28px 24px!important;padding:28px 30px!important;border-radius:28px 28px 0 0!important;color:white!important;background:linear-gradient(90deg,rgba(18,67,39,.95),rgba(38,102,60,.76)),url('/assets/image/Fundo_landing.jpg') center 70%/cover!important; }
-.diario-header h2,.estoque-header h2,.atividades-header h2,.farm-map-header h2,.farm-map-header h1 { color:white!important;font-family:Georgia,"Times New Roman",serif!important;font-size:clamp(1.8rem,3vw,2.6rem)!important; }
+.diario-header h2,.estoque-header h2,.atividades-header h2,.farm-map-header h2,.farm-map-header h1 { color:white!important;font-family:Inter,"Segoe UI",sans-serif!important;font-size:clamp(1.8rem,3vw,2.6rem)!important;font-weight:850!important;letter-spacing:-.035em!important;line-height:1.02!important; }
 .diario-header p,.estoque-header p,.atividades-header p,.farm-map-header p,.farm-map-kicker { color:rgba(255,255,255,.74)!important; }
 .diario-container .stat-card,.estoque-container .stat-card,.atividades-container .stat-card,.diary-entry,.product-card,.activity-card,.farm-map-panel,.farm-map-summary-item { border:1px solid #dfe9df!important;border-radius:18px!important;background:#fff!important;color:#173326!important;box-shadow:0 10px 28px rgba(39,78,48,.06)!important; }
 .diario-container h3,.estoque-container h3,.atividades-container h3,.diario-container strong,.estoque-container strong,.atividades-container strong,.product-info h3,.activity-info h3 { color:#214f34!important; }
@@ -582,9 +582,9 @@ html,body,button,input,select,textarea,h1,h2,h3,h4,h5,h6,p,a,label,strong,small,
 }
 
 .explore-container > .explore-tabs-modern {
-  position: sticky !important;
-  top: 84px !important;
-  z-index: 5000 !important;
+  position: relative !important;
+  top: auto !important;
+  z-index: 10 !important;
   isolation: isolate !important;
   background: #ffffff !important;
   -webkit-backdrop-filter: none !important;
@@ -613,7 +613,7 @@ html,body,button,input,select,textarea,h1,h2,h3,h4,h5,h6,p,a,label,strong,small,
   }
 
   .explore-container > .explore-tabs-modern {
-    top: 0 !important;
+    top: auto !important;
   }
 }
 
