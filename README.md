@@ -4,6 +4,18 @@ Aplicação web instalável para gestão da operação agrícola. Reúne cadastr
 
 O proprietário acompanha a rotina da fazenda, cria tarefas e administra acessos. O funcionário recebe as tarefas da equipe, registra a jornada e atualiza o andamento do trabalho.
 
+## A inteligência do Zenith
+
+O Zenith foi pensado como uma plataforma de precisão agrícola com visão computacional. A IA recebe imagens da lavoura — feitas por drone ou enviadas pela galeria — e transforma esse material em leitura operacional para apoiar a tomada de decisão no campo.
+
+Hoje, a aplicação trabalha com três frentes de análise visual:
+
+- **Diagnóstico de soja:** leitura de imagens para identificar sinais compatíveis com doenças, condições inconclusivas e imagens fora do domínio de análise.
+- **Monitoramento de plantio:** análise de imagens aéreas para observar cobertura, alinhamento das fileiras, uniformidade e possíveis falhas.
+- **Reconstrução 3D:** envio de conjuntos de fotografias para gerar uma tarefa de processamento e visualizar o terreno em três dimensões.
+
+O resultado não substitui vistoria agronômica nem laudo técnico. Ele organiza sinais, histórico e prioridades para que a equipe saiba onde olhar primeiro.
+
 ## Principais recursos
 
 - Login por e-mail/senha ou Google.

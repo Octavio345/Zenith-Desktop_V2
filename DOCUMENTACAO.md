@@ -10,6 +10,37 @@ O Zenith é uma SPA feita em React e Vite, com Firebase Authentication e Firesto
 
 O proprietário administra fazenda, funcionários, tarefas e atividades. O funcionário vê apenas o que foi destinado a ele, registra a jornada e atualiza o andamento das próprias tarefas. A autorização real fica nas regras do Firestore; a interface só complementa essa proteção.
 
+## Produto e inteligência de visão computacional
+
+O produto combina gestão operacional com análise visual da lavoura. A camada de IA recebe imagens e devolve resultados estruturados para a interface; o objetivo não é apenas exibir uma previsão, mas registrar o contexto da análise, relacioná-lo ao talhão e apoiar a decisão no fluxo de trabalho da fazenda.
+
+O Zenith expõe três serviços visuais:
+
+| Serviço | Entrada | Resultado operacional |
+| --- | --- | --- |
+| Diagnóstico de soja | uma imagem ou lote de imagens | leitura de condição, confiança e indicadores retornados pela API |
+| Monitoramento de plantio | imagem de campo ou aérea | cobertura, uniformidade, alinhamento e indicadores de falhas quando disponíveis |
+| Reconstrução 3D | de 2 a 40 fotografias | criação de tarefa de processamento e link de visualização do modelo |
+
+Os serviços são integrados por `src/services/sojaApi.js`, `src/services/monitoramentoService.js` e `src/services/modelo3dApi.js`. A interface trata timeout, erro de rede e respostas não conclusivas para evitar apresentar um diagnóstico indefinido como certeza.
+
+Os resultados devem ser usados como apoio à vistoria. A plataforma não emite laudo agronômico, não substitui avaliação presencial e não deve ser usada como única base para aplicação de defensivos ou decisão financeira.
+
+## Arquitetura da aplicação
+
+O Zenith é uma aplicação cliente: React renderiza a interface no navegador, Firebase concentra autenticação e dados operacionais, e serviços externos fornecem análise visual, clima, endereço e camadas de mapa. Não há uma API de servidor própria neste repositório; por isso, toda integração acessada pelo navegador precisa aceitar CORS e tratar indisponibilidade de rede.
+
+| Camada | Responsabilidade | Tecnologia principal |
+| --- | --- | --- |
+| Interface | telas, rotas, formulários e experiência desktop | React 18, React Router e Vite |
+| Dados e acesso | login, perfis, equipe, tarefas e atividades em tempo real | Firebase Authentication e Firestore |
+| Visão computacional | diagnóstico de soja, plantio e geração 3D | APIs HTTP configuráveis |
+| Mapa | visualização, geocodificação, desenho e cálculo de talhões | Leaflet, Leaflet Draw, Esri e OpenStreetMap |
+| Dados locais | itens que ainda não são sincronizados entre dispositivos | `localStorage` e IndexedDB |
+| Instalação | versão instalável e cache do navegador | `vite-plugin-pwa` |
+
+Essa separação é importante para manutenção: o front não deve guardar segredos e não deve assumir que uma API externa estará sempre disponível. Cada módulo mostra um retorno seguro quando o serviço não responde.
+
 ## Comandos
 
 ```bash
@@ -203,15 +234,102 @@ O painel usa uma instância secundária do Firebase Auth para criar a nova conta
 
 ## Módulos
 
-| Módulo | Arquivo principal | Persistência |
+| Módulo | O que entrega | Arquivo principal | Persistência |
 | --- | --- | --- |
-| Diagnóstico | `components/App/Explore/Diagnostico/DiagnosticoTab.jsx` | histórico local e ocorrências locais |
-| Plantio | `components/App/Explore/Monitoramento/` | API externa |
-| Clima | `services/weatherService.js` | consulta externa por cidade e UF |
-| Diário | `components/App/Explore/DiarioTab.jsx` | `localStorage["diaryEntries"]` |
-| Mapa | `components/App/Explore/MapaTab.jsx` | `localStorage["farmPolygons"]` |
-| Estoque | `components/App/Explore/EstoqueTab.jsx` | `localStorage["inventory"]` |
-| Atividades | `components/App/Explore/AtividadesTab.jsx` | Firestore |
+| Diagnóstico | envio de fotos, leitura visual, histórico e ocorrência para vistoria | `components/App/Explore/Diagnostico/DiagnosticoTab.jsx` | IndexedDB, `localStorage` e API externa |
+| Plantio | leitura de cobertura, uniformidade, fileiras e falhas | `components/App/Explore/Monitoramento/` | API externa |
+| Clima | condições atuais e previsão da cidade da fazenda | `components/App/Explore/ClimaTab.jsx` | OpenWeatherMap |
+| Diário | registro manual de acontecimentos no campo | `components/App/Explore/DiarioTab.jsx` | `localStorage["diaryEntries"]` |
+| Mapa | localização, talhões, áreas, ocorrências e camadas de imagem | `components/App/Explore/MapaTab.jsx` | `localStorage["farmPolygons"]` e APIs de mapa |
+| Estoque | produtos, quantidade e movimentações da operação | `components/App/Explore/EstoqueTab.jsx` | `localStorage["inventory"]` |
+| Atividades | atividades gerais e individuais da fazenda | `components/App/Explore/AtividadesTab.jsx` | Firestore, em tempo real |
+
+### Mapa, talhões e localização
+
+O mapa é a referência espacial da fazenda. Ele serve para localizar a propriedade, desenhar a borda real de cada talhão, calcular sua área e contextualizar ocorrências vindas do diagnóstico. Essa ligação permite saber em qual área uma imagem foi analisada antes de levar a demanda para vistoria.
+
+O fluxo do módulo é:
+
+1. A pessoa pesquisa CEP, endereço, cidade/UF ou nome da fazenda.
+2. O sistema tenta obter coordenadas confiáveis e centraliza o mapa no local encontrado.
+3. Com a imagem de satélite como referência, a pessoa desenha um polígono para cada talhão ou área operacional.
+4. O Zenith calcula a área em hectares, permite renomear e editar os vértices do polígono.
+5. Diagnósticos associados a um talhão são mostrados como ocorrências que aguardam vistoria.
+
+Cada área salva tem, no mínimo, este formato local:
+
+```js
+{
+  id,
+  name,
+  color,
+  coordinates: [[latitude, longitude]],
+  areaHa,
+  createdAt
+}
+```
+
+O cálculo prioriza a área geodésica disponibilizada pelo Leaflet. Caso ela não esteja disponível, há uma aproximação em metros baseada nas coordenadas do polígono. Por isso, o valor é uma referência operacional: a demarcação técnica ou legal da propriedade deve continuar sendo feita por profissional habilitado e base oficial.
+
+O módulo oferece dois mapas-base: imagem de satélite da Esri e mapa de ruas do OpenStreetMap. Também pode usar a geolocalização do navegador quando a pessoa autoriza o acesso. Essa permissão pertence ao navegador/dispositivo e pode ser recusada pelo usuário.
+
+### Integrações e APIs
+
+| Integração | Requisição usada pelo Zenith | Finalidade | Onde está integrada |
+| --- | --- | --- | --- |
+| API de diagnóstico de soja | `POST /predict` e `POST /predict/batch`, com `FormData` | analisa uma foto ou um lote de fotos de soja | `services/sojaApi.js` |
+| API de monitoramento de plantio | `POST /analyze`, com `FormData` no campo `file` | devolve cobertura, uniformidade, fileiras, falhas e imagens de sobreposição quando disponíveis | `services/monitoramentoService.js` |
+| API de reconstrução 3D | `POST /webodm/tasks`, `GET /webodm/tasks/:id` e rota de visualização | cria e acompanha o processamento de 2 a 40 fotografias | `services/modelo3dApi.js` |
+| OpenWeatherMap | `GET /data/2.5/weather` e `GET /data/2.5/forecast` | clima atual e previsão por cidade e UF | `services/weatherService.js` e `ClimaTab.jsx` |
+| BrasilAPI CEP | `GET /api/cep/v2/:cep` | primeira tentativa de endereço e coordenadas por CEP | `MapaTab.jsx` |
+| AwesomeAPI CEP | `GET /json/:cep` | segunda tentativa de coordenadas por CEP | `MapaTab.jsx` |
+| ViaCEP | `GET /ws/:cep/json/` | endereço por CEP para cadastro e busca geográfica | cadastro de fazenda, cadastro completo e mapa |
+| Nominatim / OpenStreetMap | `GET /search` | geocodifica endereço, cidade ou resultado do CEP | `MapaTab.jsx` |
+| Esri World Imagery | tiles XYZ | imagem de satélite para desenhar as áreas | `MapaTab.jsx` |
+| OpenStreetMap tiles | tiles XYZ | alternativa de mapa de ruas | `MapaTab.jsx` |
+
+As URLs das três APIs de visão computacional podem ser alteradas sem editar o código pelo arquivo `.env`:
+
+```env
+VITE_SOJA_API_URL=https://seu-endpoint-de-diagnostico
+VITE_MONITORAMENTO_API_URL=https://seu-endpoint-de-plantio/analyze
+VITE_MODELO_3D_API_URL=https://seu-endpoint-3d
+```
+
+Sem essas variáveis, o sistema usa as URLs padrão definidas nos respectivos arquivos de serviço. Em produção, o servidor das APIs precisa liberar o domínio da aplicação no CORS. Se qualquer API passar a exigir chave secreta, ela deve ser chamada por um backend/proxy próprio; variáveis iniciadas por `VITE_` ficam visíveis no navegador.
+
+### Operação, equipe e rotina de campo
+
+**Home.** É o painel operacional. Carrega o perfil, a fazenda vinculada e o clima pela cidade/UF cadastrada. Para funcionários, mantém uma assinatura em tempo real das tarefas individuais e das atividades recebidas. A partir daí, registra entrada, saída, início e conclusão de itens de trabalho.
+
+**Perfil e fazenda.** O proprietário edita informações pessoais e os dados da propriedade. O CEP é consultado no ViaCEP para completar endereço. Funcionários não recebem os controles administrativos de plano e de edição de perfil do proprietário.
+
+**Equipe.** O administrador cria o acesso de cada funcionário, completa o cadastro trabalhista e acompanha jornada, tarefas, atividades e status. A criação usa uma segunda instância do Firebase Auth para não encerrar a sessão de quem está cadastrando. A remoção atual bloqueia e arquiva o perfil no Firestore; não apaga a conta do Firebase Authentication nem o histórico operacional.
+
+**Tarefas e atividades.** Há dois tipos de trabalho no sistema:
+
+- `tasks`: tarefa individual criada pelo painel Equipe para um funcionário específico;
+- `activities`: atividade criada no Explorer, podendo ser `general` para toda a fazenda ou `individual` para um responsável.
+
+O funcionário pode iniciar e concluir apenas o que recebeu. Depois da conclusão, o proprietário confirma a finalização. Itens confirmados deixam de ser exibidos nas interfaces após duas horas, mas continuam registrados no Firestore.
+
+**Diário e estoque.** São módulos locais no estágio atual. O diário registra lançamentos de campo e o estoque organiza produtos e quantidades no navegador do usuário. Eles funcionam sem uma API própria, mas não devem ser considerados uma base compartilhada entre computadores até serem migrados para Firestore ou outro banco central.
+
+### Onde cada dado fica salvo
+
+| Recurso | Chave ou base | Escopo atual | Consequência prática |
+| --- | --- | --- | --- |
+| Perfil, fazenda, equipe, tarefas e atividades | Firestore | conta/equipe | sincronizado e protegido pelas regras |
+| Diagnósticos estruturados | IndexedDB `FarmDiagnosisDB` | navegador | histórico não acompanha outro dispositivo automaticamente |
+| Histórico resumido de diagnóstico | `localStorage["diagnosticHistory"]` | navegador | pode ser apagado ao limpar os dados do navegador |
+| Ocorrências por talhão | `localStorage["zenithFieldOccurrences"]` | navegador | o mapa só mostra ocorrências criadas naquele navegador |
+| Polígonos e talhões | `localStorage["farmPolygons"]` | navegador | áreas desenhadas não são compartilhadas nem têm backup remoto |
+| Diário | `localStorage["diaryEntries"]` | navegador | registros não são compartilhados entre usuários |
+| Estoque | `localStorage["inventory"]` | navegador | saldo não é centralizado entre dispositivos |
+| Rascunho de atividade | `localStorage["zenithActivityDraft"]` | navegador | preserva formulário em edição localmente |
+| Última tarefa 3D | `localStorage["zenith:lastModelo3DTask"]` | navegador | ajuda a retomar a visualização local |
+
+Para tornar o mapa, diário, estoque e histórico de diagnóstico corporativos, o próximo passo técnico é modelar coleções no Firestore por fazenda, atualizar as regras e migrar os registros locais. Isso é uma evolução de produto; não basta copiar `localStorage` para o banco sem definir proprietário, permissões, índices e estratégia de migração.
 
 ### Diagnóstico, plantio e 3D
 
@@ -223,9 +341,19 @@ VITE_MONITORAMENTO_API_URL=
 VITE_MODELO_3D_API_URL=
 ```
 
-- `src/services/sojaApi.js` envia imagem ou lote para diagnóstico de soja.
-- `src/services/monitoramentoService.js` analisa imagem de plantio.
-- `src/services/modelo3dApi.js` cria tarefas de reconstrução 3D com 2 a 40 imagens.
+- `src/services/sojaApi.js` envia imagem ou lote para diagnóstico de soja. O tempo limite da requisição é de cinco minutos e a interface permite cancelar a análise.
+- `src/services/monitoramentoService.js` aceita JPG, PNG ou WebP de até 50 MB. O tempo limite é de 40 segundos; respostas antigas e novas da API são normalizadas antes de chegar à interface.
+- `src/services/modelo3dApi.js` cria tarefas de reconstrução 3D com 2 a 40 imagens, consulta o status da tarefa e monta a URL do visualizador. O envio pode durar até 30 minutos antes de ser interrompido pelo navegador.
+
+#### Fluxo de uma análise
+
+1. A pessoa envia a imagem pela galeria ou por uma captura feita no campo.
+2. O front valida o arquivo e envia `FormData` ao serviço correspondente.
+3. A API responde com dados de análise ou uma condição de falha.
+4. A interface apresenta o resultado de forma legível e pode registrar uma ocorrência para vistoria.
+5. O histórico fica disponível para comparação e acompanhamento da operação.
+
+No diagnóstico de soja, respostas como baixa qualidade, baixa confiança ou imagem fora do domínio devem ser tratadas como orientação para repetir a captura ou fazer vistoria — nunca como resultado conclusivo.
 
 ### Clima
 
