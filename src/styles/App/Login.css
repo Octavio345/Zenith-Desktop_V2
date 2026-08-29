@@ -102,7 +102,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg-0);color:var(--t
 .auth-side-foot strong{font-family:'JetBrains Mono',monospace;font-size:18px;color:var(--text)}
 .auth-side-foot span{font-size:11px;color:#b8d0c3;text-transform:uppercase;letter-spacing:.12em}
 
-/* ===== Main / card ===== */
+
 .auth-main{
   position:relative;z-index:2;
   display:flex;align-items:center;justify-content:center;

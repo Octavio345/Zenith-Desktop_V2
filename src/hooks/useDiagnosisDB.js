@@ -1,4 +1,4 @@
-// src/hooks/useDiagnosisDB.js
+
 import { useState, useEffect, useCallback } from 'react';
 import diagnosisDB from '../services/DiagnosisDB';
 
@@ -8,7 +8,7 @@ export function useDiagnosisDB() {
   const [error, setError] = useState(null);
   const [stats, setStats] = useState(null);
 
-  // Carregar todos os diagnósticos
+
   const loadDiagnoses = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -23,7 +23,7 @@ export function useDiagnosisDB() {
     }
   }, []);
 
-  // Carregar estatísticas
+
   const loadStats = useCallback(async () => {
     try {
       const data = await diagnosisDB.getStats();
@@ -33,7 +33,7 @@ export function useDiagnosisDB() {
     }
   }, []);
 
-  // Salvar diagnóstico
+
   const saveDiagnosis = useCallback(async (diagnosisData) => {
     setLoading(true);
     setError(null);
@@ -50,7 +50,7 @@ export function useDiagnosisDB() {
     }
   }, [loadDiagnoses, loadStats]);
 
-  // Atualizar diagnóstico
+
   const updateDiagnosis = useCallback(async (id, updates) => {
     setLoading(true);
     setError(null);
@@ -67,7 +67,7 @@ export function useDiagnosisDB() {
     }
   }, [loadDiagnoses, loadStats]);
 
-  // Deletar diagnóstico
+
   const deleteDiagnosis = useCallback(async (id) => {
     setLoading(true);
     setError(null);
@@ -83,7 +83,7 @@ export function useDiagnosisDB() {
     }
   }, [loadDiagnoses, loadStats]);
 
-  // Deletar múltiplos
+
   const deleteMany = useCallback(async (ids) => {
     setLoading(true);
     setError(null);
@@ -99,7 +99,7 @@ export function useDiagnosisDB() {
     }
   }, [loadDiagnoses, loadStats]);
 
-  // Buscar por doença
+
   const searchByDisease = useCallback(async (disease) => {
     setLoading(true);
     setError(null);
@@ -114,7 +114,7 @@ export function useDiagnosisDB() {
     }
   }, []);
 
-  // Busca avançada
+
   const search = useCallback(async (filters) => {
     setLoading(true);
     setError(null);
@@ -129,7 +129,7 @@ export function useDiagnosisDB() {
     }
   }, []);
 
-  // Carregar dados iniciais
+
   useEffect(() => {
     loadDiagnoses();
     loadStats();

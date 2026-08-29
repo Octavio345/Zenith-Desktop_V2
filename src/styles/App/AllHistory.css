@@ -1,4 +1,4 @@
-/* AllHistory.css - Versão com fundo verde claro */
+
 
 .all-history-container {
   max-width: 700px;
@@ -7,7 +7,7 @@
   min-height: 100vh;
 }
 
-/* Header */
+
 .history-header {
   display: flex;
   align-items: center;
@@ -82,7 +82,7 @@
   transform: translateY(-2px);
 }
 
-/* Stats Cards */
+
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -125,7 +125,7 @@
   margin: 0;
 }
 
-/* Filters Section */
+
 .filters-section {
   margin-bottom: 24px;
   display: flex;
@@ -249,7 +249,7 @@
   color: #3f7f56;
 }
 
-/* History List */
+
 .history-list {
   display: flex;
   flex-direction: column;
@@ -430,7 +430,7 @@
   font-size: 18px;
 }
 
-/* Empty State */
+
 .empty-state {
   text-align: center;
   padding: 60px 24px;
@@ -494,7 +494,7 @@
   font-size: 20px;
 }
 
-/* Responsividade */
+
 @media (max-width: 600px) {
   .all-history-container {
     padding: 16px;

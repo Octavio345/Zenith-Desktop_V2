@@ -1,4 +1,4 @@
-// components/Profile/ProfileMouseGlow.jsx
+
 import { useEffect, useState } from 'react'
 
 export default function ProfileMouseGlow() {
@@ -14,12 +14,12 @@ export default function ProfileMouseGlow() {
   }, [])
 
   return (
-    <div 
-      className="profile-mouse-glow" 
-      style={{ 
-        left: mousePosition.x - 250, 
-        top: mousePosition.y - 250 
-      }} 
+    <div
+      className="profile-mouse-glow"
+      style={{
+        left: mousePosition.x - 250,
+        top: mousePosition.y - 250
+      }}
     />
   )
 }

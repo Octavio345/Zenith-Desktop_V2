@@ -200,7 +200,7 @@ export default function ClimaTab() {
 
   const recommendations = getRecommendations()
 
-  // ========== LOADING (INTRO) - EXATAMENTE IGUAL AO SEU CÓDIGO ==========
+
   if (loading || farmLoading) {
     return (
       <div style={styles.loadingContainer}>
@@ -217,7 +217,7 @@ export default function ClimaTab() {
     )
   }
 
-  // ========== ERRO - TAMBÉM IGUAL AO SEU CÓDIGO ==========
+
   if (error || !weatherData) {
     return (
       <div style={styles.loadingContainer}>
@@ -238,7 +238,7 @@ export default function ClimaTab() {
     )
   }
 
-  // ========== CONTEÚDO PRINCIPAL COM DESIGN PREMIUM ==========
+
   return (
     <div className="clima-premium-dashboard">
       <style>{`
@@ -749,7 +749,7 @@ export default function ClimaTab() {
   )
 }
 
-// ========== ESTILOS DO LOADING E ERRO (EXATAMENTE DO SEU CÓDIGO) ==========
+
 const styles = {
   loadingContainer: {
     minHeight: '70vh',

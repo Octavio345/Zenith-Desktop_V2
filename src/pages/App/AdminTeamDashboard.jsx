@@ -410,7 +410,7 @@ export default function AdminTeamDashboard() {
     } catch (error) {
       console.error("Erro ao cadastrar funcionário:", error)
       if (createdAuthUser) {
-        try { await deleteUser(createdAuthUser) } catch { /* Evita ocultar o erro principal. */ }
+        try { await deleteUser(createdAuthUser) } catch {   }
       }
       let message = "Não foi possível criar o login do funcionário."
       if (error.code === "auth/email-already-in-use") message = "Este email já possui uma conta de acesso."
@@ -418,7 +418,7 @@ export default function AdminTeamDashboard() {
       if (error.code === "auth/weak-password") message = "A senha inicial não atende aos requisitos de segurança."
       setEmployeeFormMessage({ type: "error", text: message })
     } finally {
-      try { await signOut(secondaryAuth) } catch { /* A instância será removida em seguida. */ }
+      try { await signOut(secondaryAuth) } catch {   }
       await deleteApp(secondaryApp)
       setIsCreatingEmployee(false)
     }

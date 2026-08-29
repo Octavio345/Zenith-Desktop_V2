@@ -1,4 +1,4 @@
-// components/Home/ParticleBackground.jsx
+
 import { useEffect, useRef } from 'react'
 
 export default function ParticleBackground() {
@@ -54,7 +54,7 @@ export default function ParticleBackground() {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
+
       particles.forEach(particle => {
         particle.update()
         particle.draw()

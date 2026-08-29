@@ -1,4 +1,4 @@
-// components/Profile/ProfileTabs.jsx
+
 export default function ProfileTabs({ activeTab, onTabChange, onEditClick }) {
   const tabs = [
     { id: "pessoal", icon: "person", label: "Pessoal" },

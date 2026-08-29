@@ -22,7 +22,7 @@ export default function EstoqueTab() {
     expiryDate: ""
   })
 
-  // Categorias disponíveis
+
   const categories = [
     { id: "insumo", name: "Insumos", icon: "inventory" },
     { id: "fertilizante", name: "Fertilizantes", icon: "grass" },
@@ -40,13 +40,13 @@ export default function EstoqueTab() {
     { value: "caixas", label: "Caixas" }
   ]
 
-  // Carregar estoque do localStorage
+
   useEffect(() => {
     const saved = localStorage.getItem("inventory")
     if (saved) {
       setProducts(JSON.parse(saved))
     } else {
-      // Dados de exemplo
+
       const sampleProducts = [
         {
           id: 1,
@@ -90,13 +90,13 @@ export default function EstoqueTab() {
     }
   }, [])
 
-  // Salvar produtos
+
   const saveProducts = (newProducts) => {
     setProducts(newProducts)
     localStorage.setItem("inventory", JSON.stringify(newProducts))
   }
 
-  // Adicionar produto
+
   const addProduct = () => {
     if (!newProduct.name.trim()) return
 
@@ -123,24 +123,24 @@ export default function EstoqueTab() {
     setShowForm(false)
   }
 
-  // Atualizar produto
+
   const updateProduct = () => {
     if (!selectedProduct) return
 
-    const updatedProducts = products.map(p => 
+    const updatedProducts = products.map(p =>
       p.id === selectedProduct.id ? { ...selectedProduct } : p
     )
     saveProducts(updatedProducts)
     setSelectedProduct(null)
   }
 
-  // Deletar produto
+
   const deleteProduct = (id) => {
     saveProducts(products.filter(p => p.id !== id))
     setDeleteTarget(null)
   }
 
-  // Atualizar quantidade
+
   const updateQuantity = (id, newQuantity) => {
     const updatedProducts = products.map(p => {
       if (p.id === id) {
@@ -151,43 +151,43 @@ export default function EstoqueTab() {
     saveProducts(updatedProducts)
   }
 
-  // Filtrar produtos
+
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = filterCategory === "todos" || product.category === filterCategory
     return matchesSearch && matchesCategory
   })
 
-  // Estatísticas
+
   const totalProducts = products.length
   const lowStock = products.filter(p => p.quantity <= p.minQuantity).length
   const totalValue = products.reduce((sum, p) => sum + (p.price * p.quantity), 0)
 
-  // Obter ícone da categoria
+
   const getCategoryIcon = (category) => {
     const cat = categories.find(c => c.id === category)
     return cat?.icon || "inventory"
   }
 
-  // Obter nome da categoria
+
   const getCategoryName = (category) => {
     const cat = categories.find(c => c.id === category)
     return cat?.name || category
   }
 
-  // Verificar se está em falta
+
   const isLowStock = (product) => {
     return product.quantity <= product.minQuantity
   }
 
-  // Formatar data
+
   const formatDate = (dateStr) => {
     if (!dateStr) return "Não definida"
     const date = new Date(dateStr)
     return date.toLocaleDateString("pt-BR")
   }
 
-  // Verificar se está perto do vencimento
+
   const isExpiringSoon = (dateStr) => {
     if (!dateStr) return false
     const expiry = new Date(dateStr)
@@ -198,7 +198,7 @@ export default function EstoqueTab() {
 
   return (
     <div className="estoque-container">
-      {/* Header */}
+
       <div className="estoque-header">
         <div>
           <h2>Estoque</h2>
@@ -210,7 +210,7 @@ export default function EstoqueTab() {
         </button>
       </div>
 
-      {/* Barra de Busca e Filtros */}
+
       <div className="estoque-controls">
         <div className="search-bar">
           <span className="material-symbols-outlined">search</span>
@@ -242,7 +242,7 @@ export default function EstoqueTab() {
         </div>
       </div>
 
-      {/* Cards de Estatísticas */}
+
       <div className="estoque-stats">
         <div className="stat-card">
           <span className="material-symbols-outlined">inventory</span>
@@ -267,7 +267,7 @@ export default function EstoqueTab() {
         </div>
       </div>
 
-      {/* Lista de Produtos */}
+
       <div className="products-list">
         {filteredProducts.length === 0 ? (
           <div className="empty-state">
@@ -372,7 +372,7 @@ export default function EstoqueTab() {
         )}
       </div>
 
-      {/* Modal Novo Produto */}
+
         {showForm && createPortal((
           <motion.div
             className="estoque-modal"
@@ -483,7 +483,7 @@ export default function EstoqueTab() {
           </motion.div>
         ), document.body)}
 
-      {/* Modal Editar Produto */}
+
         {selectedProduct && createPortal((
           <motion.div
             className="estoque-modal"

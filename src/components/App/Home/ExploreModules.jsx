@@ -1,24 +1,24 @@
-// components/Home/ExploreModules.jsx
+
 import { useNavigate } from "react-router-dom"
 
 const modules = [
-  { 
+  {
     id: "diagnostico",
-    path: "/explore", 
+    path: "/explore",
     tab: "diagnostico",
-    icon: "eco", 
-    label: "Diagnóstico", 
-    sublabel: "Análise de plantas", 
-    type: "diagnose" 
+    icon: "eco",
+    label: "Diagnóstico",
+    sublabel: "Análise de plantas",
+    type: "diagnose"
   },
-  { 
+  {
     id: "clima",
-    path: "/explore", 
+    path: "/explore",
     tab: "clima",
-    icon: "cloud", 
-    label: "Clima", 
-    sublabel: "Previsão 7 dias", 
-    type: "weather" 
+    icon: "cloud",
+    label: "Clima",
+    sublabel: "Previsão 7 dias",
+    type: "weather"
   },
   {
     id: "monitoramento",
@@ -29,40 +29,40 @@ const modules = [
     sublabel: "Analise de plantio",
     type: "monitoring"
   },
-  { 
+  {
     id: "diario",
-    path: "/explore", 
+    path: "/explore",
     tab: "diario",
-    icon: "menu_book", 
-    label: "Diário", 
-    sublabel: "Registros da plantação", 
-    type: "diary" 
+    icon: "menu_book",
+    label: "Diário",
+    sublabel: "Registros da plantação",
+    type: "diary"
   },
-  { 
+  {
     id: "mapa",
-    path: "/explore", 
+    path: "/explore",
     tab: "mapa",
-    icon: "map", 
-    label: "Mapa", 
-    sublabel: "Visualização 3D", 
-    type: "map" 
+    icon: "map",
+    label: "Mapa",
+    sublabel: "Visualização 3D",
+    type: "map"
   },
-  { 
+  {
     id: "estoque",
-    path: "/explore", 
+    path: "/explore",
     tab: "estoque",
-    icon: "inventory", 
-    label: "Estoque", 
-    sublabel: "Insumos e materiais", 
-    type: "stock" 
+    icon: "inventory",
+    label: "Estoque",
+    sublabel: "Insumos e materiais",
+    type: "stock"
   },
-  { 
+  {
     id: "atividades",
-    path: "/explore", 
+    path: "/explore",
     tab: "atividades",
-    icon: "assignment", 
-    label: "Atividades", 
-    sublabel: "Tarefas do campo", 
+    icon: "assignment",
+    label: "Atividades",
+    sublabel: "Tarefas do campo",
     type: "reports"
   }
 ]

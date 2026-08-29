@@ -1,4 +1,4 @@
-// components/Home/MetricsGrid.jsx
+
 import MetricCard from './MetricCard'
 
 export default function MetricsGrid({ hasFarm, weather, farmData }) {
@@ -16,7 +16,7 @@ export default function MetricsGrid({ hasFarm, weather, farmData }) {
       </div>
 
       <div className="cards-grid">
-        <MetricCard 
+        <MetricCard
           type="temperature"
           icon="thermostat"
           label="Temperatura"
@@ -27,7 +27,7 @@ export default function MetricsGrid({ hasFarm, weather, farmData }) {
           weather={weather}
         />
 
-        <MetricCard 
+        <MetricCard
           type="humidity"
           icon="humidity_percentage"
           label="Umidade"

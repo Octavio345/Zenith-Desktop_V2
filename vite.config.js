@@ -35,7 +35,7 @@ export default defineConfig({
   }
 ]
 },
-      // 🔥 Desativa cache durante desenvolvimento
+
       devOptions: {
         enabled: false
       }
@@ -45,16 +45,16 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
-    emptyOutDir: true, // 🔥 Limpa a pasta antes de build
+    emptyOutDir: true,
     sourcemap: false,
-    // 🔥 Força rebuild completo
+
     rollupOptions: {
       output: {
         manualChunks: undefined
       }
     }
   },
-  // 🔥 Desativa cache do Vite
+
   server: {
     force: true
   }

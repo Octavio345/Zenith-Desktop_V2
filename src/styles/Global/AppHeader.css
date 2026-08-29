@@ -1,6 +1,6 @@
 :root {
   --header-primary: #00ff9c;
-  --header-bg: #0f3a24;           /* fundo sólido (verde escuro) */
+  --header-bg: #0f3a24;
   --header-text: #e6edf3;
   --header-muted: rgba(230, 237, 243, 0.66);
 }
@@ -10,7 +10,7 @@
   top: 16px;
   left: 0;
   right: 0;
-  z-index: 1050;                  /* maior que qualquer conteúdo */
+  z-index: 1050;
   padding: 0 20px;
   pointer-events: none;
 }
@@ -27,14 +27,14 @@
   align-items: center;
   padding: 12px 18px;
   border-radius: 18px;
-  background: var(--header-bg) !important;   /* fundo sólido */
-  backdrop-filter: none !important;          /* remove qualquer blur */
+  background: var(--header-bg) !important;
+  backdrop-filter: none !important;
   border: 1px solid rgba(30, 107, 62, 0.5);
   box-shadow: 0 7px 18px rgba(0, 0, 0, 0.38);
   pointer-events: auto;
 }
 
-/* O resto do CSS permanece igual */
+
 .header .logo {
   position: relative;
   display: inline-flex;

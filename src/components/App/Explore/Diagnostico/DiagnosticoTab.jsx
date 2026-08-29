@@ -91,7 +91,7 @@ export default function DiagnosticoTab() {
       const saved = localStorage.getItem("diagnosticHistory")
       if (saved) setHistory(JSON.parse(saved))
     } catch {
-      // O diagnóstico continua funcionando mesmo se o navegador bloquear o armazenamento local.
+
     }
   }, [])
 
@@ -109,7 +109,7 @@ export default function DiagnosticoTab() {
       try {
         localStorage.setItem("diagnosticHistory", JSON.stringify(updated))
       } catch {
-        // Mantém o item em memória quando o localStorage não estiver disponível.
+
       }
       return updated
     })
@@ -364,7 +364,7 @@ export default function DiagnosticoTab() {
       const saved = localStorage.getItem("diagnosticHistory")
       if (saved) setHistory(JSON.parse(saved))
     } catch {
-      // Mantém o histórico que já está em memória.
+
     }
   }
 

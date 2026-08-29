@@ -1,4 +1,4 @@
-// components/Home/FlightActionButton.jsx
+
 export default function FlightActionButton({ onNavigate }) {
   return (
     <section className="action-section">

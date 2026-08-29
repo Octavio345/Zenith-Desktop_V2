@@ -1,4 +1,4 @@
-// components/Profile/ProfileParticleBackground.jsx
+
 import { useEffect, useRef } from 'react'
 
 export default function ProfileParticleBackground() {
@@ -54,7 +54,7 @@ export default function ProfileParticleBackground() {
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
-      
+
       particles.forEach(particle => {
         particle.update()
         particle.draw()

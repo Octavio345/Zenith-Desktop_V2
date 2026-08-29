@@ -83,7 +83,7 @@ export function diagnosticarLote(files, options = {}) {
   return postImages("/predict/batch", "files", validFiles, options.signal)
 }
 
-// Mantido para outras partes do projeto que ainda utilizam o diagnóstico individual.
+
 export function diagnosticarSoja(file, options = {}) {
   if (!(file instanceof File)) {
     return Promise.reject(new Error("Selecione uma imagem válida para iniciar a análise."))

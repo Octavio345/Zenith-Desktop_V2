@@ -1,14 +1,14 @@
-// components/Home/MetricCard.jsx
-export default function MetricCard({ 
-  type, 
-  icon, 
-  label, 
-  sublabel, 
-  value, 
-  unit, 
-  hasFarm, 
+
+export default function MetricCard({
+  type,
+  icon,
+  label,
+  sublabel,
+  value,
+  unit,
+  hasFarm,
   weather,
-  children 
+  children
 }) {
   const getHumidityStatus = (humidity) => {
     if (humidity < 10) return { label: "Crítico", className: "critical", icon: "warning", color: "#224fe4ff" }
@@ -34,7 +34,7 @@ export default function MetricCard({
           <span className="card-sublabel">{sublabel}</span>
         </div>
       </div>
-      
+
       <div className="card-main">
         {children ? children : (
           hasFarm ? (
@@ -47,22 +47,22 @@ export default function MetricCard({
           )
         )}
       </div>
-      
+
       <div className="card-footer">
         {type === 'humidity' && hasFarm && weather?.humidity !== undefined ? (
           <>
             <div className="humidity-bar">
-              <div 
+              <div
                 className="humidity-fill"
-                style={{ 
+                style={{
                   width: `${weather.humidity}%`,
                   backgroundColor: getHumidityStatus(weather.humidity).color
                 }}
               ></div>
             </div>
-            <div 
+            <div
               className="card-badge"
-              style={{ 
+              style={{
                 background: `${getHumidityStatus(weather.humidity).color}20`,
                 color: getHumidityStatus(weather.humidity).color,
                 borderColor: `${getHumidityStatus(weather.humidity).color}40`

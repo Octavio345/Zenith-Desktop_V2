@@ -13,10 +13,10 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
   const resizeDirection = useRef(null)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Detectar se é mobile
+
   const isMobile = window.innerWidth <= 768
 
-  // Calcular posição central quando o componente montar (apenas para PC)
+
   useEffect(() => {
     if (!isMobile && !isInitialized) {
       const centerX = (window.innerWidth - size.width) / 2
@@ -27,16 +27,16 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
   }, [isMobile, size.width, size.height, isInitialized])
 
   useEffect(() => {
-    // Esconder o menu bar
+
     const menuBar = document.querySelector('.menu-bar')
     if (menuBar) {
       menuBar.style.display = 'none'
     }
-    
-    // Prevenir scroll no body
+
+
     document.body.style.overflow = 'hidden'
-    
-    // Iniciar a câmera
+
+
     const startCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -49,20 +49,20 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
         console.error("Erro ao acessar câmera:", err)
       }
     }
-    
+
     startCamera()
-    
+
     return () => {
-      // Restaurar menu bar
+
       const menuBar = document.querySelector('.menu-bar')
       if (menuBar) {
         menuBar.style.display = 'flex'
       }
-      
-      // Restaurar scroll
+
+
       document.body.style.overflow = 'auto'
-      
-      // Parar a câmera
+
+
       if (videoRef.current?.srcObject) {
         const tracks = videoRef.current.srcObject.getTracks()
         tracks.forEach(track => track.stop())
@@ -70,7 +70,7 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
     }
   }, [videoRef])
 
-  // Handlers para arrastar - otimizado com requestAnimationFrame
+
   const handleMouseDown = useCallback((e) => {
     if (isMobile) return
     e.preventDefault()
@@ -85,23 +85,23 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
     if (isDragging) {
       let newX = e.clientX - dragStart.current.x
       let newY = e.clientY - dragStart.current.y
-      
-      // Limitar posição
+
+
       newX = Math.min(Math.max(0, newX), window.innerWidth - size.width)
       newY = Math.min(Math.max(0, newY), window.innerHeight - size.height)
-      
+
       setPosition({ x: newX, y: newY })
     }
-    
+
     if (isResizing && resizeDirection.current) {
       let newWidth = size.width
       let newHeight = size.height
       let newX = position.x
       let newY = position.y
-      
+
       const deltaX = e.clientX - resizeStart.current.x
       const deltaY = e.clientY - resizeStart.current.y
-      
+
       switch(resizeDirection.current) {
         case 'se':
           newWidth = resizeStart.current.width + deltaX
@@ -138,15 +138,15 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
           newX = position.x + deltaX
           break
       }
-      
-      // Limitar tamanhos mínimos e máximos
+
+
       newWidth = Math.min(Math.max(320, newWidth), window.innerWidth - 50)
       newHeight = Math.min(Math.max(240, newHeight), window.innerHeight - 50)
-      
-      // Limitar posição
+
+
       newX = Math.min(Math.max(0, newX), window.innerWidth - newWidth)
       newY = Math.min(Math.max(0, newY), window.innerHeight - newHeight)
-      
+
       setSize({ width: newWidth, height: newHeight })
       setPosition({ x: newX, y: newY })
     }
@@ -182,11 +182,11 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
     }
   }, [isMobile, handleMouseMove, handleMouseUp])
 
-  // Para mobile - versão simplificada (sem gradientes e sem botões extras)
+
   if (isMobile) {
     return (
       <div className="camera-view-container mobile-fullscreen">
-        {/* Header mobile simplificado */}
+
         <div className="camera-header-mobile-simple">
           <div className="camera-header-content-mobile-simple">
             <button className="camera-back-btn-mobile-simple" onClick={onCancel}>
@@ -198,20 +198,20 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
             <div className="camera-placeholder-simple"></div>
           </div>
         </div>
-        
-        {/* Vídeo */}
+
+
         <video
           ref={videoRef}
           autoPlay
           playsInline
           className="camera-video-mobile"
         />
-        
-        {/* Botão de capturar apenas */}
+
+
         <div className="camera-controls-mobile-simple">
-          <button 
+          <button
             ref={captureRef}
-            className="camera-capture-btn-mobile-simple" 
+            className="camera-capture-btn-mobile-simple"
             onClick={onCapture}
           >
             <div className="capture-outer-ring-mobile-simple">
@@ -225,11 +225,11 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
     )
   }
 
-  // Para PC, janela redimensionável (mantido igual)
+
   return (
     <>
       <div className="camera-overlay-backdrop"></div>
-      <div 
+      <div
         ref={containerRef}
         className="camera-draggable-window"
         style={{
@@ -241,7 +241,7 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
           transform: 'translateZ(0)'
         }}
       >
-        {/* Barra de título */}
+
         <div className="camera-window-header" onMouseDown={handleMouseDown}>
           <div className="camera-window-title">
             <span className="material-symbols-outlined">photo_camera</span>
@@ -251,8 +251,8 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        
-        {/* Conteúdo */}
+
+
         <div className="camera-window-content">
           <video
             ref={videoRef}
@@ -260,10 +260,10 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
             playsInline
             className="camera-video-window"
           />
-          
-          <button 
+
+          <button
             ref={captureRef}
-            className="camera-capture-btn-window" 
+            className="camera-capture-btn-window"
             onClick={onCapture}
           >
             <div className="capture-outer-ring">
@@ -273,8 +273,8 @@ export default function CameraView({ videoRef, onCapture, onCancel }) {
             </div>
           </button>
         </div>
-        
-        {/* Handles */}
+
+
         <div className="resize-handle resize-se" onMouseDown={(e) => startResize('se', e)}></div>
         <div className="resize-handle resize-e" onMouseDown={(e) => startResize('e', e)}></div>
         <div className="resize-handle resize-s" onMouseDown={(e) => startResize('s', e)}></div>

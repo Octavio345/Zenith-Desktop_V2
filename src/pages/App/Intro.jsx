@@ -35,7 +35,7 @@ export default function Intro() {
   }, [])
 
   useEffect(() => {
-    // Se a conexão estiver lenta ou o vídeo falhar, a pessoa ainda consegue entrar.
+
     fallbackTimerRef.current = window.setTimeout(() => setIsIntroVisible(true), 1200)
 
     return () => {
@@ -46,13 +46,13 @@ export default function Intro() {
 
   return (
     <div
-    
+
       className={`intro-container intro-classic-refresh ${isVideoReady ? "is-video-ready" : ""}`}
       ref={containerRef}
       style={{
         "--mouse-x": `${mousePosition.x}px`,
         "--mouse-y": `${mousePosition.y}px`
-        
+
       }}
     >
 <video

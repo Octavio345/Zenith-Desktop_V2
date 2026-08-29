@@ -1,4 +1,4 @@
-// App.jsx do PWA
+
 import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom"
 import { useState, useEffect, useLayoutEffect, useRef } from "react"
 import { onAuthStateChanged, reload, sendEmailVerification, signOut } from "firebase/auth"
@@ -16,11 +16,11 @@ import AdminTeamDashboard from "./pages/App/AdminTeamDashboard"
 import { auth, db } from "./services/firebase"
 import { getUserAccessProfile, isAccountBlocked, isOperationalRole } from "./services/accessControl"
 
-// Componentes
+
 import InstallPrompt from "./components/App/Global/InstallPrompt"
 import InstallSuccess from "./components/App/Global/InstallSuccess"
 
-// Estilos
+
 import "./App.css"
 import "./styles/Global/DesktopMobileTheme.css"
 
@@ -49,14 +49,14 @@ function AccountRoute({ children }) {
             profile ? "Seu acesso foi removido pelo proprietário da fazenda." : "Seu perfil de acesso não está disponível.",
           )
           setAccess("denied")
-          try { await signOut(auth) } catch { /* A rota permanece bloqueada mesmo se o encerramento remoto falhar. */ }
+          try { await signOut(auth) } catch {   }
           return
         }
         setAccess("allowed")
       }, async () => {
         sessionStorage.setItem("zenithAccessMessage", "Não foi possível validar as permissões desta conta.")
         setAccess("denied")
-        try { await signOut(auth) } catch { /* A rota permanece bloqueada. */ }
+        try { await signOut(auth) } catch {   }
       })
     })
 
@@ -208,46 +208,46 @@ function AppShell() {
     return () => window.clearTimeout(routeTimeout)
   }, [location.key])
 
-  
-  
+
+
   useEffect(() => {
-    // Detectar dispositivo
+
     const userAgent = navigator.userAgent
     setIsIOS(/iPhone|iPad|iPod/i.test(userAgent))
     setIsAndroid(/Android/i.test(userAgent))
 
-    // Verificar se já está instalado (modo standalone)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
                          window.navigator.standalone === true
-    
+
     if (isStandalone) {
       setIsInstalled(true)
       console.log('✅ App rodando em modo standalone')
       return
     }
 
-    // Verificar parâmetros da URL
+
     const params = new URLSearchParams(window.location.search)
     const shouldInstall = params.get('install') === 'true'
     const source = params.get('source')
-    
+
     console.log('📱 Modo:', isStandalone ? 'standalone' : 'navegador')
     console.log('🔧 Parâmetros:', { shouldInstall, source })
 
-    // Se veio para instalar, mostrar prompt após 1 segundo
+
     if (shouldInstall && !isStandalone) {
       setTimeout(() => {
         setShowInstallPrompt(true)
       }, 1000)
     }
 
-    // Capturar evento de instalação
+
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault()
       console.log('📲 Evento beforeinstallprompt capturado')
       setDeferredPrompt(e)
-      
-      // Se veio com install=true, disparar automaticamente
+
+
       if (shouldInstall) {
         setTimeout(() => {
           handleInstall()
@@ -255,16 +255,16 @@ function AppShell() {
       }
     }
 
-    
 
-    // Quando o app for instalado
+
+
     const handleAppInstalled = (e) => {
       console.log('🎉 App instalado com sucesso!', e)
       setIsInstalled(true)
       setShowInstallPrompt(false)
       setShowInstallSuccess(true)
       setDeferredPrompt(null)
-      
+
     }
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
@@ -298,9 +298,9 @@ const handleInstall = async () => {
 
   return (
           <>
-            {/* Prompt de instalação */}
+
             {showInstallPrompt && !isInstalled && (
-              <InstallPrompt 
+              <InstallPrompt
                 onInstall={handleInstall}
                 onClose={() => setShowInstallPrompt(false)}
                 isIOS={isIOS}
@@ -309,15 +309,15 @@ const handleInstall = async () => {
               />
             )}
 
-            {/* Mensagem de sucesso após instalação */}
+
             {showInstallSuccess && (
-              <InstallSuccess 
+              <InstallSuccess
                 onClose={() => setShowInstallSuccess(false)}
                 isIOS={isIOS}
                 isAndroid={isAndroid}
               />
             )}
-            
+
             <Routes location={location}>
               <Route path="/" element={<Intro />} />
               <Route path="/login" element={<Login />} />

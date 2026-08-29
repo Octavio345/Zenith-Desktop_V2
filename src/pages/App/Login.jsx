@@ -144,7 +144,7 @@ export default function Login() {
       navigate("/home", { replace: true })
     } catch (error) {
       if (auth.currentUser) {
-        try { await signOut(auth) } catch { /* O Firebase tentará encerrar a sessão na próxima ação. */ }
+        try { await signOut(auth) } catch {   }
       }
       let message = "Não foi possível entrar com o Google. Tente novamente."
       if (error.code === "auth/popup-closed-by-user") message = "A janela do Google foi fechada antes da conclusão."

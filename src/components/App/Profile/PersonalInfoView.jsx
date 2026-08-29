@@ -1,4 +1,4 @@
-// components/Profile/PersonalInfoView.jsx
+
 const formatPhone = (phone) => {
   const digits = String(phone || "").replace(/\D/g, "")
   if (digits.length === 11) return digits.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3")
@@ -12,9 +12,9 @@ export default function PersonalInfoView({ userData, user, formatDocument }) {
     { icon: "cake", label: "Idade", value: userData?.age ? `${userData.age} anos` : "Não informado" },
     { icon: "call", label: "Telefone", value: formatPhone(userData?.phone) },
     { icon: "mail", label: "Email", value: user?.email, badge: true },
-    { 
-      icon: "assignment_ind", 
-      label: userData?.type === "CPF" ? "CPF" : "CNPJ", 
+    {
+      icon: "assignment_ind",
+      label: userData?.type === "CPF" ? "CPF" : "CNPJ",
       value: userData?.document ? formatDocument(userData.document) : null,
       show: userData?.document
     }
@@ -31,7 +31,7 @@ export default function PersonalInfoView({ userData, user, formatDocument }) {
         <h3>Informações Pessoais</h3>
         <div className="header-line"></div>
       </div>
-      
+
       <div className="card-content">
         {infoItems.map((item, index) => (
           item.value && (

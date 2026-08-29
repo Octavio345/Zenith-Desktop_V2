@@ -1,4 +1,4 @@
-// components/Profile/AlertMessage.jsx
+
 export default function AlertMessage({ type, text }) {
   if (!text) return null
 

@@ -1,10 +1,10 @@
-// components/App/Profile/FarmInfoView.jsx
+
 import { motion } from "framer-motion"
 
 const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
   if (!farmData) {
     return (
-      <motion.div 
+      <motion.div
         className="empty-state-tech"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -15,10 +15,10 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           <div className="empty-ring"></div>
           <div className="empty-ring-2"></div>
         </div>
-        
+
         <h4>Nenhuma fazenda cadastrada</h4>
         <p>Cadastre sua primeira fazenda para começar a monitorar suas safras</p>
-        
+
         <button className="empty-action-btn" onClick={onAddFarm}>
           <span className="material-symbols-outlined">add</span>
           Cadastrar Fazenda
@@ -39,14 +39,14 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="profile-card"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
       <div className="card-corner"></div>
-      
+
       <div className="card-header">
         <div className="header-icon">
           <span className="material-symbols-outlined">agriculture</span>
@@ -57,7 +57,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
       </div>
 
       <div className="farm-info-grid">
-        {/* Área Total */}
+
         <div className="info-item-tech highlight">
           <div className="info-label">
             <span className="material-symbols-outlined">square_foot</span>
@@ -69,7 +69,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           </div>
         </div>
 
-        {/* Cultura */}
+
         {farmData.plantacao && (
           <div className="info-item-tech">
             <div className="info-label">
@@ -80,7 +80,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           </div>
         )}
 
-        {/* Localização */}
+
         {(farmData.municipio || farmData.uf) && (
           <div className="info-item-tech">
             <div className="info-label">
@@ -93,7 +93,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           </div>
         )}
 
-        {/* Bairro */}
+
         {farmData.bairro && (
           <div className="info-item-tech">
             <div className="info-label">
@@ -104,7 +104,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           </div>
         )}
 
-        {/* CEP */}
+
         {farmData.cep && (
           <div className="info-item-tech">
             <div className="info-label">
@@ -115,7 +115,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           </div>
         )}
 
-        {/* Telefone */}
+
         {farmData.telefone && (
           <div className="info-item-tech">
             <div className="info-label">
@@ -126,7 +126,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           </div>
         )}
 
-        {/* Data de Aquisição */}
+
         {farmData.data_aquisicao && (
           <div className="info-item-tech">
             <div className="info-label">
@@ -137,7 +137,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           </div>
         )}
 
-        {/* Tipo de Proprietário */}
+
         {farmData.tipo_proprietario && (
           <div className="info-item-tech">
             <div className="info-label">
@@ -161,21 +161,21 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           flex-direction: column;
           gap: 8px;
         }
-        
+
         .info-item-tech.highlight {
           background: linear-gradient(135deg, rgba(19, 236, 128, 0.05), transparent);
           border-radius: 16px;
           margin: -4px;
           padding: 4px;
         }
-        
+
         .info-item-tech.highlight .info-value {
           background: linear-gradient(135deg, rgba(19, 236, 128, 0.2), rgba(0, 102, 255, 0.1));
           border-color: var(--primary);
           font-weight: 700;
           font-size: 16px;
         }
-        
+
         .edit-farm-btn {
           position: relative;
           width: 100%;
@@ -196,7 +196,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           transition: all 0.3s ease;
           box-shadow: 0 12px 26px rgba(13, 124, 75, 0.18);
         }
-        
+
         .edit-farm-btn:hover {
           background: #0e9c5e;
           border-color: rgba(63, 127, 86, 0.4);

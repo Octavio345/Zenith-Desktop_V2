@@ -94,7 +94,7 @@ export async function analisarImagem(file) {
         const body = await response.json()
         detalhe = body.detail || detalhe
       } catch {
-        // Mantem a mensagem padrao quando o corpo nao e JSON.
+
       }
       throw new Error(detalhe)
     }

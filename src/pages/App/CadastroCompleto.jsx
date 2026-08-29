@@ -262,7 +262,7 @@ export default function CadastroCompleto() {
       })
     } catch (error) {
       if (createdUser && auth.currentUser?.uid === createdUser.uid) {
-        try { await deleteUser(createdUser) } catch { /* Conta preservada para recuperação em caso de falha externa. */ }
+        try { await deleteUser(createdUser) } catch {   }
       }
       let msg = "Erro no cadastro. Tente novamente."
       if (error.code === "auth/email-already-in-use") msg = "Este email já está cadastrado."

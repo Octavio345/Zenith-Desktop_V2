@@ -11,7 +11,7 @@ import { useDiagnostico } from "../../hooks/useDiagnostico";
 import { useGallery } from "../../hooks/useGallery";
 import "../../../styles/App/Explore.css";
 
-// Dados mockados para teste caso os hooks falhem
+
 const MOCK_CAMERA = {
   videoRef: { current: null },
   isCameraActive: false,
@@ -73,12 +73,12 @@ export default function ExploreView() {
   });
   const [loading, setLoading] = useState(true);
 
-  // Inicializa todos os hooks com segurança
+
   useEffect(() => {
     console.log("📦 Inicializando hooks...");
-    
+
     try {
-      // Tenta usar os hooks reais
+
       const farmHook = useFarmData();
       const cameraHook = useCamera();
       const diagnosticoHook = useDiagnostico();
@@ -99,7 +99,7 @@ export default function ExploreView() {
       });
     } catch (error) {
       console.error("❌ Erro ao inicializar hooks reais, usando mock:", error);
-      // Se falhar, usa os mocks
+
       setHooks({
         farmData: { farmData: null, loading: false, error: null },
         camera: MOCK_CAMERA,
@@ -111,7 +111,7 @@ export default function ExploreView() {
     }
   }, []);
 
-  // Log para debug
+
   useEffect(() => {
     if (!loading) {
       console.log("📊 Estado dos hooks:", {
@@ -137,28 +137,28 @@ export default function ExploreView() {
   return (
     <div className="explore-container">
       <ExploreTabs activeTab={activeTab} onTabChange={setActiveTab} />
-      
+
       <div className="tab-content">
         {activeTab === "clima" && (
           <ClimaTab farmData={hooks.farmData?.farmData || null} />
         )}
-        
+
         {activeTab === "diagnostico" && (
-          <DiagnosticoTab 
+          <DiagnosticoTab
             camera={hooks.camera}
             diagnostico={hooks.diagnostico}
             gallery={hooks.gallery}
           />
         )}
-        
+
         {activeTab === "diario" && (
           <DiarioTab />
         )}
-        
+
         {activeTab === "mapa" && (
           <MapaTab />
         )}
-        
+
         {activeTab === "estoque" && (
           <EstoqueTab />
         )}

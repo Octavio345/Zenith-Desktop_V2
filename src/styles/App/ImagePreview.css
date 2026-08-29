@@ -1,5 +1,5 @@
 
-/* ===== CAMERA DRAGGABLE WINDOW - OTIMIZADO ===== */
+
 .camera-overlay-backdrop {
   position: fixed;
   top: 0;
@@ -11,7 +11,7 @@
   z-index: 999;
   animation: fadeIn 0.2s ease;
   will-change: opacity;
-  pointer-events: none; /* ← Importante: permite clicar através do backdrop */
+  pointer-events: none;
 }
 
 .camera-draggable-window {
@@ -52,7 +52,7 @@
   }
 }
 
-/* Barra de título */
+
 .camera-window-header {
   display: flex;
   align-items: center;
@@ -112,7 +112,7 @@
   font-size: 16px;
 }
 
-/* Conteúdo da janela */
+
 .camera-window-content {
   flex: 1;
   position: relative;
@@ -127,7 +127,7 @@
   will-change: transform;
 }
 
-/* Botão de capturar na janela */
+
 .camera-capture-btn-window {
   position: absolute;
   bottom: 16px;
@@ -182,7 +182,7 @@
   transform: translateX(-50%) scale(0.98);
 }
 
-/* Handles para redimensionar - mais precisos */
+
 .resize-handle {
   position: absolute;
   background: transparent;
@@ -270,7 +270,7 @@
   border-bottom-left-radius: 12px;
 }
 
-/* Para mobile - mantém tela cheia */
+
 .mobile-fullscreen {
   position: fixed;
   top: 0;
@@ -281,15 +281,15 @@
   z-index: 1000;
 }
 
-/* Responsividade */
+
 @media (max-width: 768px) {
   .camera-overlay-backdrop {
     display: none;
   }
 }
 
-/* VERSAO DE MOBILE DA CAMERA */
-/* ===== CAMERA MOBILE - VERSÃO SIMPLIFICADA ===== */
+
+
 .mobile-fullscreen {
   position: fixed;
   top: 0;
@@ -302,14 +302,14 @@
   flex-direction: column;
 }
 
-/* Vídeo mobile */
+
 .camera-video-mobile {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Header mobile simplificado - sem gradiente */
+
 .camera-header-mobile-simple {
   position: absolute;
   top: 0;
@@ -372,7 +372,7 @@
   opacity: 0;
 }
 
-/* Controles inferiores mobile simplificado - apenas botão de captura */
+
 .camera-controls-mobile-simple {
   position: absolute;
   bottom: 30px;
@@ -424,32 +424,32 @@
   color: #000;
 }
 
-/* Responsividade mobile */
+
 @media (max-width: 480px) {
   .camera-back-btn-mobile-simple {
     width: 40px;
     height: 40px;
   }
-  
+
   .camera-back-btn-mobile-simple span {
     font-size: 20px;
   }
-  
+
   .camera-title-mobile-simple {
     font-size: 14px;
     padding: 6px 16px;
   }
-  
+
   .capture-outer-ring-mobile-simple {
     width: 70px;
     height: 70px;
   }
-  
+
   .capture-inner-ring-mobile-simple {
     width: 58px;
     height: 58px;
   }
-  
+
   .capture-inner-ring-mobile-simple span {
     font-size: 28px;
   }
@@ -459,22 +459,22 @@
   .camera-controls-mobile-simple {
     bottom: 20px;
   }
-  
+
   .capture-outer-ring-mobile-simple {
     width: 64px;
     height: 64px;
   }
-  
+
   .capture-inner-ring-mobile-simple {
     width: 52px;
     height: 52px;
   }
-  
+
   .capture-inner-ring-mobile-simple span {
     font-size: 24px;
   }
 }
-/* ===== PREVIEW MODERN - DESIGN ATUALIZADO ===== */
+
 .preview-container-modern {
   position: fixed;
   top: 0;
@@ -514,7 +514,7 @@
   }
 }
 
-/* Header */
+
 .preview-header {
   padding: 20px 24px;
   background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(0, 102, 255, 0.05));
@@ -566,7 +566,7 @@
   }
 }
 
-/* Área da imagem */
+
 .preview-image-area {
   padding: 24px;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
@@ -626,7 +626,7 @@
   transform: scale(1);
 }
 
-/* Informações adicionais */
+
 .preview-info {
   display: flex;
   gap: 20px;
@@ -661,7 +661,7 @@
   color: var(--primary);
 }
 
-/* Ações modernas */
+
 .preview-actions-modern {
   display: flex;
   gap: 16px;
@@ -737,7 +737,7 @@
   box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
 }
 
-/* Responsividade */
+
 @media (max-width: 768px) {
   .preview-container-modern {
     padding: 16px;

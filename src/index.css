@@ -22,7 +22,7 @@ html, body {
   height: 100%;
   min-height: 100vh;
   overflow-x: hidden;
-  overflow-y: auto; /* LIBERA SCROLL */
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -36,7 +36,7 @@ body {
   width: 100%;
   min-height: 100vh;
 }
-/* Melhorias globais para desktop */
+
 @media (min-width: 1024px) {
   body {
     font-size: 16px;

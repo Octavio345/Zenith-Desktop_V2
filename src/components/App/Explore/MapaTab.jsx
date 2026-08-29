@@ -393,14 +393,14 @@ export default function MapaTab() {
     const satelliteLayer = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
       {
-        // maxZoom controla até onde o usuário pode dar zoom na UI (mantém o zoom control liberado).
+
         maxZoom: 21,
-        // maxNativeZoom controla até onde o Leaflet REALMENTE busca tiles novos no servidor.
-        // A Esri não tem imagem de satélite em alta resolução para todo o globo além do zoom 17-18
-        // (comum em zonas rurais/fazendas). Pedir tiles acima disso faz a Esri devolver esse tile
-        // cinza "Map data not yet available" em vez de um erro. Ao limitar aqui, o Leaflet passa a
-        // fazer upscale do último tile válido (17) quando o usuário continua o zoom — a imagem fica
-        // um pouco mais "pixelizada" além desse ponto, mas nunca mais aparece o cinza vazio.
+
+
+
+
+
+
         maxNativeZoom: 17,
         attribution: "Tiles © Esri"
       }

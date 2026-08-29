@@ -1,4 +1,4 @@
-// pages/App/Explore.jsx
+
 import { useState, useEffect } from "react"
 import { useLocation } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
@@ -43,14 +43,14 @@ export default function Explore() {
     return savedTab || "diagnostico"
   })
 
-  // Verificar se veio uma tab específica do estado de navegação
+
   useEffect(() => {
-    // Prioridade: 1. state, 2. localStorage, 3. padrão
+
     if (location.state?.activeTab) {
       setActiveTab(location.state.activeTab)
       localStorage.setItem("activeExploreTab", location.state.activeTab)
     } else {
-      // Verificar se tem uma tab salva
+
       const savedTab = localStorage.getItem("activeExploreTab")
       if (savedTab && savedTab !== activeTab) {
         setActiveTab(savedTab)
@@ -58,7 +58,7 @@ export default function Explore() {
     }
   }, [location])
 
-  // Salvar tab quando mudar manualmente
+
   useEffect(() => {
     localStorage.setItem("activeExploreTab", activeTab)
   }, [activeTab])
@@ -73,21 +73,21 @@ export default function Explore() {
 
   const renderTab = () => {
     switch(activeTab) {
-      case "diagnostico": 
+      case "diagnostico":
         return <DiagnosticoTab active={activeTab === "diagnostico"} />
       case "monitoramento":
         return <MonitoramentoView />
-      case "clima": 
+      case "clima":
         return <ClimaTab />
-      case "diario": 
+      case "diario":
         return <DiarioTab />
-      case "mapa": 
+      case "mapa":
         return <MapaTab />
-      case "estoque": 
+      case "estoque":
         return <EstoqueTab />
-      case "atividades": 
+      case "atividades":
         return <AtividadesTab />
-      default: 
+      default:
         return <DiagnosticoTab />
     }
   }

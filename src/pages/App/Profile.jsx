@@ -1,4 +1,4 @@
-// Profile.jsx — com correção definitiva do header/menu bar (fundo verde sempre visível)
+
 import { useState, useEffect, useRef } from "react"
 import { auth, db } from "../../services/firebase"
 import {
@@ -20,7 +20,7 @@ import SplashScreen from "../../components/App/Global/SplashScreen"
 
 import "../../styles/App/Profile.css"
 
-/* ---------- Helpers ---------- */
+
 const onlyDigits = (v) => String(v || "").replace(/\D/g, "")
 
 const formatPhoneInput = (value) => {
@@ -157,7 +157,7 @@ const getPlanByValue = (value) => {
   )
 }
 
-/* ---------- Component ---------- */
+
 export default function Profile() {
   const [user, setUser] = useState(null)
   const [userData, setUserData] = useState(null)
@@ -200,7 +200,7 @@ export default function Profile() {
   const location = useLocation()
   const alertTimer = useRef(null)
 
-  /* ---------- Auth & loading ---------- */
+
   useEffect(() => {
     const unsub = auth.onAuthStateChanged(async (current) => {
       if (current) {
@@ -503,7 +503,7 @@ export default function Profile() {
     const now = new Date()
     const diffMs = now - created
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays === 0) return "hoje"
     if (diffDays < 7) {
       return `${diffDays} ${diffDays === 1 ? "dia" : "dias"}`
@@ -533,68 +533,68 @@ export default function Profile() {
   )
   const isEmployeeAccount = isOperationalRole(userData?.role)
 
-  // ========== CORREÇÃO DEFINITIVA DO HEADER E MENU BAR ==========
-  /*
-  useEffect(() => { return undefined
-    // Adiciona classe no body para identificar a página de perfil
-    document.body.classList.add('profile-page')
-    
-    // Função para aplicar estilos inline nos elementos
-    const applyGreenStyles = () => {
-      const headerContainer = document.querySelector('.header .container')
-      const menuBar = document.querySelector('.menu-bar')
 
-      if (headerContainer) {
-        headerContainer.style.setProperty('background', 'linear-gradient(135deg, #0a2a1a 0%, #0f3a24 100%)', 'important')
-        headerContainer.style.setProperty('backdrop-filter', 'none', 'important')
-        headerContainer.style.setProperty('border', '1px solid rgba(30, 107, 62, 0.5)', 'important')
-        headerContainer.style.setProperty('box-shadow', 'none', 'important')
-        // Garante que o header fique acima de qualquer conteúdo
-        headerContainer.style.setProperty('z-index', '2000', 'important')
-      }
 
-      if (menuBar) {
-        menuBar.style.setProperty('background', 'linear-gradient(135deg, #0a2a1a 0%, #0f3a24 100%)', 'important')
-        menuBar.style.setProperty('backdrop-filter', 'none', 'important')
-        menuBar.style.setProperty('border', '1px solid rgba(30, 107, 62, 0.5)', 'important')
-        menuBar.style.setProperty('box-shadow', 'none', 'important')
-        menuBar.style.setProperty('z-index', '2000', 'important')
-      }
-    }
 
-    // Executa imediatamente e também após um pequeno delay (para garantir que o DOM esteja pronto)
-    applyGreenStyles()
-    const timeoutId = setTimeout(applyGreenStyles, 100)
 
-    // Observa mudanças no DOM (caso o header seja renderizado novamente)
-    const observer = new MutationObserver(() => applyGreenStyles())
-    observer.observe(document.body, { childList: true, subtree: true })
 
-    // Limpeza ao desmontar o componente
-    return () => {
-      clearTimeout(timeoutId)
-      observer.disconnect()
-      document.body.classList.remove('profile-page')
-      // Restaura os estilos originais removendo os inline
-      const headerContainer = document.querySelector('.header .container')
-      const menuBar = document.querySelector('.menu-bar')
-      if (headerContainer) {
-        headerContainer.style.removeProperty('background')
-        headerContainer.style.removeProperty('backdrop-filter')
-        headerContainer.style.removeProperty('border')
-        headerContainer.style.removeProperty('box-shadow')
-        headerContainer.style.removeProperty('z-index')
-      }
-      if (menuBar) {
-        menuBar.style.removeProperty('background')
-        menuBar.style.removeProperty('backdrop-filter')
-        menuBar.style.removeProperty('border')
-        menuBar.style.removeProperty('box-shadow')
-        menuBar.style.removeProperty('z-index')
-      }
-    }
-  }, [])
-  */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   if (loading) return <SplashScreen message="Carregando perfil..." />
 
@@ -618,7 +618,7 @@ export default function Profile() {
           <div className="pf-grain-overlay" />
         </div>
 
-        {/* HERO */}
+
         <section className="pf-hero">
           <div className="pf-hero-inner">
             <div className="pf-avatar">
@@ -660,7 +660,7 @@ export default function Profile() {
           </div>
         </section>
 
-        {/* STATS ROW */}
+
         <section className="pf-stats">
           <div className="pf-stat">
             <span className="material-symbols-outlined">eco</span>
@@ -692,7 +692,7 @@ export default function Profile() {
           </div>}
         </section>
 
-        {/* TABS */}
+
         <div className="pf-tabs">
           {TABS.map((t) => (
             <button
@@ -711,7 +711,7 @@ export default function Profile() {
           ))}
         </div>
 
-        {/* ALERT */}
+
         {alert.text && (
           <div className={`pf-alert pf-alert-${alert.type}`}>
             <span className="material-symbols-outlined">
@@ -721,9 +721,9 @@ export default function Profile() {
           </div>
         )}
 
-        {/* CONTENT */}
+
         <div className="pf-content">
-          {/* ABA PESSOAL */}
+
           {activeTab === "pessoal" && (
             <div className="pf-card" style={{ animationDelay: "0ms" }}>
               <div className="pf-card-header">
@@ -945,7 +945,7 @@ export default function Profile() {
               </div>
           )}
 
-          {/* ABA FAZENDA */}
+
           {activeTab === "fazenda" && (
             <div className="pf-card" style={{ animationDelay: "60ms" }}>
               <div className="pf-card-header">
@@ -1171,7 +1171,7 @@ export default function Profile() {
               </div>
           )}
 
-          {/* ABA CONTA */}
+
           {activeTab === "seguranca" && (
             <>
               {!isEmployeeAccount && <div className="pf-card pf-plan-card" style={{ animationDelay: "90ms" }}>

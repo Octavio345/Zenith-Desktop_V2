@@ -1,18 +1,18 @@
-// components/App/Global/InstallSuccess.jsx
+
 import { motion } from "framer-motion"
 import { FaCheckCircle, FaRocket, FaTimes } from 'react-icons/fa'
 import '../../../styles/Global/InstallSuccess.css'
 
 const InstallSuccess = ({ onClose, isIOS, isAndroid }) => {
   return (
-    <motion.div 
+    <motion.div
       className="install-success-overlay"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
-      <motion.div 
+      <motion.div
         className="install-success"
         initial={{ scale: 0.8, y: 50 }}
         animate={{ scale: 1, y: 0 }}

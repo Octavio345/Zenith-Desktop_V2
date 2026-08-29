@@ -1,6 +1,6 @@
-/* ============================================ */
-/* AtividadesTab.css - Design com cores vivas e borda lateral por status */
-/* ============================================ */
+
+
+
 
 :root {
   --bg: #0b0f14;
@@ -28,7 +28,7 @@
   --ease: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Container */
+
 .atividades-container {
   max-width: 1280px;
   margin: 0 auto;
@@ -40,7 +40,7 @@
 @media (max-width: 768px) { .atividades-container { padding: 20px; } }
 @media (max-width: 480px) { .atividades-container { padding: 16px; } }
 
-/* Header */
+
 .atividades-header {
   display: flex;
   align-items: flex-end;
@@ -69,7 +69,7 @@
   .atividades-header { flex-direction: column; align-items: stretch; }
 }
 
-/* Botão principal */
+
 .add-activity-btn {
   display: inline-flex;
   align-items: center;
@@ -134,7 +134,7 @@
   font-size: 19px;
 }
 
-/* Estatísticas */
+
 .atividades-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -194,7 +194,7 @@
   font-weight: 500;
 }
 
-/* Controles */
+
 .atividades-controls {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 200px 200px;
@@ -275,7 +275,7 @@
   padding: 10px;
 }
 
-/* CustomSelect compatibilidade */
+
 .atividades-container .custom-select.filter-select {
   padding: 0;
   background: transparent;
@@ -315,7 +315,7 @@
   color: var(--text);
 }
 
-/* Lista */
+
 .activities-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
@@ -326,7 +326,7 @@
   .activities-list { grid-template-columns: 1fr; }
 }
 
-/* Card */
+
 .activity-card {
   position: relative;
   background: var(--surface);
@@ -337,7 +337,7 @@
   display: flex;
   flex-direction: column;
   transition: border-color 0.15s var(--ease), background 0.15s var(--ease), transform 0.15s var(--ease);
-  /* Bordas laterais por status (substitui a antiga borda de atraso) */
+
   border-left-width: 3px;
   border-left-style: solid;
 }
@@ -348,7 +348,7 @@
   transform: translateY(-1px);
 }
 
-/* Bordas coloridas por status */
+
 .activity-card.pendente {
   border-left-color: var(--warning-light);
 }
@@ -362,9 +362,9 @@
   border-left-color: var(--danger);
 }
 
-/* Remove a antiga classe .overdue que aplicava borda vermelha */
+
 .activity-card.overdue {
-  /* não aplica borda extra, mantém a do status */
+
 }
 
 .activity-card.concluida { opacity: 0.85; }
@@ -387,7 +387,7 @@
 
 .activity-icon span {
   font-size: 22px;
-  filter: drop-shadow(0 0 2px currentColor); /* realça a cor do ícone */
+  filter: drop-shadow(0 0 2px currentColor);
 }
 
 .activity-info {
@@ -432,7 +432,7 @@
 
 .activity-date span { font-size: 14px; }
 
-/* Badges */
+
 .activity-badges {
   display: flex;
   flex-direction: column;
@@ -457,18 +457,18 @@
 .priority-badge span,
 .status-badge span { font-size: 13px; }
 
-/* Cores mais vivas para prioridade */
+
 .priority-badge.alta   { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); }
 .priority-badge.media  { background: rgba(243, 156, 18, 0.15); color: #f39c12; border-color: rgba(243, 156, 18, 0.3); }
 .priority-badge.baixa  { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border-color: rgba(46, 204, 113, 0.3); }
 
-/* Status com cores mais intensas */
+
 .status-badge.pendente      { background: rgba(243, 156, 18, 0.15); color: #f39c12; border-color: rgba(243, 156, 18, 0.3); }
 .status-badge.em_andamento  { background: rgba(52, 152, 219, 0.15); color: #3498db; border-color: rgba(52, 152, 219, 0.3); }
 .status-badge.concluida     { background: rgba(46, 204, 113, 0.15); color: #2ecc71; border-color: rgba(46, 204, 113, 0.3); }
 .status-badge.cancelada     { background: rgba(231, 76, 60, 0.15); color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); }
 
-/* Descrição */
+
 .activity-description {
   background: rgba(255, 255, 255, 0.025);
   border-left: 2px solid var(--border-strong);
@@ -482,7 +482,7 @@
 
 .activity-description p { margin: 0; }
 
-/* Info row */
+
 .activity-info-row {
   display: flex;
   align-items: center;
@@ -523,7 +523,7 @@
 
 .overdue-badge span { font-size: 13px; }
 
-/* Ações */
+
 .activity-actions {
   display: flex;
   gap: 8px;
@@ -578,7 +578,7 @@
   border-color: rgba(231, 76, 60, 0.25);
 }
 
-/* Empty state */
+
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
@@ -624,7 +624,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* Modal */
+
 .atividades-modal {
   position: fixed;
   inset: 0;
@@ -688,7 +688,7 @@
 
 .close-btn span { font-size: 18px; }
 
-/* Form */
+
 .form-group { margin-bottom: 16px; }
 
 .form-group label {
@@ -749,7 +749,7 @@
   .form-row { grid-template-columns: 1fr; }
 }
 
-/* Botões do form */
+
 .submit-btn {
   width: 100%;
   padding: 11px 18px;
@@ -788,7 +788,7 @@
 
 .confirm-text strong { color: var(--text); font-weight: 600; }
 
-/* Responsivo */
+
 @media (max-width: 640px) {
   .atividades-header h2 { font-size: 20px; }
   .activity-card { padding: 14px; }
@@ -798,13 +798,13 @@
   .activities-list { grid-template-columns: 1fr; }
 }
 
-/* Desktop polish */
+
 @media (min-width: 1280px) {
   .atividades-container { padding: 40px; }
   .activities-list { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* Scrollbar do modal */
+
 .activity-form::-webkit-scrollbar { width: 8px; }
 .activity-form::-webkit-scrollbar-track { background: transparent; }
 .activity-form::-webkit-scrollbar-thumb {

@@ -38,7 +38,7 @@ select option {
   font-weight: 700;
 }
 
-/* ===== Zenith desktop visual refresh ===== */
+
 :root {
   --zenith-bg: #06100d;
   --zenith-panel: rgba(9, 20, 17, 0.96);
@@ -148,7 +148,7 @@ body {
   mask-composite: exclude;
 }
 
-/* Intro desktop */
+
 .intro-container {
   display: flex;
   align-items: center;
@@ -334,7 +334,7 @@ body {
   text-align: left !important;
 }
 
-/* Login and account creation */
+
 .login-container,
 .register-container,
 .cadastro-completo-container {
@@ -485,7 +485,7 @@ body {
   backdrop-filter: none !important;
 }
 
-/* Dedicated farm registration page */
+
 .register-container .register-header {
   position: relative !important;
   top: auto !important;
@@ -520,7 +520,7 @@ body {
   grid-column: 1 / -1;
 }
 
-/* Profile without the unwanted blur */
+
 .profile-background-canvas,
 .profile-mouse-glow {
   opacity: 0.28;
@@ -653,7 +653,7 @@ body {
   }
 }
 
-/* ===== Intro/Login correction after visual QA ===== */
+
 .intro-container {
   align-items: stretch;
   padding: clamp(18px, 3vw, 36px);
@@ -851,7 +851,7 @@ body {
   }
 }
 
-/* ===== Requested redesign: intro and login v3 ===== */
+
 .intro-container {
   display: flex !important;
   align-items: center !important;
@@ -1207,7 +1207,7 @@ body {
   }
 }
 
-/* ===== Intro v4: premium product opening ===== */
+
 .intro-container.intro-v4 {
   min-height: 100vh;
   padding: clamp(18px, 3vw, 34px) !important;
@@ -1585,7 +1585,7 @@ body {
   }
 }
 
-/* ===== Final correction: classic intro and filled auth side panels ===== */
+
 .intro-container.intro-classic-refresh {
   min-height: 100vh;
   padding: 28px !important;
@@ -1811,7 +1811,7 @@ body {
   }
 }
 
-/* ===== User feedback: smaller classic intro, no auth promo card ===== */
+
 .login-header::before,
 .login-header::after,
 .register-header::before,
@@ -2167,7 +2167,7 @@ body {
   }
 }
 
-/* Introdução: durante o carregamento não há foto, drone ou camada escura. */
+
 .intro-container.intro-classic-refresh {
   background: #f2f6ef !important;
 }

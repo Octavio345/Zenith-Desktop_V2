@@ -1,19 +1,19 @@
-/**
- * MonitoramentoView.module.css
- * Design system do modulo de Monitoramento.
- *
- * Alinhado ao tema verde organico do Diagnostico:
- *   Background: #0a0c0e  |  Verde: #56a870  |  Azul: #0066ff
- *   Cards: glass effect (backdrop-filter + rgba escuro)
- *   Texto: #fff (primario), #a0a8b4 (secundario)
- *
- * @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
- * Adicione o import acima no seu index.html ou CSS global.
- */
 
-/* ============================================================
-   VARIAVEIS - herdadas por todos os filhos
-   ============================================================ */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 .container {
   --g0: #03150d;
   --g1: #061c12;
@@ -32,7 +32,7 @@
   --border-strong: rgba(19, 236, 128, 0.28);
 
 
-  /* Cores base */
+
   --n-primary:          #2e6f46;
   --n-primary-dark:     #245c39;
   --n-primary-glow:     rgba(46, 111, 70, 0.18);
@@ -40,23 +40,23 @@
   --n-secondary:        #38bdf8;
   --n-secondary-glow:   rgba(56, 189, 248, 0.24);
 
-  /* Backgrounds */
+
   --n-bg:               #f4f8f0;
   --n-card:             #ffffff;
   --n-card-solid:       #ffffff;
   --n-glass:            #f4f8f0;
 
-  /* Bordas */
+
   --n-border:           #dce7da;
   --n-border-md:        #c9ddc7;
   --n-border-glow:      rgba(46, 111, 70, 0.3);
 
-  /* Texto */
+
   --n-text:             #173326;
   --n-text-secondary:   #53665a;
   --n-text-muted:       #7a897f;
 
-  /* Semantica */
+
   --n-danger:           #ff4d4d;
   --n-danger-soft:      rgba(255, 77, 77, 0.12);
   --n-danger-glow:      rgba(255, 77, 77, 0.3);
@@ -65,18 +65,18 @@
   --n-success:          var(--g6);
   --n-info:             #00ccff;
 
-  /* Sombras */
+
   --n-shadow:           0 18px 45px rgba(39, 78, 48, 0.10);
   --n-shadow-sm:        0 6px 18px rgba(39, 78, 48, 0.08);
   --n-neon:             0 0 20px rgba(46, 111, 70, 0.12);
 
-  /* Radii */
+
   --n-r-sm:  12px;
   --n-r-md:  20px;
   --n-r-lg:  28px;
   --n-r-xl:  36px;
 
-  /* Font */
+
   --n-font: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
 
   font-family: var(--n-font);
@@ -93,9 +93,9 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ============================================================
-   CABECALHO
-   ============================================================ */
+
+
+
 .cabecalho {
   text-align: center;
   margin-bottom: 24px;
@@ -145,9 +145,9 @@
   font-weight: 600;
 }
 
-/* ============================================================
-   UPLOAD
-   ============================================================ */
+
+
+
 .uploadArea {
   position: relative;
   overflow: hidden;
@@ -323,9 +323,9 @@
   display: none;
 }
 
-/* ============================================================
-   LOADING
-   ============================================================ */
+
+
+
 .loadingContainer {
   display: flex;
   flex-direction: column;
@@ -554,9 +554,9 @@
   100% { transform: translateX(100%); }
 }
 
-/* ============================================================
-   ERRO
-   ============================================================ */
+
+
+
 .erroContainer {
   display: flex;
   align-items: flex-start;
@@ -612,9 +612,9 @@
   border-color: var(--n-danger);
 }
 
-/* ============================================================
-   ALERTA BANNER
-   ============================================================ */
+
+
+
 .alertBanner {
   display: flex;
   align-items: flex-start;
@@ -667,9 +667,9 @@
 .alertBanner_aviso  .alertBannerText { color: rgba(255, 210, 100, 0.9); }
 .alertBanner_ok     .alertBannerText { color: rgba(86, 168, 112, 0.85); }
 
-/* ============================================================
-   LAYOUT DE RESULTADOS
-   ============================================================ */
+
+
+
 .resultados {
   display: flex;
   flex-direction: column;
@@ -695,9 +695,9 @@
   }
 }
 
-/* ============================================================
-   CARD DE IMAGEM + ABAS
-   ============================================================ */
+
+
+
 .imagemCard {
   background: var(--n-card);
   backdrop-filter: blur(12px);
@@ -793,9 +793,9 @@
   flex-shrink: 0;
 }
 
-/* ============================================================
-   PAINEL DE METRICAS
-   ============================================================ */
+
+
+
 .painelMetricas {
   background: var(--n-card);
   backdrop-filter: blur(12px);
@@ -823,7 +823,7 @@
   line-height: 1;
 }
 
-/* Metricas principais - aneis de progresso */
+
 .metriasPrincipais {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -869,7 +869,7 @@
   letter-spacing: 0.5px;
 }
 
-/* Badge de falhas */
+
 .badgeFalhas {
   display: flex;
   flex-direction: column;
@@ -905,7 +905,7 @@
   line-height: 1;
 }
 
-/* Grid de detalhes */
+
 .gridDetalhes {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -943,7 +943,7 @@
   gap: 4px;
 }
 
-/* Status tags */
+
 .statusTag {
   display: inline-flex;
   align-items: center;
@@ -972,7 +972,7 @@
   border-color: var(--n-border);
 }
 
-/* Fileiras */
+
 .fileirasDetalhes {
   display: flex;
   flex-direction: column;
@@ -984,7 +984,7 @@
   color: var(--n-text-muted);
 }
 
-/* Iluminacao */
+
 .iluminacao_boa {
   background: rgba(86, 168, 112, 0.1);
   color: var(--n-primary);
@@ -1009,9 +1009,9 @@
   margin-top: 3px;
 }
 
-/* ============================================================
-   INTERPRETACAO
-   ============================================================ */
+
+
+
 .secaoInterpretacao {
   padding: 14px 18px;
   border-top: 1px solid var(--n-border);
@@ -1062,9 +1062,9 @@
 .itemInsight_aviso  { color: #fcd34d; }
 .itemInsight_ok     { color: var(--g7); }
 
-/* ============================================================
-   BOTAO DE NOVA ANALISE
-   ============================================================ */
+
+
+
 .botaoNova {
   width: 100%;
   padding: 14px;
@@ -1089,9 +1089,9 @@
   box-shadow: var(--n-neon);
 }
 
-/* ============================================================
-   RESPONSIVIDADE FINA
-   ============================================================ */
+
+
+
 
 @media (max-width: 380px) {
   .metriasPrincipais {

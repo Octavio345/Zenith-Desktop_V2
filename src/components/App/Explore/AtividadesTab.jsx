@@ -36,7 +36,7 @@ export default function AtividadesTab() {
     assigneeId: ""
   })
 
-  // Cores mais vibrantes para os ícones
+
   const activityTypes = [
     { id: "tarefa", name: "Tarefa", icon: "assignment", color: "#347b4e" },
     { id: "voo", name: "Voo de Drone", icon: "flight", color: "#426b87" },
@@ -230,7 +230,7 @@ export default function AtividadesTab() {
 
   return (
     <div className="atividades-container">
-      {/* Header */}
+
       <div className="atividades-header">
         <div>
           <h2>Atividades</h2>
@@ -252,7 +252,7 @@ export default function AtividadesTab() {
         </div>
       )}
 
-      {/* Estatísticas */}
+
       <div className="atividades-stats">
         <div className="stat-card">
           <span className="material-symbols-outlined">assignment</span>
@@ -284,7 +284,7 @@ export default function AtividadesTab() {
         </div>
       </div>
 
-      {/* Controles */}
+
       <div className="atividades-controls">
         <div className="search-bar">
           <span className="material-symbols-outlined">search</span>
@@ -312,7 +312,7 @@ export default function AtividadesTab() {
         </div>
       </div>
 
-      {/* Lista */}
+
       <div className="activities-list">
         {activitiesLoading ? (
           <div className="empty-state activities-loading">
@@ -429,7 +429,7 @@ export default function AtividadesTab() {
         )}
       </div>
 
-      {/* Modal Nova */}
+
         {showForm && createPortal((
           <motion.div
             className="atividades-modal"
@@ -522,7 +522,7 @@ export default function AtividadesTab() {
           </motion.div>
         ), document.body)}
 
-      {/* Modal Editar */}
+
         {selectedActivity && createPortal((
           <motion.div
             className="atividades-modal"
@@ -613,7 +613,7 @@ export default function AtividadesTab() {
           </motion.div>
         ), document.body)}
 
-      {/* Modal Excluir */}
+
         {deleteTarget && createPortal((
           <motion.div
             className="atividades-modal"

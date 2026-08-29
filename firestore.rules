@@ -66,7 +66,7 @@ service cloud.firestore {
 
     match /users/{userId} {
 
-      // Proprietário cria o próprio perfil ou cadastra um funcionário vinculado.
+
       allow create: if estaLogado() && (
         (
           request.auth.uid == userId &&
@@ -85,8 +85,8 @@ service cloud.firestore {
         )
       );
 
-      // Usuário lê o próprio perfil; proprietário lê sua equipe;
-      // funcionário pode ler o perfil do proprietário ao qual está vinculado.
+
+
       allow read: if (
         estaLogado() && request.auth.uid == userId
       ) || (
@@ -105,7 +105,7 @@ service cloud.firestore {
         )
       );
 
-      // Proprietário atualiza as próprias informações pessoais.
+
       allow update: if contaAtiva() &&
         request.auth.uid == userId &&
         perfilEhAdministrador(resource.data) &&
@@ -125,7 +125,7 @@ service cloud.firestore {
           "updatedAt"
         ]);
 
-      // Proprietário administra os dados cadastrais e trabalhistas de sua equipe.
+
       allow update: if administradorConfirmado() &&
         resource.data.ownerId == request.auth.uid &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -152,7 +152,7 @@ service cloud.firestore {
           "updatedAt"
         ]);
 
-      // Funcionário atualiza somente dados operacionais da própria jornada.
+
       allow update: if contaAtiva() &&
         request.auth.uid == userId &&
         resource.data.role in ["employee", "collaborator"] &&
@@ -171,8 +171,8 @@ service cloud.firestore {
           "updatedAt"
         ]);
 
-      // O plano gratuito preserva o histórico e revoga o acesso por
-      // archived/accessStatus; exclusão física pelo cliente não é permitida.
+
+
       allow delete: if false;
     }
 
@@ -199,13 +199,13 @@ service cloud.firestore {
         resource.data.employeeId == request.auth.uid
       );
 
-      // Proprietário administra tarefas de sua equipe.
+
       allow update: if administradorConfirmado()
                     && resource.data.ownerId == request.auth.uid
                     && request.resource.data.ownerId == resource.data.ownerId
                     && request.resource.data.employeeId == resource.data.employeeId;
 
-      // Funcionário pode iniciar ou concluir somente uma tarefa atribuída a ele.
+
       allow update: if contaAtiva()
                     && resource.data.employeeId == request.auth.uid
                     && request.resource.data.ownerId == resource.data.ownerId
@@ -226,8 +226,8 @@ service cloud.firestore {
 
     match /activities/{activityId} {
 
-      // O proprietário publica uma atividade para toda a fazenda ou para um
-      // funcionário que pertença à própria equipe.
+
+
       allow create: if administradorConfirmado()
                     && request.resource.data.ownerId == request.auth.uid
                     && (
@@ -238,8 +238,8 @@ service cloud.firestore {
                       )
                     );
 
-      // O proprietário vê toda a operação. O funcionário vê os comunicados
-      // gerais da sua fazenda e as atividades atribuídas diretamente a ele.
+
+
       allow read: if contaAtiva() && (
         resource.data.ownerId == request.auth.uid ||
         (
@@ -260,7 +260,7 @@ service cloud.firestore {
                       )
                     );
 
-      // O funcionário designado pode apenas iniciar ou concluir a atividade.
+
       allow update: if contaAtiva()
                     && resource.data.assigneeId == request.auth.uid
                     && request.resource.data.ownerId == resource.data.ownerId
@@ -279,10 +279,10 @@ service cloud.firestore {
                     && resource.data.ownerId == request.auth.uid;
     }
 
-    // Tudo que não foi declarado acima permanece bloqueado.
+
     match /{document=**} {
       allow read, write: if false;
     }
   }
-  
+
 }

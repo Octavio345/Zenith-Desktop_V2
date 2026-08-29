@@ -1,4 +1,4 @@
-/* Home.css - Versão final: cards transparentes, profile sidebar igual, header normal */
+
 @import url('https://fonts.googleapis.com/css2?family=Jersey+15&family=Poppins:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1');
 
@@ -22,7 +22,7 @@
   --warning: #ffaa00;
   --info: #00ccff;
   --success: #00ff88;
-  
+
   --neon-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
   --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
@@ -1717,7 +1717,7 @@ body {
     padding: 20px 24px 32px 0;
     background: transparent;
   }
-  /* PROFILE CARD COM MESMA TRANSPARÊNCIA DOS CARDS PRINCIPAIS */
+
   .profile-sidebar .profile-card {
     margin-bottom: 24px;
     padding: 24px 20px;
@@ -1827,7 +1827,7 @@ body {
   .profile-sidebar {
     padding: 20px 26px 40px 0;
   }
-  /* Ajuste fino para o profile card manter transparência consistente */
+
   .profile-sidebar .profile-card {
     background: linear-gradient(145deg, rgba(18, 22, 28, 0.3), rgba(18, 22, 28, 0.12));
     backdrop-filter: blur(12px);
@@ -2545,25 +2545,25 @@ body {
   }
 }
 
-/* ===================================================== */
-/* 🔥 BACKGROUND BONITO + MAIS CLARO + PREMIUM */
-/* ===================================================== */
-/* ===================================================== */
-/* 🌅 HERO CINEMATOGRÁFICO — substitui o bloco antigo    */
-/* ===================================================== */
+
+
+
+
+
+
 .home-page {
   position: relative;
   min-height: 100vh;
-  background: var(--background-darker); /* base sólida do app */
+  background: var(--background-darker);
   overflow: visible !important;
   isolation: isolate;
 }
 
-/* Camada 1: a foto com Ken Burns (zoom+pan lento) */
+
 .home-page::before {
   content: "";
   position: fixed;
-  inset: -5% -5% -5% -5%;        /* margem pra não cortar no zoom */
+  inset: -5% -5% -5% -5%;
   z-index: -2;
   background: url("https://portaladama.com/wp-content/uploads/2020/08/Guia-da-Soja-capa-1.jpeg")
     center/cover no-repeat;
@@ -2577,7 +2577,7 @@ body {
   100% { transform: scale(1.18) translate3d( 2%,  1%, 0); }
 }
 
-/* Camada 2: overlays — vinheta + auroras + fade pro dark */
+
 .home-page::after {
   content: "";
   position: fixed;
@@ -2585,13 +2585,13 @@ body {
   z-index: -1;
   pointer-events: none;
   background:
-    /* aurora verde (sua --primary) drift */
+
     radial-gradient(60% 50% at 18% 22%, rgba(0,255,136,0.22), transparent 60%),
-    /* calor de sol no canto direito */
+
     radial-gradient(45% 40% at 85% 15%, rgba(255,190,120,0.18), transparent 65%),
-    /* vinheta superior leve */
+
     linear-gradient(to bottom, rgba(5,7,8,0.55) 0%, rgba(5,7,8,0.15) 25%, rgba(5,7,8,0.55) 60%, rgba(5,7,8,0.95) 100%),
-    /* tom geral pra integrar com o tema neon-dark */
+
     linear-gradient(135deg, rgba(0,40,30,0.25), rgba(0,20,40,0.35));
   animation: auroraDrift 18s ease-in-out infinite alternate;
   will-change: background-position, opacity;
@@ -2603,9 +2603,9 @@ body {
   100% { filter: hue-rotate(6deg)   saturate(1.1);  opacity: 1; }
 }
 
-/* Camada 3: grain sutil (premium) */
+
 .home-page > .grain,
-.home-page::before { /* nada */ }
+.home-page::before {   }
 
 .home-page .grain-overlay {
   position: fixed;
@@ -2617,10 +2617,10 @@ body {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-/* Garante que conteúdo fica por cima */
+
 .home-page > * { position: relative; z-index: 1; }
 
-/* Faz o welcome-section "abraçar" a cena: vidro com brilho de horizonte */
+
 .welcome-section {
   background:
     linear-gradient(135deg, rgba(10,14,18,0.55), rgba(10,14,18,0.25)) !important;
@@ -2631,7 +2631,7 @@ body {
     inset 0 1px 0 rgba(255,255,255,0.06);
 }
 
-/* Respeita usuários com prefers-reduced-motion */
+
 @media (prefers-reduced-motion: reduce) {
   .home-page::before,
   .home-page::after { animation: none !important; }
@@ -2665,9 +2665,9 @@ body {
   overflow-x: hidden;
 }
 
-/* ===================================================== */
-/* Zenith site style pass for the authenticated Home      */
-/* ===================================================== */
+
+
+
 .home-page {
   --site-primary: #16f29a;
   --site-primary-dark: #10c97b;
@@ -3456,9 +3456,9 @@ body {
   }
 }
 
-/* ===================================================== */
-/* Correção do redesign: fundo visível + welcome sem quebra */
-/* ===================================================== */
+
+
+
 .home-page .home-bg-image {
   inset: -10%;
   background:
@@ -3556,9 +3556,9 @@ body {
   }
 }
 
-/* ===================================================== */
-/* Ajuste final pedido: soja visível e dashboard sem esmagar */
-/* ===================================================== */
+
+
+
 .home-page .home-bg-image {
   inset: -6%;
   background:
@@ -3635,7 +3635,7 @@ body {
   }
 }
 
-/* Meio-termo: soja visível, mas com camada tech igual ao estilo anterior */
+
 .home-page .home-bg-image {
   background:
     linear-gradient(180deg, rgba(4, 8, 6, 0.34), rgba(4, 8, 6, 0.62)),
@@ -3678,7 +3678,7 @@ body {
   opacity: 0.26;
 }
 
-/* Alinhamento dos cards de dados no dashboard */
+
 .home-page .farm-info-card {
   display: flex;
   flex-direction: column;
@@ -3759,9 +3759,9 @@ body {
   100% { background-position: 64px 64px, 64px 64px; }
 }
 
-/* ===================================================== */
-/* Alinhamento definitivo dos blocos da Home              */
-/* ===================================================== */
+
+
+
 .home-page .farm-info-card,
 .home-page .profile-sidebar .profile-card {
   display: flex;
@@ -4070,7 +4070,7 @@ body {
     gap: 8px;
   }
 }
-/* Central de operação: dados existentes transformados em uma rotina de decisão. */
+
 .farm-command-center {
   margin: 34px 0;
   padding: clamp(22px, 3vw, 38px);
@@ -4124,7 +4124,7 @@ body {
 @media (max-width: 850px) { .farm-command-center__head, .farm-command-center__body { grid-template-columns: 1fr; display: grid; }.farm-command-center__head { align-items: start; }.farm-command-center__head > button { width: 100%; }.farm-command-center__metrics { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 480px) { .farm-command-center { border-radius: 20px; margin: 24px 0; }.farm-command-center__metrics { gap: 8px; }.farm-command-center__metrics article { min-height: 104px; padding: 13px; }.farm-command-center__metrics small { margin-top: 8px; }.farm-command-center__metrics strong { font-size: 1.4rem; } }
 
-/* Ajuste visual: a central segue a identidade neon preta/verde/azul do Zenith. */
+
 .farm-command-center {
   border-color: rgba(0, 255, 136, .18);
   background:
@@ -4155,7 +4155,7 @@ body {
 .farm-command-center__section-title > .material-symbols-outlined,
 .operation-event__icon { background: var(--primary-soft); }
 
-/* Central da fazenda alinhada ao tema real da Home (papel claro e verde agrícola). */
+
 .zenith-home .farm-command-center {
   color: var(--zenith-ink);
   border-color: var(--zenith-line);

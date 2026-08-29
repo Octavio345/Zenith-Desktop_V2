@@ -1,8 +1,8 @@
-/* Explore.css - Versão Organizada */
+
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0,1');
 
-/* ===== VARIÁVEIS ===== */
+
 :root {
   --primary: #00ff88;
   --primary-dark: #00cc6a;
@@ -27,7 +27,7 @@
   --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-/* ===== RESET ===== */
+
 * {
   margin: 0;
   padding: 0;
@@ -40,7 +40,7 @@ body {
   overflow-x: hidden;
 }
 
-/* ===== FUNDO ===== */
+
 .background-canvas {
   position: fixed;
   top: 0;
@@ -64,17 +64,17 @@ body {
   transition: opacity 0.3s ease;
 }
 
-/* ===== CONTAINER PRINCIPAL ===== */
+
 .explore-container {
   position: relative;
   z-index: 2;
   min-height: 100vh;
-  padding-top: 64px; /* altura do AppHeader */
+  padding-top: 64px;
   color: var(--text-primary);
   padding-bottom: 80px;
 }
 
-/* ===== HEADER ===== */
+
 .explore-header {
   display: flex;
   justify-content: space-between;
@@ -126,7 +126,7 @@ body {
   color: var(--primary);
 }
 
-/* ===== TABS ===== */
+
 .tabs-container {
   display: flex;
   gap: 12px;
@@ -203,8 +203,8 @@ body {
   padding-top: 64px;
 }
 
-/* ===== COMPONENTES GLOBAIS ===== */
-/* Section Header */
+
+
 .section-header {
   display: flex;
   align-items: center;
@@ -274,7 +274,7 @@ body {
   animation: livePulse 1.5s infinite;
 }
 
-/* Empty State */
+
 .empty-state {
   position: relative;
   padding: 60px 24px;
@@ -325,7 +325,7 @@ body {
   box-shadow: 0 10px 30px var(--primary-glow);
 }
 
-/* View All Button */
+
 .view-all-btn {
   position: relative;
   display: flex;
@@ -353,13 +353,13 @@ body {
   transform: translateY(-2px);
 }
 
-/* ===== DIAGNÓSTICO ===== */
+
 .diagnostico-container {
   max-width: 600px;
   margin: 0 auto;
 }
 
-/* Options Grid */
+
 .options-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -443,7 +443,7 @@ body {
   line-height: 1.6;
 }
 
-/* Database Section */
+
 .database-section {
   margin: 24px 0;
   padding: 20px;
@@ -557,7 +557,7 @@ body {
   font-size: 14px;
 }
 
-/* History Section */
+
 .history-section {
   margin-top: 40px;
 }
@@ -618,7 +618,7 @@ body {
   font-weight: 600;
 }
 
-/* Stats Cards */
+
 .stats-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -646,7 +646,7 @@ body {
   color: var(--text-secondary);
 }
 
-/* Search Bar */
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -676,7 +676,7 @@ body {
   color: var(--text-muted);
 }
 
-/* ===== CÂMERA ===== */
+
 .camera-container {
   position: fixed;
   top: 0;
@@ -812,7 +812,7 @@ body {
   background: var(--primary-dark);
 }
 
-/* ===== PREVIEW ===== */
+
 .preview-container {
   position: relative;
   border-radius: 30px;
@@ -908,7 +908,7 @@ body {
   font-weight: 600;
 }
 
-/* ===== LOADING / ANALYZING ===== */
+
 .analyzing-container {
   text-align: center;
   padding: 80px 20px;
@@ -970,7 +970,7 @@ body {
   font-size: 1rem;
 }
 
-/* ===== RESULT CARD ===== */
+
 .result-card {
   background: linear-gradient(135deg, var(--card-bg), rgba(18, 22, 28, 0.4));
   backdrop-filter: blur(10px);
@@ -1171,7 +1171,7 @@ body {
   font-size: 20px;
 }
 
-/* ===== HISTÓRICO TAB ===== */
+
 .historico-container {
   max-width: 600px;
   margin: 0 auto;
@@ -1316,7 +1316,7 @@ body {
   color: var(--warning);
 }
 
-/* ===== DIAGNOSIS GRID (para listagens) ===== */
+
 .diagnoses-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1451,7 +1451,7 @@ body {
   font-size: 16px;
 }
 
-/* ===== MODAL ===== */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1532,7 +1532,7 @@ body {
   font-size: 20px;
 }
 
-/* ===== MAPA TAB ===== */
+
 .mapa-container {
   max-width: 600px;
   margin: 0 auto;
@@ -1614,7 +1614,7 @@ body {
   font-size: 20px;
 }
 
-/* ===== SCROLLBARS ===== */
+
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -1645,7 +1645,7 @@ body {
   border-radius: 4px;
 }
 
-/* ===== ANIMAÇÕES ===== */
+
 @keyframes livePulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.5; transform: scale(1.3); }
@@ -1665,62 +1665,62 @@ body {
   50% { transform: scale(1.05); }
 }
 
-/* ===== RESPONSIVE ===== */
+
 @media (max-width: 480px) {
   .options-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .result-actions {
     grid-template-columns: 1fr;
   }
-  
+
   .disease-name {
     font-size: 1.5rem;
   }
-  
+
   .result-content {
     padding: 20px;
   }
-  
+
   .option-card {
     padding: 24px 16px;
   }
-  
+
   .option-icon {
     width: 60px;
     height: 60px;
   }
-  
+
   .option-icon span {
     font-size: 30px;
   }
-  
+
   .option-card h3 {
     font-size: 1.2rem;
   }
-  
+
   .history-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .empty-state {
     padding: 40px 20px;
   }
-  
+
   .empty-icon {
     width: 80px;
     height: 80px;
   }
-  
+
   .empty-icon span {
     font-size: 40px;
   }
-  
+
   .empty-state h3 {
     font-size: 1.2rem;
   }
-  
+
   .database-grid {
     grid-template-columns: 1fr;
   }
@@ -1728,8 +1728,8 @@ body {
 
 
 
-/* EXPLORE TABS */
-/* ===== EXPLORE TABS - APENAS BOTÕES MODERNOS ===== */
+
+
 .explore-tabs-modern {
   display: flex;
   align-items: center;
@@ -1749,7 +1749,7 @@ body {
   display: none;
 }
 
-/* Botões das tabs */
+
 .explore-tab {
   flex: 0 0 auto;
   display: flex;
@@ -1780,7 +1780,7 @@ body {
   font-weight: 500;
 }
 
-/* Hover effect */
+
 .explore-tab:hover {
   background: rgba(0, 255, 136, 0.1);
   border-color: rgba(0, 255, 136, 0.3);
@@ -1793,7 +1793,7 @@ body {
   color: #00ff88;
 }
 
-/* Active state */
+
 .explore-tab.active {
   background: linear-gradient(135deg, rgba(0, 255, 136, 0.15), rgba(0, 102, 255, 0.1));
   border-color: rgba(0, 255, 136, 0.4);
@@ -1804,7 +1804,7 @@ body {
   color: #00ff88;
 }
 
-/* Responsividade */
+
 @media (max-width: 768px) {
   .explore-tabs-modern {
     padding: 16px 16px 0 16px;
@@ -1845,7 +1845,7 @@ body {
   }
 }
 
-/* Animação de entrada */
+
 @keyframes fadeSlideUp {
   from {
     opacity: 0;
@@ -1861,60 +1861,60 @@ body {
   animation: fadeSlideUp 0.3s ease-out;
 }
 
-/* ===== FORÇAR TODOS OS ÍCONES MATERIAL SYMBOLS ===== */
 
-/* Forçar ícones específicos do clima por estilo inline */
+
+
 span[style*="color: var(--primary)"] {
   color: #3f7f56 !important;
 }
 
-/* Forçar ícones no loading e erro */
+
 .loadingIcon .material-symbols-outlined,
 .errorIcon .material-symbols-outlined {
   color: #3f7f56 !important;
 }
 
-/* Forçar ícones nos cards de estatística */
+
 .statCard .material-symbols-outlined {
   color: #3f7f56 !important;
 }
 
-/* Forçar ícones nas recomendações */
+
 .recommendation .material-symbols-outlined {
   color: #3f7f56 !important;
 }
 
-/* Forçar ícone do título de recomendações */
+
 .recommendationsTitle .material-symbols-outlined {
   color: #3f7f56 !important;
 }
 
-/* Forçar ícone da data */
+
 .date .material-symbols-outlined {
   color: #3f7f56 !important;
 }
 
-/* Forçar ícones de temperatura */
+
 .tempDetail .material-symbols-outlined,
 .tempMin .material-symbols-outlined,
 .tempMax .material-symbols-outlined {
   color: #3f7f56 !important;
 }
 
-/* Forçar ícone do footer */
+
 .footer .material-symbols-outlined {
   color: #3f7f56 !important;
 }
-/* ===== DESKTOP ENHANCEMENTS ===== */
+
 @media (min-width: 1024px) {
-  /* Container principal */
+
   .explore-container {
     max-width: 1400px;
     margin: 0 auto;
     padding-bottom: 80px;
   }
 
-  /* Header mais espaçoso */
+
   .explore-header {
     padding: 24px 40px;
     border-radius: 0 0 40px 40px;
@@ -1925,7 +1925,7 @@ span[style*="color: var(--primary)"] {
     font-size: 32px;
   }
 
-  /* Tabs modernas e maiores */
+
   .explore-tabs-modern {
     padding: 24px 40px 0;
     gap: 12px;
@@ -1948,12 +1948,12 @@ span[style*="color: var(--primary)"] {
     font-size: 1rem;
   }
 
-  /* Conteúdo das abas com largura máxima agradável */
+
   .tab-content {
     padding: 32px 40px;
   }
 
-  /* Diagnóstico: grid de opções com 2 colunas e cards maiores */
+
   .options-grid {
     gap: 24px;
     margin-bottom: 48px;
@@ -1983,7 +1983,7 @@ span[style*="color: var(--primary)"] {
     font-size: 15px;
   }
 
-  /* Seção de histórico com layout de grade mais amplo */
+
   .history-grid {
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 24px;
@@ -1997,7 +1997,7 @@ span[style*="color: var(--primary)"] {
     height: 140px;
   }
 
-  /* Resultados de diagnóstico */
+
   .result-card {
     max-width: 800px;
     margin: 0 auto;
@@ -2011,7 +2011,7 @@ span[style*="color: var(--primary)"] {
     font-size: 36px;
   }
 
-  /* Clima: cards de estatísticas em grid de 3 colunas */
+
   .clima-tab-stats-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -2020,7 +2020,7 @@ span[style*="color: var(--primary)"] {
     padding: 24px;
   }
 
-  /* Diário de campo: lista mais arejada */
+
   .diario-list {
     gap: 20px;
   }
@@ -2030,7 +2030,7 @@ span[style*="color: var(--primary)"] {
     gap: 24px;
   }
 
-  /* Mapa: container maior */
+
   .mapa-container {
     max-width: 1200px;
   }
@@ -2039,20 +2039,20 @@ span[style*="color: var(--primary)"] {
     height: 600px;
   }
 
-  /* Estoque: grid de produtos em 2 colunas */
+
   .products-list {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 20px;
   }
 
-  /* Botões de ação maiores */
+
   .action-button {
     padding: 18px 32px;
     font-size: 1.1rem;
   }
 
-  /* Preview de imagem */
+
   .preview-card {
     max-width: 700px;
   }
@@ -2062,7 +2062,7 @@ span[style*="color: var(--primary)"] {
   }
 }
 
-/* Ajustes para telas ultra-wide */
+
 @media (min-width: 1440px) {
   .explore-container {
     max-width: 1600px;
@@ -2081,9 +2081,9 @@ span[style*="color: var(--primary)"] {
   }
 }
 
-/* ===================================================== */
-/* Serviços no mesmo estilo visual da Home                */
-/* ===================================================== */
+
+
+
 .explore-container {
   --site-primary: #16f29a;
   --site-primary-dark: #10c97b;
@@ -2476,7 +2476,7 @@ body:has(.explore-container) .menu-bar {
   }
 }
 
-/* Ajuste fino: Serviços mais alto e grid com leitura melhor */
+
 .explore-container {
   padding-top: 0;
   --site-circuit: rgba(6, 96, 58, 0.76);
@@ -2486,12 +2486,12 @@ body:has(.explore-container) .header-spacer {
   height: 68px;
 }
 
-/*
- * The footer is the final child of Explore. Desktop bottom spacing must not
- * live on this parent, otherwise it is rendered after the footer as a light
- * strip and makes the footer look detached from the viewport in production.
- * Mobile keeps its own bottom reservation for the fixed navigation bar.
- */
+
+
+
+
+
+
 @media (min-width: 761px) {
   .explore-container[class*="explore-container--"] {
     padding-bottom: 0 !important;
@@ -2502,7 +2502,7 @@ body:has(.explore-container) .header-spacer {
   }
 }
 
-/* The module selector belongs to the page flow; it must not follow scrolling. */
+
 .explore-container > .explore-tabs-modern {
   position: relative !important;
   top: auto !important;

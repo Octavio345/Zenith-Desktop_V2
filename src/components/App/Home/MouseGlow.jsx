@@ -1,4 +1,4 @@
-// components/Home/MouseGlow.jsx
+
 import { useEffect, useState } from 'react'
 
 export default function MouseGlow() {
@@ -14,12 +14,12 @@ export default function MouseGlow() {
   }, [])
 
   return (
-    <div 
-      className="mouse-glow" 
-      style={{ 
-        left: mousePosition.x - 250, 
-        top: mousePosition.y - 250 
-      }} 
+    <div
+      className="mouse-glow"
+      style={{
+        left: mousePosition.x - 250,
+        top: mousePosition.y - 250
+      }}
     />
   )
 }

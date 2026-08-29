@@ -448,7 +448,7 @@
   gap: 10px;
 }
 
-/* Resultados consolidados */
+
 .batch-result-page {
   width: min(1400px, 100%);
   margin: 0 auto;
@@ -1432,7 +1432,7 @@
 .batch-field-context__icon { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 13px; color: #00ff88; background: rgba(0, 255, 136, .12); }.batch-field-context__copy .batch-eyebrow { margin-bottom: 4px; color: #00ff88; }.batch-field-context h2 { margin: 0; color: #f6fbf8; font-size: .96rem; }.batch-field-context p { margin: 5px 0 0; color: #8fa3b8; font-size: .76rem; line-height: 1.45; }.batch-field-context__controls { display: grid; gap: 8px; }.batch-field-context select, .batch-field-context input { width: 100%; min-height: 42px; padding: 0 11px; border: 1px solid rgba(255,255,255,.12); border-radius: 10px; outline: none; color: #f3f7f5; background: rgba(5,7,8,.72); font: inherit; font-size: .8rem; }.batch-field-context select:focus, .batch-field-context input:focus { border-color: #00ff88; box-shadow: 0 0 0 3px rgba(0,255,136,.11); }
 @media (max-width: 760px) { .batch-field-context { grid-template-columns: auto minmax(0, 1fr); }.batch-field-context__controls { grid-column: 1 / -1; } }
 
-/* Campo inicial de talhão: mantém a paleta neon escura do restante do Zenith. */
+
 .diagnostic-field-context { color: #f3f7f5; border-color: rgba(0, 255, 136, .18); background: rgba(255, 255, 255, .025); }
 .diagnostic-field-context > .material-symbols-outlined { color: #00ff88; }
 .diagnostic-field-context strong em { margin-left: 5px; color: #8fa3b8; font-size: .7rem; font-style: normal; font-weight: 500; }
@@ -1441,7 +1441,7 @@
 .diagnostic-field-context select:focus, .diagnostic-field-context input:focus { border-color: #00ff88; box-shadow: 0 0 0 3px rgba(0,255,136,.11); }
 @media (max-width: 680px) { .diagnostic-field-context input { grid-column: 1 / -1; } }
 
-/* Contraste da identificação e dos filtros no tema claro do Zenith. */
+
 .batch-field-context {
   border-color: #cce9cf !important;
   background: #f2fbf2 !important;

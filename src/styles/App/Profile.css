@@ -40,7 +40,7 @@
   overflow-x: hidden;
 }
 
-/* FUNDO COM IMAGEM */
+
 .pf-atmosphere {
   position: fixed;
   inset: 0;
@@ -183,7 +183,7 @@ body:has(.pf-page) .mouse-glow {
   display: none;
 }
 
-/* HEADER GLOBAL */
+
 body:has(.pf-page) .header {
   top: 0;
   padding: 0;
@@ -246,7 +246,7 @@ body:has(.pf-page) .header .nav-item.active {
   opacity: 1;
 }
 
-/* HERO */
+
 .pf-hero {
   padding: 34px 24px 22px;
   margin: 0 auto;
@@ -377,7 +377,7 @@ body:has(.pf-page) .header .nav-item.active {
   gap: 8px;
 }
 
-/* STATS */
+
 .pf-stats {
   max-width: 1040px;
   margin: 14px auto 0;
@@ -439,7 +439,7 @@ body:has(.pf-page) .header .nav-item.active {
   line-height: 1.2;
 }
 
-/* TABS */
+
 .pf-tabs {
   max-width: 1040px;
   margin: 24px auto 0;
@@ -489,7 +489,7 @@ body:has(.pf-page) .header .nav-item.active {
   color: #04100b;
 }
 
-/* ALERT */
+
 .pf-alert {
   max-width: 1040px;
   margin: 14px auto 0;
@@ -522,7 +522,7 @@ body:has(.pf-page) .header .nav-item.active {
   background: #fff3f0;
 }
 
-/* CONTENT */
+
 .pf-content {
   max-width: 1040px;
   margin: 20px auto 0;
@@ -608,7 +608,7 @@ body:has(.pf-page) .header .nav-item.active {
   gap: 8px;
 }
 
-/* FIELDS */
+
 .pf-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -680,7 +680,7 @@ body:has(.pf-page) .header .nav-item.active {
   cursor: pointer;
 }
 
-/* ICON PICKER */
+
 .pf-icon-picker {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
@@ -717,7 +717,7 @@ body:has(.pf-page) .header .nav-item.active {
   color: var(--pf-green);
 }
 
-/* BUTTONS */
+
 .pf-btn {
   display: inline-flex;
   align-items: center;
@@ -794,7 +794,7 @@ body:has(.pf-page) .header .nav-item.active {
   animation: spin 0.7s linear infinite;
 }
 
-/* EMPTY */
+
 .pf-empty {
   padding: 40px 20px;
   text-align: center;
@@ -814,7 +814,7 @@ body:has(.pf-page) .header .nav-item.active {
   font-size: 14px;
 }
 
-/* PLANOS */
+
 .pf-plan-card {
   padding: 24px;
 }
@@ -962,7 +962,7 @@ body:has(.pf-page) .header .nav-item.active {
   margin-top: auto;
 }
 
-/* BADGES */
+
 .pf-badge {
   display: inline-flex;
   align-items: center;
@@ -1011,14 +1011,14 @@ body:has(.pf-page) .header .nav-item.active {
   letter-spacing: 0.06em;
 }
 
-/* MENU BAR */
+
 body:has(.pf-page) .menu-bar {
   background: rgba(8, 15, 12, 0.8);
   border-color: rgba(22, 242, 154, 0.22);
   backdrop-filter: blur(16px);
 }
 
-/* ANIMAÇÕES */
+
 @keyframes slideUp {
   from {
     opacity: 0;
@@ -1102,7 +1102,7 @@ body:has(.pf-page) .menu-bar {
   }
 }
 
-/* RESPONSIVO */
+
 @media (max-width: 900px) {
   .pf-hero-inner {
     align-items: flex-start;

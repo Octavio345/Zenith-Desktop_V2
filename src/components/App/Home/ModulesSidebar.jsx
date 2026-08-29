@@ -1,4 +1,4 @@
-// components/App/Home/ModulesSidebar.jsx
+
 import { useNavigate } from "react-router-dom"
 
 const modules = [
