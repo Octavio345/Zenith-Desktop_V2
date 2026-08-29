@@ -153,23 +153,23 @@ export default function AllHistory({ onBack }) {
           display: flex;
           align-items: center;
           gap: 0.5rem;
-          background: rgba(0, 255, 170, 0.08);
-          border: 1px solid rgba(0, 255, 170, 0.25);
+          background: rgba(63, 127, 86, 0.08);
+          border: 1px solid rgba(63, 127, 86, 0.25);
           padding: 0.5rem 1.2rem;
           border-radius: 40px;
-          color: #00ffaa;
+          color: #3f7f56;
           cursor: pointer;
           transition: all 0.2s;
           font-weight: 500;
         }
         .back-button:hover {
-          background: rgba(0, 255, 170, 0.2);
+          background: rgba(63, 127, 86, 0.2);
           transform: translateX(-4px);
-          box-shadow: 0 0 12px rgba(0,255,170,0.3);
+          box-shadow: 0 0 12px rgba(63, 127, 86, 0.3);
         }
         .all-history-header h1 {
           font-size: 2.2rem;
-          background: linear-gradient(135deg, #00ffaa, #0066ff);
+          background: linear-gradient(135deg, #3f7f56, #0066ff);
           -webkit-background-clip: text;
           background-clip: text;
           color: transparent;
@@ -187,15 +187,15 @@ export default function AllHistory({ onBack }) {
         }
         .history-card-full {
           background: transparent;
-          border: 1px solid rgba(0, 255, 170, 0.25);
+          border: 1px solid rgba(63, 127, 86, 0.25);
           border-radius: 28px;
           padding: 1.5rem;
           transition: all 0.3s ease;
         }
         .history-card-full:hover {
-          border-color: #00ffaa;
+          border-color: #3f7f56;
           transform: translateY(-6px);
-          box-shadow: 0 0 0 1px rgba(0,255,170,0.3), 0 12px 28px rgba(0,0,0,0.4);
+          box-shadow: 0 0 0 1px rgba(63, 127, 86, 0.3), 0 12px 28px rgba(0,0,0,0.4);
         }
         .history-card-header {
           display: flex;
@@ -206,16 +206,16 @@ export default function AllHistory({ onBack }) {
         .history-icon-large {
           width: 52px;
           height: 52px;
-          background: rgba(0, 255, 170, 0.1);
+          background: rgba(63, 127, 86, 0.1);
           border-radius: 18px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid rgba(0, 255, 170, 0.4);
+          border: 1px solid rgba(63, 127, 86, 0.4);
         }
         .history-icon-large span {
           font-size: 30px;
-          color: #00ffaa;
+          color: #3f7f56;
         }
         .history-card-actions {
           display: flex;
@@ -235,7 +235,7 @@ export default function AllHistory({ onBack }) {
         .icon-btn span { font-size: 22px; }
         .icon-btn.edit { color: #00ccff; }
         .icon-btn.delete { color: #ff4d4d; }
-        .icon-btn.save { color: #00ffaa; }
+        .icon-btn.save { color: #3f7f56; }
         .icon-btn.cancel { color: #aaa; }
         .icon-btn:hover {
           background: rgba(255,255,255,0.08);
@@ -252,7 +252,7 @@ export default function AllHistory({ onBack }) {
           width: 100%;
           padding: 0.6rem;
           background: #050a07;
-          border: 1px solid #00ffaa;
+          border: 1px solid #3f7f56;
           border-radius: 16px;
           color: #fff;
           font-size: 1rem;
@@ -274,20 +274,20 @@ export default function AllHistory({ onBack }) {
           gap: 0.35rem;
           margin: -0.1rem 0 0.8rem;
           padding: 0.38rem 0.6rem;
-          border: 1px solid rgba(0, 255, 170, 0.18);
+          border: 1px solid rgba(63, 127, 86, 0.18);
           border-radius: 999px;
           color: #b8ead0;
-          background: rgba(0, 255, 170, 0.07);
+          background: rgba(63, 127, 86, 0.07);
           font-size: 0.69rem;
           font-weight: 700;
         }
         .history-field-area .material-symbols-outlined { font-size: 15px; }
         .batch-history-meta span {
           padding: 0.38rem 0.58rem;
-          border: 1px solid rgba(0, 255, 170, 0.14);
+          border: 1px solid rgba(63, 127, 86, 0.14);
           border-radius: 9px;
           color: #7f92a3;
-          background: rgba(0, 255, 170, 0.04);
+          background: rgba(63, 127, 86, 0.04);
           font-size: 0.66rem;
         }
         .batch-history-meta strong {
@@ -296,7 +296,7 @@ export default function AllHistory({ onBack }) {
         .confidence-percent {
           font-size: 0.9rem;
           font-weight: 600;
-          color: #00ffaa;
+          color: #3f7f56;
           display: inline-block;
           margin-bottom: 0.3rem;
         }
@@ -308,7 +308,7 @@ export default function AllHistory({ onBack }) {
         }
         .confidence-fill-full {
           height: 100%;
-          background: linear-gradient(90deg, #00ffaa, #0066ff);
+          background: linear-gradient(90deg, #3f7f56, #0066ff);
           border-radius: 3px;
         }
         .history-date-full {
@@ -322,26 +322,26 @@ export default function AllHistory({ onBack }) {
           background: transparent;
           border-radius: 36px;
           margin-top: 2rem;
-          border: 1px dashed rgba(0,255,170,0.3);
+          border: 1px dashed rgba(63, 127, 86, 0.3);
         }
         .empty-history-large .empty-icon {
           width: 90px;
           height: 90px;
           margin: 0 auto 1rem;
-          background: rgba(0, 255, 170, 0.08);
+          background: rgba(63, 127, 86, 0.08);
           border-radius: 45px;
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid rgba(0,255,170,0.3);
+          border: 1px solid rgba(63, 127, 86, 0.3);
         }
-        .empty-icon span { font-size: 48px; color: #00ffaa; }
+        .empty-icon span { font-size: 48px; color: #3f7f56; }
         .empty-title { font-size: 1.2rem; color: #fff; margin-bottom: 0.5rem; }
         .empty-description { color: #8fa3b8; margin-bottom: 1.5rem; }
         .btn.primary {
           margin-top: 1rem;
           padding: 0.7rem 1.8rem;
-          background: linear-gradient(135deg, #00ffaa, #0066ff);
+          background: linear-gradient(135deg, #3f7f56, #0066ff);
           border: none;
           border-radius: 40px;
           font-weight: 600;
@@ -351,7 +351,7 @@ export default function AllHistory({ onBack }) {
         }
         .btn.primary:hover {
           transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(0,255,170,0.4);
+          box-shadow: 0 5px 15px rgba(63, 127, 86, 0.4);
         }
         @media (max-width: 768px) {
           .all-history-container { padding: 1rem; }

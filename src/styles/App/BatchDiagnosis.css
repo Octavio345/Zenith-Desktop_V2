@@ -23,7 +23,7 @@
   overflow-y: auto;
   padding: clamp(16px, 3vw, 44px);
   background:
-    radial-gradient(circle at 15% 0%, rgba(0, 255, 170, 0.12), transparent 34%),
+    radial-gradient(circle at 15% 0%, rgba(63, 127, 86, 0.12), transparent 34%),
     radial-gradient(circle at 100% 30%, rgba(0, 102, 255, 0.10), transparent 38%),
     rgba(3, 9, 6, 0.94);
   backdrop-filter: blur(18px);
@@ -35,12 +35,12 @@
   min-height: min(760px, calc(100vh - 88px));
   margin: 0 auto;
   overflow: hidden;
-  border: 1px solid rgba(0, 255, 170, 0.16);
+  border: 1px solid rgba(63, 127, 86, 0.16);
   border-radius: 30px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 40%),
     var(--batch-surface);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 255, 170, 0.04);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(63, 127, 86, 0.04);
   animation: batchSlideUp 380ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -52,7 +52,7 @@
   padding: clamp(24px, 3vw, 38px);
   border-bottom: 1px solid var(--batch-border);
   background:
-    linear-gradient(110deg, rgba(0, 255, 170, 0.075), rgba(59, 130, 246, 0.04) 65%, transparent),
+    linear-gradient(110deg, rgba(63, 127, 86, 0.075), rgba(59, 130, 246, 0.04) 65%, transparent),
     rgba(255, 255, 255, 0.012);
 }
 
@@ -70,11 +70,11 @@
   place-items: center;
   width: 58px;
   height: 58px;
-  border: 1px solid rgba(0, 255, 170, 0.25);
+  border: 1px solid rgba(63, 127, 86, 0.25);
   border-radius: 18px;
   color: var(--batch-green);
-  background: linear-gradient(145deg, rgba(0, 255, 170, 0.13), rgba(0, 255, 170, 0.04));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 28px rgba(0, 255, 170, 0.11);
+  background: linear-gradient(145deg, rgba(63, 127, 86, 0.13), rgba(63, 127, 86, 0.04));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 28px rgba(63, 127, 86, 0.11);
 }
 
 .batch-heading-icon span,
@@ -247,15 +247,15 @@
 }
 
 .batch-button-ghost {
-  border-color: rgba(0, 255, 170, 0.18);
+  border-color: rgba(63, 127, 86, 0.18);
   color: var(--batch-green);
-  background: rgba(0, 255, 170, 0.055);
+  background: rgba(63, 127, 86, 0.055);
 }
 
 .batch-button-secondary:hover,
 .batch-button-ghost:hover {
-  border-color: rgba(0, 255, 170, 0.38);
-  background: rgba(0, 255, 170, 0.085);
+  border-color: rgba(63, 127, 86, 0.38);
+  background: rgba(63, 127, 86, 0.085);
 }
 
 .batch-thumbnail-grid {
@@ -276,7 +276,7 @@
 .batch-thumbnail-grid::-webkit-scrollbar-thumb,
 .batch-image-result-grid::-webkit-scrollbar-thumb {
   border-radius: 99px;
-  background: rgba(0, 255, 170, 0.24);
+  background: rgba(63, 127, 86, 0.24);
 }
 
 .batch-thumbnail-card,
@@ -291,7 +291,7 @@
 
 .batch-thumbnail-card:hover {
   z-index: 1;
-  border-color: rgba(0, 255, 170, 0.26);
+  border-color: rgba(63, 127, 86, 0.26);
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
   transform: translateY(-3px);
 }
@@ -391,9 +391,9 @@
 }
 
 .batch-add-tile:hover {
-  border-color: rgba(0, 255, 170, 0.4);
+  border-color: rgba(63, 127, 86, 0.4);
   color: var(--batch-green);
-  background: rgba(0, 255, 170, 0.04);
+  background: rgba(63, 127, 86, 0.04);
 }
 
 .batch-add-tile .material-symbols-outlined {
@@ -464,11 +464,11 @@
   align-items: center;
   overflow: hidden;
   padding: clamp(26px, 4vw, 46px);
-  border: 1px solid rgba(0, 255, 170, 0.17);
+  border: 1px solid rgba(63, 127, 86, 0.17);
   border-radius: 27px;
   background:
-    radial-gradient(circle at 0% 0%, rgba(0, 255, 170, 0.13), transparent 42%),
-    linear-gradient(135deg, rgba(0, 255, 170, 0.045), rgba(59, 130, 246, 0.035)),
+    radial-gradient(circle at 0% 0%, rgba(63, 127, 86, 0.13), transparent 42%),
+    linear-gradient(135deg, rgba(63, 127, 86, 0.045), rgba(59, 130, 246, 0.035)),
     var(--batch-surface);
   box-shadow: 0 22px 60px rgba(0, 0, 0, 0.27);
 }
@@ -480,7 +480,7 @@
   width: 360px;
   height: 360px;
   border-radius: 50%;
-  background: rgba(0, 255, 170, 0.06);
+  background: rgba(63, 127, 86, 0.06);
   content: "";
   filter: blur(8px);
   pointer-events: none;
@@ -545,7 +545,7 @@
   height: 112px;
   border-radius: 50%;
   background: conic-gradient(var(--batch-green) var(--progress), rgba(255, 255, 255, 0.07) 0deg);
-  box-shadow: 0 0 34px rgba(0, 255, 170, 0.11);
+  box-shadow: 0 0 34px rgba(63, 127, 86, 0.11);
 }
 
 .batch-score-ring > div {
@@ -634,7 +634,7 @@
 
 .batch-metric-success > .material-symbols-outlined {
   color: var(--batch-green);
-  background: rgba(0, 255, 170, 0.08);
+  background: rgba(63, 127, 86, 0.08);
 }
 
 .batch-metric-warning > .material-symbols-outlined {
@@ -686,10 +686,10 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border: 1px solid rgba(0, 255, 170, 0.15);
+  border: 1px solid rgba(63, 127, 86, 0.15);
   border-radius: 11px;
   color: var(--batch-green);
-  background: rgba(0, 255, 170, 0.06);
+  background: rgba(63, 127, 86, 0.06);
   font-size: 0.83rem;
   font-weight: 750;
 }
@@ -787,7 +787,7 @@
 .batch-condition-healthy .batch-condition-icon,
 .batch-image-condition.batch-condition-healthy {
   color: var(--batch-green);
-  background: rgba(0, 255, 170, 0.075);
+  background: rgba(63, 127, 86, 0.075);
 }
 
 .batch-condition-healthy .batch-condition-title span {
@@ -876,10 +876,10 @@
   place-items: center;
   width: 25px;
   height: 25px;
-  border: 1px solid rgba(0, 255, 170, 0.18);
+  border: 1px solid rgba(63, 127, 86, 0.18);
   border-radius: 8px;
   color: var(--batch-green);
-  background: rgba(0, 255, 170, 0.055);
+  background: rgba(63, 127, 86, 0.055);
   font-size: 0.66rem;
   font-weight: 800;
 }
@@ -985,7 +985,7 @@
 }
 
 .batch-image-result-card:hover {
-  border-color: rgba(0, 255, 170, 0.22);
+  border-color: rgba(63, 127, 86, 0.22);
   box-shadow: 0 15px 32px rgba(0, 0, 0, 0.23);
   transform: translateY(-3px);
 }
@@ -1018,7 +1018,7 @@
   gap: 5px;
   align-items: center;
   padding: 6px 8px;
-  border: 1px solid rgba(0, 255, 170, 0.2);
+  border: 1px solid rgba(63, 127, 86, 0.2);
   border-radius: 8px;
   color: #bbf7d0;
   background: rgba(5, 24, 15, 0.78);

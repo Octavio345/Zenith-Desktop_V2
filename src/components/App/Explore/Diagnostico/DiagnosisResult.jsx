@@ -323,8 +323,8 @@ export default function DiagnosisResult({ result, onRestart }) {
 
         .result-title span {
           font-size: 2.5rem;
-          color: #00ffaa;
-          filter: drop-shadow(0 0 8px rgba(0, 255, 170, 0.4));
+          color: #3f7f56;
+          filter: drop-shadow(0 0 8px rgba(63, 127, 86, 0.4));
           flex-shrink: 0;
         }
 
@@ -375,8 +375,8 @@ export default function DiagnosisResult({ result, onRestart }) {
         }
 
         .premium-card:hover {
-          border-color: rgba(0, 255, 170, 0.3);
-          box-shadow: 0 0 0 1px rgba(0, 255, 170, 0.2), 0 0 24px rgba(0, 255, 170, 0.15), 0 8px 40px rgba(0, 0, 0, 0.5);
+          border-color: rgba(63, 127, 86, 0.3);
+          box-shadow: 0 0 0 1px rgba(63, 127, 86, 0.2), 0 0 24px rgba(63, 127, 86, 0.15), 0 8px 40px rgba(0, 0, 0, 0.5);
           transform: translateY(-3px);
         }
 
@@ -402,11 +402,11 @@ export default function DiagnosisResult({ result, onRestart }) {
 
         .icon-highlight {
           font-size: 2.5rem;
-          color: #00ffaa !important;
-          background: rgba(0, 255, 170, 0.08);
+          color: #3f7f56 !important;
+          background: rgba(63, 127, 86, 0.08);
           padding: 0.5rem;
           border-radius: 12px;
-          border: 1px solid rgba(0, 255, 170, 0.2);
+          border: 1px solid rgba(63, 127, 86, 0.2);
           flex-shrink: 0;
         }
 
@@ -445,8 +445,8 @@ export default function DiagnosisResult({ result, onRestart }) {
         }
 
         .font-neon {
-          color: #00ffaa;
-          text-shadow: 0 0 10px rgba(0, 255, 170, 0.4);
+          color: #3f7f56;
+          text-shadow: 0 0 10px rgba(63, 127, 86, 0.4);
         }
 
         .confidence-bar-container {
@@ -460,7 +460,7 @@ export default function DiagnosisResult({ result, onRestart }) {
 
         .confidence-fill {
           height: 100%;
-          background: linear-gradient(90deg, #00cc88 0%, #00ffaa 100%);
+          background: linear-gradient(90deg, #00cc88 0%, #3f7f56 100%);
           border-radius: 999px;
           transition: width 0.6s ease;
         }
@@ -478,7 +478,7 @@ export default function DiagnosisResult({ result, onRestart }) {
 
         .prob-header span:first-child,
         .rec-header span:first-child {
-          color: #00ffaa;
+          color: #3f7f56;
           font-size: 1.5rem;
           flex-shrink: 0;
         }
@@ -526,7 +526,7 @@ export default function DiagnosisResult({ result, onRestart }) {
 
         .prob-name span:first-child {
           font-size: 1.1rem;
-          color: #00ffaa !important;
+          color: #3f7f56 !important;
           flex-shrink: 0;
         }
 
@@ -553,7 +553,7 @@ export default function DiagnosisResult({ result, onRestart }) {
 
         .prob-fill {
           height: 100%;
-          background: #00ffaa;
+          background: #3f7f56;
           border-radius: 999px;
           transition: width 0.5s ease;
         }
@@ -561,7 +561,7 @@ export default function DiagnosisResult({ result, onRestart }) {
         .prob-value {
           font-size: 0.85rem;
           font-weight: 600;
-          color: #00ffaa !important;
+          color: #3f7f56 !important;
           min-width: 40px;
           text-align: right;
         }
@@ -613,7 +613,7 @@ export default function DiagnosisResult({ result, onRestart }) {
         }
 
         .list-check {
-          color: #00ffaa !important;
+          color: #3f7f56 !important;
           font-size: 1.25rem;
           flex-shrink: 0;
           margin-top: 2px;

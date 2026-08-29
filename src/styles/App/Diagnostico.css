@@ -3,24 +3,24 @@
    ================================================================ */
 
 :root {
-  --primary: #00ffaa;
+  --primary: #3f7f56;
   --primary-dark: #00cc88;
-  --primary-glow: rgba(0, 255, 170, 0.35);
-  --primary-soft: rgba(0, 255, 170, 0.08);
-  --primary-border: rgba(0, 255, 170, 0.20);
+  --primary-glow: rgba(63, 127, 86, 0.35);
+  --primary-soft: rgba(63, 127, 86, 0.08);
+  --primary-border: rgba(63, 127, 86, 0.20);
   --secondary: #0066ff;
   --secondary-glow: rgba(0, 102, 255, 0.25);
   --danger: #ff4d4d;
   --warning: #ffaa00;
   --info: #00ccff;
-  --success: #00ffaa;
+  --success: #3f7f56;
   --bg-base: #0a120e;
   --bg-deep: #050a07;
   --bg-card: rgba(8, 18, 13, 0.75);
   --bg-card-solid: #0a1810;
   --bg-elevated: rgba(12, 24, 18, 0.80);
   --bg-glass: rgba(255, 255, 255, 0.025);
-  --bg-hover: rgba(0, 255, 170, 0.06);
+  --bg-hover: rgba(63, 127, 86, 0.06);
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-muted: rgba(255, 255, 255, 0.10);
   --border-accent: var(--primary-border);
@@ -223,14 +223,14 @@
 .option-card.drag-active {
   border-color: var(--primary);
   background:
-    radial-gradient(circle at 50% 0%, rgba(0, 255, 170, 0.16), transparent 58%),
+    radial-gradient(circle at 50% 0%, rgba(63, 127, 86, 0.16), transparent 58%),
     var(--bg-card);
-  box-shadow: var(--shadow-neon), var(--shadow-card), inset 0 0 0 1px rgba(0, 255, 170, 0.18);
+  box-shadow: var(--shadow-neon), var(--shadow-card), inset 0 0 0 1px rgba(63, 127, 86, 0.18);
   transform: translateY(-4px);
 }
 
 .option-card.drag-active .option-icon {
-  background: rgba(0, 255, 170, 0.14);
+  background: rgba(63, 127, 86, 0.14);
   border-color: var(--primary);
   box-shadow: 0 0 18px var(--primary-glow);
 }
@@ -293,7 +293,7 @@
 }
 
 .option-card:hover .option-icon {
-  background: rgba(0, 255, 170, 0.12);
+  background: rgba(63, 127, 86, 0.12);
   border-color: var(--primary);
   box-shadow: 0 0 16px var(--primary-glow);
 }
@@ -448,7 +448,7 @@
 }
 
 .history-item:hover {
-  background: rgba(0, 255, 170, 0.04);
+  background: rgba(63, 127, 86, 0.04);
   border-color: var(--primary-border);
   box-shadow: 0 2px 8px var(--shadow-card);
 }
@@ -1066,5 +1066,5 @@
 .confidence-value,
 .probability-value,
 .result-disease {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }

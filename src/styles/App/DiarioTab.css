@@ -55,7 +55,7 @@
   min-width: 176px;
   padding: 13px 18px;
   background: #0d7c4b;
-  border: 1px solid rgba(0, 255, 170, 0.24);
+  border: 1px solid rgba(63, 127, 86, 0.24);
   border-radius: 12px;
   color: #fff;
   font-size: 0.95rem;
@@ -87,8 +87,8 @@
   gap: 10px;
   background:
     linear-gradient(145deg, rgba(7, 16, 11, 0.96), rgba(4, 10, 8, 0.98)),
-    radial-gradient(circle at top left, rgba(0, 255, 170, 0.11), transparent 42%);
-  border: 1px solid rgba(0, 255, 170, 0.12);
+    radial-gradient(circle at top left, rgba(63, 127, 86, 0.11), transparent 42%);
+  border: 1px solid rgba(63, 127, 86, 0.12);
   border-radius: 14px;
   padding: 0 14px;
   min-height: 48px;
@@ -97,7 +97,7 @@
 
 .diario-search span,
 .diario-filter span {
-  color: #00ffaa;
+  color: #3f7f56;
 }
 
 .diario-search input,
@@ -166,8 +166,8 @@
   justify-content: center;
   flex-shrink: 0;
   border-radius: 12px;
-  color: #00ffaa;
-  background: rgba(0, 255, 170, 0.08);
+  color: #3f7f56;
+  background: rgba(63, 127, 86, 0.08);
 }
 
 .diario-summary-card strong {
@@ -205,7 +205,7 @@
 }
 
 .diario-card:hover {
-  border-color: rgba(0, 255, 170, 0.34);
+  border-color: rgba(63, 127, 86, 0.34);
   transform: translateY(-2px);
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.26);
 }
@@ -213,8 +213,8 @@
 .diario-card-date {
   min-height: 82px;
   border-radius: 14px;
-  background: rgba(0, 255, 170, 0.07);
-  border: 1px solid rgba(0, 255, 170, 0.16);
+  background: rgba(63, 127, 86, 0.07);
+  border: 1px solid rgba(63, 127, 86, 0.16);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -317,7 +317,7 @@
   max-width: 620px;
   width: 100%;
   background: linear-gradient(145deg, rgba(9, 24, 17, 0.98), rgba(7, 14, 20, 0.98));
-  border: 1px solid rgba(0, 255, 170, 0.16);
+  border: 1px solid rgba(63, 127, 86, 0.16);
   border-radius: 20px;
   padding: 28px;
   position: relative;
@@ -386,7 +386,7 @@
 .form-group select {
   appearance: none;
   background-color: rgba(5, 15, 10, 0.96);
-  border-color: rgba(0, 255, 170, 0.16);
+  border-color: rgba(63, 127, 86, 0.16);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%2300ffaa' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 14px center;
@@ -400,8 +400,8 @@
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #00ffaa;
-  box-shadow: 0 0 0 3px rgba(0, 255, 170, 0.1);
+  border-color: #3f7f56;
+  box-shadow: 0 0 0 3px rgba(63, 127, 86, 0.1);
 }
 
 .form-group select option {
@@ -494,13 +494,13 @@
   text-align: center;
   padding: 72px 24px;
   background: rgba(8, 18, 13, 0.78);
-  border: 1px dashed rgba(0, 255, 170, 0.2);
+  border: 1px dashed rgba(63, 127, 86, 0.2);
   border-radius: 18px;
 }
 
 .diario-empty span {
   font-size: 52px;
-  color: #00ffaa;
+  color: #3f7f56;
   margin-bottom: 16px;
 }
 

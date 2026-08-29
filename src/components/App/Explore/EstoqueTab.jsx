@@ -329,7 +329,7 @@ export default function EstoqueTab() {
                         className="stock-fill"
                         style={{
                           width: `${Math.min(100, (product.quantity / product.minQuantity) * 100)}%`,
-                          background: isLowStock(product) ? "#ffaa00" : "#00ffaa"
+                          background: isLowStock(product) ? "#ffaa00" : "#3f7f56"
                         }}
                       ></div>
                     </div>

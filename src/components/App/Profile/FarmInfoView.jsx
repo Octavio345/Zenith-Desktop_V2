@@ -186,7 +186,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
           padding: 14px 18px;
           margin-top: 24px;
           background: #0d7c4b;
-          border: 1px solid rgba(0, 255, 170, 0.24);
+          border: 1px solid rgba(63, 127, 86, 0.24);
           border-radius: 12px;
           color: #ffffff;
           font-size: 14px;
@@ -199,7 +199,7 @@ const FarmInfoView = ({ farmData, onAddFarm, onEditFarm, formatPhone }) => {
         
         .edit-farm-btn:hover {
           background: #0e9c5e;
-          border-color: rgba(0, 255, 170, 0.4);
+          border-color: rgba(63, 127, 86, 0.4);
           transform: translateY(-2px);
           box-shadow: 0 14px 30px rgba(13, 124, 75, 0.28);
         }

@@ -1865,45 +1865,45 @@ body {
 
 /* Forçar ícones específicos do clima por estilo inline */
 span[style*="color: var(--primary)"] {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 
 /* Forçar ícones no loading e erro */
 .loadingIcon .material-symbols-outlined,
 .errorIcon .material-symbols-outlined {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 
 /* Forçar ícones nos cards de estatística */
 .statCard .material-symbols-outlined {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 
 /* Forçar ícones nas recomendações */
 .recommendation .material-symbols-outlined {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 
 /* Forçar ícone do título de recomendações */
 .recommendationsTitle .material-symbols-outlined {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 
 /* Forçar ícone da data */
 .date .material-symbols-outlined {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 
 /* Forçar ícones de temperatura */
 .tempDetail .material-symbols-outlined,
 .tempMin .material-symbols-outlined,
 .tempMax .material-symbols-outlined {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 
 /* Forçar ícone do footer */
 .footer .material-symbols-outlined {
-  color: #00ffaa !important;
+  color: #3f7f56 !important;
 }
 /* ===== DESKTOP ENHANCEMENTS ===== */
 @media (min-width: 1024px) {
