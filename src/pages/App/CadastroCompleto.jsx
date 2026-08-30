@@ -5,6 +5,7 @@ import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification } fro
 import { doc, setDoc, addDoc, collection } from "firebase/firestore"
 import { ACCOUNT_ROLES } from "../../services/accessControl"
 import CustomSelect from "../../components/App/Global/CustomSelect"
+import { BRAZIL_STATE_OPTIONS, BRAZIL_STATE_SET } from "../../constants/brazilStates"
 import "../../styles/App/CadastroCompleto.css"
 
 const PERSON_TYPE_OPTIONS = [
@@ -21,8 +22,6 @@ const AREA_OPTIONS = ["1-6", "7-12", "13-20", "21-29", "30-40"].map((value) => (
   value,
   label: `${value.replace("-", " – ")} ha`,
 }))
-
-const CROP_OPTIONS = ["Soja", "Tomate", "Café", "Milho", "Feijão"]
 
 const PLAN_OPTIONS = [
   {
@@ -63,7 +62,6 @@ const PLAN_OPTIONS = [
   },
 ]
 
-const UFS_BRASIL = new Set(["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"])
 const VALID_DDDS = new Set(["11","12","13","14","15","16","17","18","19","21","22","24","27","28","31","32","33","34","35","37","38","41","42","43","44","45","46","47","48","49","51","53","54","55","61","62","63","64","65","66","67","68","69","71","73","74","75","77","79","81","82","83","84","85","86","87","88","89","91","92","93","94","95","96","97","98","99"])
 
 const formatCEP = (value) => value.replace(/\D/g, "").slice(0, 8).replace(/^(\d{5})(\d)/, "$1-$2")
@@ -118,7 +116,7 @@ export default function CadastroCompleto() {
   })
   const [farmData, setFarmData] = useState({
     name: "", tipo_proprietario: "", data_aquisicao: "", cep: "",
-    bairro: "", municipio: "", uf: "", area_total: "", telefone: "", plantacao: ""
+    bairro: "", municipio: "", uf: "", area_total: "", telefone: "", plantacao: "Soja"
   })
 
   const buscarCEP = async (cep) => {
@@ -213,7 +211,7 @@ export default function CadastroCompleto() {
       try { const response = await fetch(`https://viacep.com.br/ws/${cepDigits}/json/`); const data = await response.json(); validCEP = response.ok && !data.erro ? data : null; if (validCEP) setCepData(validCEP) } catch { validCEP = null }
     }
     if (!validCEP) { setAlertMessage({ type: "error", text: "CEP não encontrado. Confira o número informado." }); return false }
-    if (!UFS_BRASIL.has(f.uf) || (validCEP.uf && f.uf !== validCEP.uf)) { setAlertMessage({ type: "error", text: validCEP.uf ? `A UF correspondente a esse CEP é ${validCEP.uf}.` : "Informe uma UF válida." }); return false }
+    if (!BRAZIL_STATE_SET.has(f.uf) || (validCEP.uf && f.uf !== validCEP.uf)) { setAlertMessage({ type: "error", text: validCEP.uf ? `A UF correspondente a esse CEP é ${validCEP.uf}.` : "Informe uma UF válida." }); return false }
     if (!hasMinLetters(f.bairro, 2) || (validCEP.bairro && normalizeText(f.bairro) !== normalizeText(validCEP.bairro))) { setAlertMessage({ type: "error", text: validCEP.bairro ? `O bairro correspondente a esse CEP é ${validCEP.bairro}.` : "Informe um bairro válido." }); return false }
     if (!hasMinLetters(f.municipio, 2) || (validCEP.localidade && normalizeText(f.municipio) !== normalizeText(validCEP.localidade))) { setAlertMessage({ type: "error", text: validCEP.localidade ? `O município correspondente a esse CEP é ${validCEP.localidade}.` : "Informe um município válido." }); return false }
     if (!isValidPhone(f.telefone.replace(/\D/g, ""))) { setAlertMessage({ type: "error", text: "Informe um telefone brasileiro válido com DDD." }); return false }
@@ -479,7 +477,14 @@ export default function CadastroCompleto() {
                   </div>
                   <div className="cc-field">
                     <label>UF</label>
-                    <input type="text" name="uf" value={farmData.uf} onChange={handleFarmChange} maxLength="2" placeholder="SP"/>
+                    <CustomSelect
+                      name="uf"
+                      value={farmData.uf}
+                      onChange={handleFarmChange}
+                      options={BRAZIL_STATE_OPTIONS}
+                      placeholder="Selecione a UF"
+                      className="cc-custom-select"
+                    />
                   </div>
                 </div>
 
@@ -510,18 +515,6 @@ export default function CadastroCompleto() {
                     <label>Telefone</label>
                     <input type="text" name="telefone" value={farmData.telefone} onChange={handleFarmChange} placeholder="(00) 00000-0000"/>
                   </div>
-                </div>
-
-                <div className="cc-field">
-                  <label>Principal plantação</label>
-                  <CustomSelect
-                    name="plantacao"
-                    value={farmData.plantacao}
-                    onChange={handleFarmChange}
-                    options={CROP_OPTIONS}
-                    placeholder="Selecione a cultura principal"
-                    className="cc-custom-select"
-                  />
                 </div>
 
                 {alertMessage.text && etapa === 2 && (

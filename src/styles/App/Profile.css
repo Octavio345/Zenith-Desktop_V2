@@ -661,6 +661,17 @@ body:has(.pf-page) .header .nav-item.active {
   transition: var(--pf-transition);
 }
 
+.pf-field-input select {
+  background-color: #ffffff;
+  color: #1d2b21;
+  color-scheme: light;
+}
+
+.pf-field-input select option {
+  background: #ffffff;
+  color: #1d2b21;
+}
+
 .pf-field-input input::placeholder {
   color: var(--pf-text-3);
 }

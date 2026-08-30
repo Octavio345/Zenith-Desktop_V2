@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import CustomSelect from "../Global/CustomSelect"
+import { BRAZIL_STATE_OPTIONS } from "../../../constants/brazilStates"
 
 const onlyDigits = (value) => String(value || "").replace(/\D/g, "")
 
@@ -13,26 +14,9 @@ const formatPhoneInput = (value) => {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`
 }
 
-const ufList = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
-  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
-  "RS", "RO", "RR", "SC", "SP", "SE", "TO"
-]
-
-const culturaList = [
-  "Soja", "Milho", "Cafe", "Cana-de-acucar", "Algodao",
-  "Trigo", "Arroz", "Feijao", "Pastagem", "Eucalipto",
-  "Laranja", "Outros"
-]
-
-const culturaOptions = [
-  { value: "", label: "Selecione" },
-  ...culturaList.map(cultura => ({ value: cultura, label: cultura }))
-]
-
 const ufOptions = [
   { value: "", label: "Selecione" },
-  ...ufList.map(uf => ({ value: uf, label: uf }))
+  ...BRAZIL_STATE_OPTIONS
 ]
 
 const tipoProprietarioOptions = [
@@ -55,7 +39,7 @@ const FarmEditForm = ({ farmData, onSave, onCancel, saving }) => {
   const [formData, setFormData] = useState({
     name: farmData?.name || "",
     area_total: farmData?.area_total || "",
-    plantacao: farmData?.plantacao || "",
+    plantacao: "Soja",
     municipio: farmData?.municipio || "",
     uf: farmData?.uf || "",
     bairro: farmData?.bairro || "",
@@ -155,32 +139,18 @@ const FarmEditForm = ({ farmData, onSave, onCancel, saving }) => {
           </div>
           {errors.name && <span className="error-message">{errors.name}</span>}
 
-          <div className="input-row-tech">
-            <div className="input-group">
-              <label className="input-label">Area total (ha)</label>
-              <input
-                type="number"
-                name="area_total"
-                value={formData.area_total}
-                onChange={handleChange}
-                className={`tech-input ${errors.area_total ? "error" : ""}`}
-                step="0.1"
-                min="0"
-                disabled={saving}
-              />
-            </div>
-
-            <div className="input-group">
-              <label className="input-label">Cultura</label>
-              <CustomSelect
-                name="plantacao"
-                value={formData.plantacao}
-                onChange={handleChange}
-                className="tech-select"
-                disabled={saving}
-                options={culturaOptions}
-              />
-            </div>
+          <div className="input-group">
+            <label className="input-label">Area total (ha)</label>
+            <input
+              type="number"
+              name="area_total"
+              value={formData.area_total}
+              onChange={handleChange}
+              className={`tech-input ${errors.area_total ? "error" : ""}`}
+              step="0.1"
+              min="0"
+              disabled={saving}
+            />
           </div>
 
           <div className="input-group">

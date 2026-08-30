@@ -17,6 +17,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow
 })
 
+// O diagnóstico usa a mesma chave para localizar os talhões salvos no mapa.
 const STORAGE_KEY = "farmPolygons"
 const DEFAULT_CENTER = [-15.7801, -47.9292]
 const FARM_COLORS = ["#22c55e", "#38bdf8", "#f59e0b", "#a78bfa", "#f97316"]
@@ -385,7 +386,8 @@ export default function MapaTab() {
 
     const map = L.map(mapContainerRef.current, {
       zoomControl: false,
-      preferCanvas: true
+      preferCanvas: true,
+      maxZoom: 23
     }).setView(DEFAULT_CENTER, 5)
 
     mapRef.current = map
@@ -400,6 +402,7 @@ export default function MapaTab() {
     const satelliteLayer = L.layerGroup()
 
     if (ARCGIS_API_KEY) {
+      // Carrega o ArcGIS separado do bundle principal para manter o PWA dentro do limite de cache.
       import("esri-leaflet-vector")
         .then(({ vectorBasemapLayer }) => {
           if (mapRef.current !== map) return

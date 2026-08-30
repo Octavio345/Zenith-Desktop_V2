@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../services/firebase"
 import { addDoc, collection, query, where, getDocs } from "firebase/firestore"
 import CustomSelect from "../../components/App/Global/CustomSelect"
+import { BRAZIL_STATE_OPTIONS } from "../../constants/brazilStates"
 import "../../styles/App/CadastrarFazenda.css"
 
 const OWNER_TYPES = [{ value: "PF", label: "Pessoa Física" }, { value: "PJ", label: "Pessoa Jurídica" }]
@@ -11,13 +12,11 @@ const AREA_OPTIONS = [
   { value: "13-20", label: "13 – 20 ha" }, { value: "21-29", label: "21 – 29 ha" },
   { value: "30-40", label: "30 – 40 ha" }, { value: "40+", label: "Mais de 40 ha" },
 ]
-const CROP_OPTIONS = ["Soja", "Tomate", "Café", "Milho", "Feijão"]
-
 export default function CadastrarFazenda() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [notice, setNotice] = useState("")
-  const [formData, setFormData] = useState({ name: "", tipo_proprietario: "", data_aquisicao: "", cep: "", bairro: "", municipio: "", uf: "", area_total: "", telefone: "", plantacao: "" })
+  const [formData, setFormData] = useState({ name: "", tipo_proprietario: "", data_aquisicao: "", cep: "", bairro: "", municipio: "", uf: "", area_total: "", telefone: "", plantacao: "Soja" })
 
   const handleChange = ({ target: { name, value } }) => {
     let formatted = value
@@ -82,12 +81,11 @@ export default function CadastrarFazenda() {
             <label className="farm-field"><span>Tipo de proprietário</span><CustomSelect name="tipo_proprietario" value={formData.tipo_proprietario} onChange={handleChange} options={OWNER_TYPES} placeholder="Selecione" /></label>
             <label className="farm-field"><span>Data de aquisição</span><input type="date" name="data_aquisicao" value={formData.data_aquisicao} onChange={handleChange} /></label>
             <label className="farm-field"><span>CEP</span><input name="cep" value={formData.cep} onChange={(event) => { handleChange(event); buscarCEP(event.target.value) }} placeholder="00000-000" /></label>
-            <label className="farm-field"><span>UF</span><input name="uf" value={formData.uf} onChange={handleChange} placeholder="SP" /></label>
+            <label className="farm-field"><span>UF</span><CustomSelect name="uf" value={formData.uf} onChange={handleChange} options={BRAZIL_STATE_OPTIONS} placeholder="Selecione a UF" /></label>
             <label className="farm-field"><span>Bairro</span><input name="bairro" value={formData.bairro} onChange={handleChange} placeholder="Bairro ou distrito" /></label>
             <label className="farm-field"><span>Município</span><input name="municipio" value={formData.municipio} onChange={handleChange} placeholder="Cidade" /></label>
             <label className="farm-field"><span>Área total</span><CustomSelect name="area_total" value={formData.area_total} onChange={handleChange} options={AREA_OPTIONS} placeholder="Selecione a área" /></label>
             <label className="farm-field"><span>Telefone</span><input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="(00) 00000-0000" /></label>
-            <label className="farm-field farm-field--full"><span>Principal plantação</span><CustomSelect name="plantacao" value={formData.plantacao} onChange={handleChange} options={CROP_OPTIONS} placeholder="Selecione a cultura principal" /></label>
           </div>
           {notice && <p className="farm-registration__notice">{notice}</p>}
           <button className="farm-registration__submit" type="submit" disabled={loading}>{loading ? "Salvando dados..." : <>Concluir cadastro <span className="material-symbols-outlined">arrow_forward</span></>}</button>

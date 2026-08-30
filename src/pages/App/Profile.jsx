@@ -12,6 +12,7 @@ import {
 } from "firebase/firestore"
 import { useLocation, useNavigate } from "react-router-dom"
 import { isOperationalRole } from "../../services/accessControl"
+import { BRAZIL_STATE_CODES, BRAZIL_STATE_SET } from "../../constants/brazilStates"
 
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
@@ -186,7 +187,7 @@ export default function Profile() {
   const [farmForm, setFarmForm] = useState({
     name: "",
     area_total: "",
-    plantacao: "",
+    plantacao: "Soja",
     municipio: "",
     uf: "",
     bairro: "",
@@ -261,7 +262,7 @@ export default function Profile() {
           createdAt: data.createdAt || null,
           data_aquisicao: data.data_aquisicao || "",
           municipio: data.municipio || "",
-          plantacao: data.plantacao || "",
+          plantacao: "Soja",
           telefone: data.telefone || "",
           tipo_proprietario: data.tipo_proprietario || "",
           uf: data.uf || "",
@@ -377,8 +378,8 @@ export default function Profile() {
       showAlert("error", "Informe o nome completo da cidade, sem abreviação.")
       return
     }
-    if (state && state.length !== 2) {
-      showAlert("error", "UF deve ter exatamente 2 letras.")
+    if (state && !BRAZIL_STATE_SET.has(state)) {
+      showAlert("error", "Selecione uma UF válida.")
       return
     }
 
@@ -429,13 +430,17 @@ export default function Profile() {
       showAlert("error", "CEP deve ter 8 números.")
       return
     }
+    if (farmForm.uf && !BRAZIL_STATE_SET.has(farmForm.uf)) {
+      showAlert("error", "Selecione uma UF válida para a fazenda.")
+      return
+    }
 
     setSavingFarm(true)
     try {
       await updateDoc(doc(db, "farms", farmData.id), {
         name: normalizeText(farmForm.name),
         area_total: parseFloat(farmForm.area_total) || 0,
-        plantacao: normalizeText(farmForm.plantacao),
+        plantacao: "Soja",
         municipio,
         uf: farmForm.uf,
         bairro: normalizeText(farmForm.bairro),
@@ -908,15 +913,18 @@ export default function Profile() {
                   </div>
                   <div className="pf-field pf-field-input">
                     <label htmlFor="state">UF</label>
-                    <input
+                    <select
                       id="state"
                       name="state"
                       value={formData.state}
                       onChange={handleChange}
-                      placeholder="SP"
                       autoComplete="address-level1"
-                      maxLength={2}
-                    />
+                    >
+                      <option value="">Selecione</option>
+                      {BRAZIL_STATE_CODES.map((uf) => (
+                        <option key={uf} value={uf}>{uf}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="pf-field pf-field-full pf-field-input">
                     <label>Ícone do perfil</label>
@@ -1019,7 +1027,7 @@ export default function Profile() {
                   </div>
                   <div className="pf-field">
                     <label>Cultivo principal</label>
-                    <p>{farmData.plantacao || "—"}</p>
+                    <p>Soja</p>
                   </div>
                   <div className="pf-field">
                     <label>Município</label>
@@ -1076,17 +1084,6 @@ export default function Profile() {
                     />
                   </div>
                   <div className="pf-field pf-field-input">
-                    <label htmlFor="farm-plantacao">Cultivo principal</label>
-                    <input
-                      id="farm-plantacao"
-                      name="plantacao"
-                      value={farmForm.plantacao}
-                      onChange={handleFarmChange}
-                      placeholder="Soja, Milho..."
-                      maxLength={40}
-                    />
-                  </div>
-                  <div className="pf-field pf-field-input">
                     <label htmlFor="farm-municipio">Município</label>
                     <input
                       id="farm-municipio"
@@ -1100,14 +1097,17 @@ export default function Profile() {
                   </div>
                   <div className="pf-field pf-field-input">
                     <label htmlFor="farm-uf">UF</label>
-                    <input
+                    <select
                       id="farm-uf"
                       name="uf"
                       value={farmForm.uf}
                       onChange={handleFarmChange}
-                      placeholder="SP"
-                      maxLength={2}
-                    />
+                    >
+                      <option value="">Selecione</option>
+                      {BRAZIL_STATE_CODES.map((uf) => (
+                        <option key={uf} value={uf}>{uf}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="pf-field pf-field-input">
                     <label htmlFor="farm-bairro">Bairro</label>
