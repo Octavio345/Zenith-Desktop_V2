@@ -243,6 +243,7 @@ O painel usa uma instância secundária do Firebase Auth para criar a nova conta
 | Mapa | localização, talhões, áreas, ocorrências, demarcação 2D e inspeção 3D | `components/App/Explore/MapaTab.jsx` | `localStorage["farmPolygons"]` e APIs de mapa |
 | Estoque | produtos, quantidade e movimentações da operação | `components/App/Explore/EstoqueTab.jsx` | `localStorage["inventory"]` |
 | Atividades | atividades gerais e individuais da fazenda | `components/App/Explore/AtividadesTab.jsx` | Firestore, em tempo real |
+| Legislação | orientação operacional e links oficiais para uso de drones agrícolas | `components/App/Explore/LegislacaoDronesTab.jsx` | conteúdo estático e canais oficiais |
 
 ### Mapa, talhões e localização
 
@@ -280,6 +281,18 @@ O mapa abre em **2D**, que é o modo destinado à demarcação e à edição das
 O **3D** é uma visualização complementar com ArcGIS `SceneView`, imagem de satélite e terreno reais. Ele não cria nem edita talhões: sua finalidade é inspecionar a lavoura, o relevo e os limites já demarcados. Ao entrar no 3D, o enquadramento prioriza a área selecionada; sem seleção, enquadra o conjunto de áreas; sem áreas, preserva a região atual do mapa 2D. A câmera abre com inclinação de 45° e os polígonos ficam aderidos ao terreno, sem extrusão.
 
 O módulo ArcGIS é carregado somente quando o modo 3D é aberto. Ao voltar ao 2D, o centro aproximado da câmera é reaproveitado para preservar o contexto. Navegadores ou dispositivos sem suporte ao 3D recebem uma mensagem de indisponibilidade e podem continuar no 2D.
+
+### Legislação de drones
+
+A aba **Legislação** fica no Explorer e está disponível tanto para proprietário quanto para funcionários. Ela funciona como uma referência rápida para a preparação de missões agrícolas, sem substituir a consulta oficial nem a avaliação da operação.
+
+O conteúdo distingue as responsabilidades de cada órgão:
+
+- **ANAC:** regras civis, cadastro e responsabilidades do operador;
+- **DECEA / SARPAS:** acesso ao espaço aéreo e autorizações de voo;
+- **Anatel:** homologação dos itens de radiofrequência, como controle, telemetria e transmissão.
+
+A aba inclui links externos oficiais. Como normas e procedimentos podem mudar, a interface não considera seu texto uma autorização de voo: a equipe deve conferir as condições vigentes antes de cada operação.
 
 ### Integrações e APIs
 

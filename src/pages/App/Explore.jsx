@@ -12,6 +12,7 @@ import MapaTab from "../../components/App/Explore/MapaTab"
 import EstoqueTab from "../../components/App/Explore/EstoqueTab"
 import AtividadesTab from "../../components/App/Explore/AtividadesTab"
 import MonitoramentoView from "../../components/App/Explore/Monitoramento/MonitoramentoView"
+import LegislacaoDronesTab from "../../components/App/Explore/LegislacaoDronesTab"
 import ParticleBackground from "../../components/App/Home/ParticleBackground"
 import MouseGlow from "../../components/App/Home/MouseGlow"
 import "../../styles/App/Explore.css"
@@ -23,7 +24,8 @@ const tabs = [
   { id: "diario", label: "Diário", icon: "menu_book" },
   { id: "mapa", label: "Mapa", icon: "map" },
   { id: "estoque", label: "Estoque", icon: "inventory" },
-  { id: "atividades", label: "Atividades", icon: "assignment" }
+  { id: "atividades", label: "Atividades", icon: "assignment" },
+  { id: "legislacao", label: "Legislação", icon: "gavel" }
 ]
 
 const tabContext = {
@@ -34,6 +36,7 @@ const tabContext = {
   mapa: ["Mapa da propriedade", "Visualize áreas, talhões e pontos importantes da fazenda."],
   estoque: ["Estoque e insumos", "Controle entradas, saídas e níveis críticos com clareza."],
   atividades: ["Atividades", "Planeje tarefas e acompanhe a execução da equipe."],
+  legislacao: ["Legislação de drones", "Consulte orientações para operar drones agrícolas com responsabilidade."],
 }
 
 export default function Explore() {
@@ -87,6 +90,8 @@ export default function Explore() {
         return <EstoqueTab />
       case "atividades":
         return <AtividadesTab />
+      case "legislacao":
+        return <LegislacaoDronesTab />
       default:
         return <DiagnosticoTab />
     }

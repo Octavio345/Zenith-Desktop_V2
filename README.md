@@ -28,6 +28,7 @@ O resultado não substitui vistoria agronômica nem laudo técnico. Ele organiza
 - Clima, diário de campo, mapa 2D de áreas e estoque.
 - Demarcação de talhões em 2D, com quantidade livre de vértices, edição das bordas e cálculo em hectares.
 - Visualização 3D opcional da propriedade, com satélite e terreno reais, para analisar talhões já demarcados.
+- Central de legislação de drones, disponível a toda a equipe, com orientações e links oficiais da ANAC, DECEA/SARPAS e Anatel.
 - PWA com possibilidade de instalação no navegador.
 
 ## Tecnologias
