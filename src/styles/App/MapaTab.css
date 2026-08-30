@@ -461,6 +461,68 @@
   background: #020617;
 }
 
+.farm-map-canvas--hidden {
+  display: none;
+}
+
+.farm-map-3d,
+.farm-map-3d__scene,
+.farm-map-3d__loading {
+  width: 100%;
+  height: 720px;
+}
+
+.farm-map-3d {
+  position: relative;
+  background: #020617;
+}
+
+.farm-map-3d__loading,
+.farm-map-3d__error {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 24px;
+  color: #dbeafe;
+  font-size: .88rem;
+  font-weight: 700;
+}
+
+.farm-map-3d__error {
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 12, .78);
+  text-align: center;
+}
+
+.farm-map-view-mode {
+  position: absolute;
+  z-index: 650;
+  top: 16px;
+  right: 62px;
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, .26);
+  border-radius: 8px;
+  background: rgba(2, 6, 12, .84);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .28);
+  backdrop-filter: blur(10px);
+}
+
+.farm-map-view-mode button {
+  min-width: 40px;
+  height: 32px;
+  border: 0;
+  border-right: 1px solid rgba(148, 163, 184, .2);
+  background: transparent;
+  color: #cbd5e1;
+  font: 800 .72rem Inter, sans-serif;
+  cursor: pointer;
+}
+
+.farm-map-view-mode button:last-child { border-right: 0; }
+.farm-map-view-mode button.active { background: rgba(34, 197, 94, .22); color: #dcfce7; }
+
 .farm-map-status {
   position: absolute;
   top: 16px;

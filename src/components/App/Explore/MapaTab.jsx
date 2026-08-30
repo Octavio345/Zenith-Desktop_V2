@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import "leaflet-draw"
@@ -22,6 +22,7 @@ const STORAGE_KEY = "farmPolygons"
 const DEFAULT_CENTER = [-15.7801, -47.9292]
 const FARM_COLORS = ["#22c55e", "#38bdf8", "#f59e0b", "#a78bfa", "#f97316"]
 const ARCGIS_API_KEY = import.meta.env.VITE_ARCGIS_API_KEY?.trim()
+const FarmMap3D = lazy(() => import("./FarmMap3D"))
 
 const onlyDigits = (value) => String(value || "").replace(/\D/g, "")
 
@@ -270,6 +271,8 @@ export default function MapaTab() {
   const [deleteDialog, setDeleteDialog] = useState(null)
   const [statusMessage, setStatusMessage] = useState("Use o satélite para contornar a borda real da fazenda.")
   const [searching, setSearching] = useState(false)
+  const [mapViewMode, setMapViewMode] = useState("2d")
+  const [sceneInitialView, setSceneInitialView] = useState(null)
 
   const totalArea = useMemo(
     () => areas.reduce((sum, area) => sum + (Number(area.areaHa) || 0), 0),
@@ -380,6 +383,11 @@ export default function MapaTab() {
   useEffect(() => {
     renderAreasOnMap()
   }, [areas, selectedAreaId])
+
+  useEffect(() => {
+    if (mapViewMode !== "2d" || !mapRef.current) return
+    window.setTimeout(() => mapRef.current?.invalidateSize(), 0)
+  }, [mapViewMode])
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return
@@ -656,6 +664,26 @@ export default function MapaTab() {
     if (featureGroupRef.current.getLayers().length > 0) {
       mapRef.current.fitBounds(featureGroupRef.current.getBounds(), { padding: [34, 34], maxZoom: 17 })
     }
+  }
+
+  const switchMapView = (nextMode) => {
+    if (nextMode === mapViewMode) return
+
+    if (nextMode === "3d" && mapRef.current) {
+      stopActiveTool({ revertEdit: true })
+      const center = mapRef.current.getCenter()
+      setSceneInitialView({ center: [center.lng, center.lat], zoom: mapRef.current.getZoom() })
+      setStatusMessage("Visualização 3D: navegue, incline e rotacione o terreno. Para editar áreas, volte ao modo 2D.")
+    }
+
+    setMapViewMode(nextMode)
+  }
+
+  const handleSceneCameraChange = (sceneCamera) => {
+    if (!sceneCamera?.center || !mapRef.current) return
+    const [longitude, latitude] = sceneCamera.center
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return
+    mapRef.current.setView([latitude, longitude], Math.max(3, Math.min(20, sceneCamera.zoom || 15)))
   }
 
   const locateUser = () => {
@@ -974,14 +1002,30 @@ export default function MapaTab() {
           </div>
         </aside>
 
-        <section className="farm-map-canvas-card">
+        <section className={`farm-map-canvas-card farm-map-canvas-card--${mapViewMode}`}>
           <div className={`farm-map-status ${activeMode}`}>
             <span className="material-symbols-outlined">
               {activeMode === "drawing" ? "gesture" : activeMode === "editing" ? "edit" : "satellite_alt"}
             </span>
             <span>{statusMessage}</span>
           </div>
-          <div ref={mapContainerRef} className="farm-map-canvas" />
+          <div className="farm-map-view-mode" role="group" aria-label="Modo de visualização do mapa">
+            <button type="button" className={mapViewMode === "2d" ? "active" : ""} onClick={() => switchMapView("2d")}>2D</button>
+            <button type="button" className={mapViewMode === "3d" ? "active" : ""} onClick={() => switchMapView("3d")}>3D</button>
+          </div>
+          <div ref={mapContainerRef} className={`farm-map-canvas ${mapViewMode === "3d" ? "farm-map-canvas--hidden" : ""}`} />
+          {mapViewMode === "3d" && (
+            <Suspense fallback={<div className="farm-map-3d__loading">Carregando visualização 3D...</div>}>
+              <FarmMap3D
+                areas={areas}
+                selectedAreaId={selectedAreaId}
+                initialView={sceneInitialView}
+                apiKey={ARCGIS_API_KEY}
+                onAreaSelect={setSelectedAreaId}
+                onCameraChange={handleSceneCameraChange}
+              />
+            </Suspense>
+          )}
         </section>
       </section>
 
