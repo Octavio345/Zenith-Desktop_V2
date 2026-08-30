@@ -603,7 +603,7 @@
 
 .empty-state button {
   padding: 10px 22px;
-  background: var(--accent);
+  background: #2e6f46;
   border: none;
   border-radius: var(--radius);
   color: #fff;
@@ -613,7 +613,7 @@
   transition: background 0.15s var(--ease);
 }
 
-.empty-state button:hover { background: #0ea372; }
+.empty-state button:hover { background: #245c3b; }
 
 .activities-loading > span {
   color: var(--accent);

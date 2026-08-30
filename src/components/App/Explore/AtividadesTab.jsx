@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { onAuthStateChanged } from "firebase/auth"
 import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query, updateDoc, where } from "firebase/firestore"
 import { auth, db } from "../../../services/firebase"
-import { isOperationalRole } from "../../../services/accessControl"
+import { isAccountBlocked, isOperationalRole } from "../../../services/accessControl"
 import { isAwaitingOwnerConfirmation, isConfirmedWorkItemExpired } from "../../../services/workItemLifecycle"
 import { clearActivityDraft, getActivityDraft } from "../../../services/fieldOperations"
 import CustomSelect from "../Global/CustomSelect"
@@ -103,7 +103,9 @@ export default function AtividadesTab() {
         setActivitiesLoading(false)
       }, (error) => { console.error("Erro ao sincronizar atividades:", error); setActivityMessage("Não foi possível carregar as atividades compartilhadas."); setActivitiesLoading(false) }))
       unsubscribers.push(onSnapshot(teamMembers, (snapshot) => {
-        setEmployees(snapshot.docs.map((memberDoc) => ({ id: memberDoc.id, ...memberDoc.data() })).filter((member) => isOperationalRole(member.role)))
+        setEmployees(snapshot.docs
+          .map((memberDoc) => ({ id: memberDoc.id, ...memberDoc.data() }))
+          .filter((member) => isOperationalRole(member.role) && !isAccountBlocked(member)))
       }))
     } else {
       const ownerId = userProfile.ownerId || userProfile.teamId

@@ -85,7 +85,7 @@ export default function CadastrarFazenda() {
             <label className="farm-field"><span>Bairro</span><input name="bairro" value={formData.bairro} onChange={handleChange} placeholder="Bairro ou distrito" /></label>
             <label className="farm-field"><span>Município</span><input name="municipio" value={formData.municipio} onChange={handleChange} placeholder="Cidade" /></label>
             <label className="farm-field"><span>Área total</span><CustomSelect name="area_total" value={formData.area_total} onChange={handleChange} options={AREA_OPTIONS} placeholder="Selecione a área" /></label>
-            <label className="farm-field"><span>Telefone</span><input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="(00) 00000-0000" /></label>
+            <label className="farm-field"><span>Telefone</span><input type="tel" inputMode="numeric" maxLength={15} name="telefone" value={formData.telefone} onChange={handleChange} placeholder="(00) 00000-0000" /></label>
           </div>
           {notice && <p className="farm-registration__notice">{notice}</p>}
           <button className="farm-registration__submit" type="submit" disabled={loading}>{loading ? "Salvando dados..." : <>Concluir cadastro <span className="material-symbols-outlined">arrow_forward</span></>}</button>

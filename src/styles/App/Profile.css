@@ -37,7 +37,8 @@
   color: var(--pf-text);
   font-family: "Inter", sans-serif;
   background: var(--pf-bg);
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 

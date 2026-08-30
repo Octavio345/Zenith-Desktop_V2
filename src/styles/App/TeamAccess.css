@@ -628,6 +628,39 @@
   padding: 0 10px;
 }
 
+.new-employee-password {
+  position: relative;
+  min-width: 0;
+}
+
+.new-employee-password input {
+  padding-right: 42px;
+}
+
+.new-employee-password .new-employee-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  width: 32px;
+  min-height: 32px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--team-green);
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.new-employee-password .new-employee-password__toggle:hover {
+  background: #e8f2e6;
+}
+
+.new-employee-password__toggle .material-symbols-outlined {
+  font-size: 19px;
+}
+
 .new-employee-form button,
 .assign-task button {
   min-height: 42px;
@@ -900,6 +933,57 @@
   font-size: 0.68rem;
 }
 
+.employee-detail-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 9px 10px;
+  border-bottom: 1px solid #e6ede4;
+  background: #f8fbf6;
+}
+
+.employee-detail-tabs button {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: #65766b;
+  font: inherit;
+  font-size: .67rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.employee-detail-tabs button:hover {
+  border-color: #d3e2d0;
+  background: #ffffff;
+  color: #2c6240;
+}
+
+.employee-detail-tabs button.active {
+  border-color: #bcd6bd;
+  background: #ffffff;
+  color: var(--team-green);
+  box-shadow: 0 5px 14px rgba(38, 91, 54, .08);
+}
+
+.employee-detail-tabs .material-symbols-outlined {
+  font-size: 17px;
+}
+
+.employee-detail-tabs strong {
+  min-width: 18px;
+  padding: 2px 5px;
+  border-radius: 999px;
+  background: #e5f1e2;
+  font-size: .55rem;
+}
+
 .detail-status {
   width: fit-content;
   display: flex;
@@ -1103,6 +1187,27 @@
   padding: 10px;
   border-top: 1px solid #edf1ed;
   scroll-margin-block: 120px;
+}
+
+.task-assignment-message {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: .63rem;
+  font-weight: 750;
+}
+
+.task-assignment-message.success {
+  border: 1px solid #bfd9bc;
+  background: #edf7e9;
+  color: #28643d;
+}
+
+.task-assignment-message.error {
+  border: 1px solid #efc2b9;
+  background: #fff1ee;
+  color: #a34232;
 }
 
 .assign-task input {
@@ -1573,6 +1678,11 @@
   .assign-task {
     grid-template-columns: 1fr;
     padding: 7px;
+  }
+
+  .employee-detail-tabs button {
+    min-height: 36px;
+    font-size: .6rem;
   }
 
   .detail-actions {

@@ -376,6 +376,8 @@ export default function CadastroCompleto() {
                       type="text" name="document" value={userData.document}
                       onChange={(e) => handleUserChange({ target: { name: "document", value: formatDocument(e.target.value, userData.type) } })}
                       placeholder={userData.type === "CPF" ? "000.000.000-00" : "00.000.000/0000-00"}
+                      inputMode="numeric"
+                      maxLength={userData.type === "CPF" ? 14 : 18}
                     />
                   </div>
                 )}
@@ -513,7 +515,7 @@ export default function CadastroCompleto() {
                   </div>
                   <div className="cc-field">
                     <label>Telefone</label>
-                    <input type="text" name="telefone" value={farmData.telefone} onChange={handleFarmChange} placeholder="(00) 00000-0000"/>
+                    <input type="tel" inputMode="numeric" maxLength={15} name="telefone" value={farmData.telefone} onChange={handleFarmChange} placeholder="(00) 00000-0000"/>
                   </div>
                 </div>
 

@@ -18,9 +18,30 @@ export default function Register() {
 
   const [loading, setLoading] = useState(false)
   const [alertMessage, setAlertMessage] = useState({ type: "", text: "" })
+  const [showPassword, setShowPassword] = useState(false)
+
+  const formatDocument = (value, type) => {
+    const digits = value.replace(/\D/g, "").slice(0, type === "PJ" ? 14 : 11)
+    if (type === "PJ") {
+      return digits
+        .replace(/^(\d{2})(\d)/, "$1.$2")
+        .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+        .replace(/\.(\d{3})(\d)/, ".$1/$2")
+        .replace(/(\d{4})(\d)/, "$1-$2")
+    }
+    return digits
+      .replace(/^(\d{3})(\d)/, "$1.$2")
+      .replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2")
+  }
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    if (name === "type") {
+      setForm({ ...form, type: value, document: "" })
+    } else {
+      setForm({ ...form, [name]: name === "document" ? formatDocument(value, form.type) : value })
+    }
     setAlertMessage({ type: "", text: "" })
   }
 
@@ -54,7 +75,7 @@ export default function Register() {
         name: form.name,
         age: parseInt(form.age),
         type: form.type,
-        document: form.document,
+        document: form.document.replace(/\D/g, ""),
         hectares: parseFloat(form.hectares),
         email: form.email,
         createdAt: new Date().toISOString(),
@@ -203,13 +224,23 @@ export default function Register() {
 
             <div className="input-group-register">
               <label>Senha</label>
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                placeholder="Mínimo 6 caracteres"
-                onChange={handleChange}
-              />
+              <div className="register-password-field">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={form.password}
+                  placeholder="Mínimo 6 caracteres"
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((current) => !current)}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">{showPassword ? "visibility_off" : "visibility"}</span>
+                </button>
+              </div>
             </div>
 
             {alertMessage.text && (

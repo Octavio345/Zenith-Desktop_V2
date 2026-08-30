@@ -9,7 +9,7 @@ import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
 import AppFooter from "../../components/App/Global/AppFooter"
 import DroneIcon from "../../components/App/Global/DroneIcon"
-import { ACCOUNT_ROLES } from "../../services/accessControl"
+import { ACCOUNT_ROLES, isAccountBlocked } from "../../services/accessControl"
 import "../../styles/App/TeamAccess.css"
 
 const DRONE_MODELS = [
@@ -148,7 +148,11 @@ export default function AdminTeamDashboard() {
   const [isTeamLoading, setIsTeamLoading] = useState(true)
   const [filters, setFilters] = useState({ employee: "", sector: "todos", status: "todos", date: "" })
   const [taskTitle, setTaskTitle] = useState("")
+  const [detailTab, setDetailTab] = useState("summary")
+  const [isAssigningTask, setIsAssigningTask] = useState(false)
+  const [taskAssignmentMessage, setTaskAssignmentMessage] = useState({ type: "", text: "" })
   const [showNewEmployee, setShowNewEmployee] = useState(false)
+  const [showEmployeePassword, setShowEmployeePassword] = useState(false)
   const [isCreatingEmployee, setIsCreatingEmployee] = useState(false)
   const [employeeFormMessage, setEmployeeFormMessage] = useState({ type: "", text: "" })
   const [isEditingEmployee, setIsEditingEmployee] = useState(false)
@@ -210,7 +214,7 @@ export default function AdminTeamDashboard() {
       ]
       const visibleTasks = allWorkItems.filter((task) => !isConfirmedWorkItemExpired(task))
       const operationalEmployees = employeeDocs.filter((docSnap) => (
-        docSnap.data().archived !== true &&
+        !isAccountBlocked(docSnap.data()) &&
         (docSnap.data().role === ACCOUNT_ROLES.EMPLOYEE || docSnap.data().role === ACCOUNT_ROLES.COLLABORATOR)
       ))
 
@@ -314,10 +318,13 @@ export default function AdminTeamDashboard() {
       return
     }
 
-    if (location.hash !== "#nova-tarefa" || !assignTaskRef.current) return
+    if (location.hash !== "#nova-tarefa") return
 
-    assignTaskRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
-    window.setTimeout(() => taskInputRef.current?.focus(), 360)
+    setDetailTab("tasks")
+    window.setTimeout(() => {
+      assignTaskRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      taskInputRef.current?.focus()
+    }, 120)
   }, [location.hash, selected?.id])
 
   const totals = useMemo(() => ({
@@ -332,23 +339,48 @@ export default function AdminTeamDashboard() {
   }), [employees])
 
   const assignTask = async () => {
-    if (!taskTitle.trim() || !selected) return
+    const title = taskTitle.trim()
+    if (!selected) {
+      setTaskAssignmentMessage({ type: "error", text: "Selecione um funcionário antes de atribuir a tarefa." })
+      return
+    }
+    if (!title) {
+      setTaskAssignmentMessage({ type: "error", text: "Digite o nome da tarefa antes de enviar." })
+      taskInputRef.current?.focus()
+      return
+    }
+    if (!auth.currentUser?.uid) {
+      setTaskAssignmentMessage({ type: "error", text: "Sua sessão expirou. Entre novamente para atribuir tarefas." })
+      return
+    }
 
+    setIsAssigningTask(true)
+    setTaskAssignmentMessage({ type: "", text: "" })
     try {
       const taskPayload = {
         employeeId: selected.id,
         employeeName: selected.name,
-        title: taskTitle.trim(),
+        title,
         status: "pendente",
-        priority: "Media",
+        priority: "media",
         due: filters.date || "Sem prazo",
-        ownerId: auth.currentUser?.uid || "",
+        ownerId: auth.currentUser.uid,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       }
       await addDoc(collection(db, "tasks"), taskPayload)
       setTaskTitle("")
+      setTaskAssignmentMessage({ type: "success", text: `Tarefa atribuída a ${selected.name}.` })
     } catch (error) {
       console.error("Erro ao atribuir tarefa:", error)
+      setTaskAssignmentMessage({
+        type: "error",
+        text: error?.code === "permission-denied"
+          ? "O Firebase recusou a operação. Confirme o email do proprietário e publique as regras atuais do Firestore."
+          : "Não foi possível atribuir a tarefa. Tente novamente.",
+      })
+    } finally {
+      setIsAssigningTask(false)
     }
   }
 
@@ -373,7 +405,7 @@ export default function AdminTeamDashboard() {
       name: newEmployee.name.trim(),
       email: newEmployee.email.trim().toLowerCase(),
       age: Number(newEmployee.age) || null,
-      phone: newEmployee.phone.trim(),
+      phone: onlyDigits(newEmployee.phone),
       type: newEmployee.personType,
       document: newEmployee.document.replace(/\D/g, ""),
       employmentType: newEmployee.employmentType,
@@ -405,6 +437,7 @@ export default function AdminTeamDashboard() {
       await setDoc(doc(db, "users", credential.user.uid), employeePayload)
       setSelectedId(credential.user.uid)
       setNewEmployee({ name: "", email: "", password: "", age: "", phone: "", personType: "CPF", document: "", employmentType: "CLT", position: "", sector: "", droneModel: "", role: ACCOUNT_ROLES.EMPLOYEE })
+      setShowEmployeePassword(false)
       setEmployeeFormMessage({ type: "success", text: "Login criado. O funcionário já pode entrar com o email e a senha definidos." })
       setShowNewEmployee(false)
     } catch (error) {
@@ -653,13 +686,23 @@ export default function AdminTeamDashboard() {
                 placeholder="Email de acesso"
                 type="email"
               />
-              <input
-                value={newEmployee.password}
-                onChange={(event) => setNewEmployee((current) => ({ ...current, password: event.target.value }))}
-                placeholder="Senha inicial segura"
-                type="password"
-                autoComplete="new-password"
-              />
+              <div className="new-employee-password">
+                <input
+                  value={newEmployee.password}
+                  onChange={(event) => setNewEmployee((current) => ({ ...current, password: event.target.value }))}
+                  placeholder="Senha inicial segura"
+                  type={showEmployeePassword ? "text" : "password"}
+                  autoComplete="new-password"
+                />
+                <button
+                  className="new-employee-password__toggle"
+                  type="button"
+                  onClick={() => setShowEmployeePassword((current) => !current)}
+                  aria-label={showEmployeePassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  <span className="material-symbols-outlined" aria-hidden="true">{showEmployeePassword ? "visibility_off" : "visibility"}</span>
+                </button>
+              </div>
               <input
                 value={newEmployee.age}
                 onChange={(event) => setNewEmployee((current) => ({ ...current, age: event.target.value.replace(/\D/g, "").slice(0, 3) }))}
@@ -668,19 +711,22 @@ export default function AdminTeamDashboard() {
               />
               <input
                 value={newEmployee.phone}
-                onChange={(event) => setNewEmployee((current) => ({ ...current, phone: event.target.value }))}
-                placeholder="Telefone com DDD"
-                inputMode="tel"
+                onChange={(event) => setNewEmployee((current) => ({ ...current, phone: formatBrazilianPhone(event.target.value) }))}
+                placeholder="(00) 00000-0000"
+                type="tel"
+                inputMode="numeric"
+                maxLength={15}
               />
-              <select value={newEmployee.personType} onChange={(event) => setNewEmployee((current) => ({ ...current, personType: event.target.value }))} aria-label="Tipo de pessoa">
+              <select value={newEmployee.personType} onChange={(event) => setNewEmployee((current) => ({ ...current, personType: event.target.value, document: "" }))} aria-label="Tipo de pessoa">
                 <option value="CPF">Pessoa física (CPF)</option>
                 <option value="PJ">Pessoa jurídica (CNPJ)</option>
               </select>
               <input
                 value={newEmployee.document}
-                onChange={(event) => setNewEmployee((current) => ({ ...current, document: event.target.value }))}
-                placeholder={newEmployee.personType === "PJ" ? "CNPJ" : "CPF ou documento de identidade"}
+                onChange={(event) => setNewEmployee((current) => ({ ...current, document: formatBrazilianDocument(event.target.value, current.personType) }))}
+                placeholder={newEmployee.personType === "PJ" ? "00.000.000/0000-00" : "000.000.000-00"}
                 inputMode="numeric"
+                maxLength={newEmployee.personType === "PJ" ? 18 : 14}
               />
               <select value={newEmployee.employmentType} onChange={(event) => setNewEmployee((current) => ({ ...current, employmentType: event.target.value }))} aria-label="Vínculo de trabalho">
                 <option value="CLT">Contratação CLT</option>
@@ -724,7 +770,7 @@ export default function AdminTeamDashboard() {
               <button
                 key={employee.id}
                 className={`employee-row ${selected?.id === employee.id ? "active" : ""}`}
-                onClick={() => { setSelectedId(employee.id); setIsEditingEmployee(false); setEmployeeEditMessage({ type: "", text: "" }) }}
+                onClick={() => { setSelectedId(employee.id); setDetailTab("summary"); setIsEditingEmployee(false); setEmployeeEditMessage({ type: "", text: "" }); setTaskAssignmentMessage({ type: "", text: "" }) }}
               >
                 <span className={`status-dot ${employee.status}`}></span>
                 <span className="employee-list-avatar">{getInitials(employee.name)}</span>
@@ -761,16 +807,22 @@ export default function AdminTeamDashboard() {
               </div>
             </div>
 
-            <div className="detail-stats">
+            <nav className="employee-detail-tabs" aria-label="Seções do funcionário">
+              <button type="button" className={detailTab === "summary" ? "active" : ""} onClick={() => setDetailTab("summary")}><span className="material-symbols-outlined">dashboard</span>Resumo</button>
+              <button type="button" className={detailTab === "tasks" ? "active" : ""} onClick={() => setDetailTab("tasks")}><span className="material-symbols-outlined">task_alt</span>Tarefas<strong>{selected.tasks?.length || 0}</strong></button>
+              <button type="button" className={detailTab === "registry" ? "active" : ""} onClick={() => setDetailTab("registry")}><span className="material-symbols-outlined">badge</span>Cadastro</button>
+            </nav>
+
+            {detailTab === "summary" && <div className="detail-stats">
               <article><span className="material-symbols-outlined">schedule</span><div><small>Entrada</small><strong>{selected.entry}</strong></div></article>
               <article><span className="material-symbols-outlined">schedule</span><div><small>Saída</small><strong>{selected.exit}</strong></div></article>
               <article><span className="material-symbols-outlined">avg_time</span><div><small>Horas</small><strong>{selected.hours}h</strong></div></article>
               <article><span className="material-symbols-outlined">calendar_today</span><div><small>Atrasos</small><strong>{selected.delays}</strong></div></article>
               <article><span className="material-symbols-outlined">event_busy</span><div><small>Faltas</small><strong>{selected.absences}</strong></div></article>
               <article><span className="material-symbols-outlined">map</span><div><small>Setor</small><strong>{selected.sector}</strong></div></article>
-            </div>
+            </div>}
 
-            <div className="employee-record">
+            {detailTab === "registry" && <div className="employee-record">
               <div className="employee-record__head"><span className="material-symbols-outlined">badge</span><div><small>Cadastro administrado pelo proprietário</small><strong>Dados do vínculo</strong></div>{!isEditingEmployee && <span className="employee-record__actions"><button type="button" className="employee-record__edit" onClick={startEmployeeEdit}><span className="material-symbols-outlined">edit</span>Editar</button><button type="button" className="employee-record__delete" onClick={() => { setDeleteEmployeeTarget(selected); setDeleteEmployeeError("") }}><span className="material-symbols-outlined">person_remove</span>Remover</button></span>}</div>
               {employeeEditMessage.text && <p className={`employee-edit-message ${employeeEditMessage.type}`}>{employeeEditMessage.text}</p>}
               {isEditingEmployee ? (
@@ -795,14 +847,14 @@ export default function AdminTeamDashboard() {
                   <span><small>Email</small><strong>{selected.email || "Não informado"}</strong></span>
                 </div>
               )}
-            </div>
+            </div>}
 
-            <div className="last-activity">
+            {detailTab === "summary" && <div className="last-activity">
               <span className="material-symbols-outlined" aria-hidden="true">deployed_code_history</span>
               <div><small>Última atividade</small><strong>{selected.lastActivity}</strong></div>
-            </div>
+            </div>}
 
-            <div className="detail-performance-grid">
+            {detailTab === "summary" && <div className="detail-performance-grid">
               <article className="productivity-card">
                 <small>Produtividade pelas tarefas</small>
                 <strong>{selected.productivity === null ? "--" : `${selected.productivity}%`}</strong>
@@ -838,19 +890,22 @@ export default function AdminTeamDashboard() {
                   <p>{selected.droneModel ? "Modelo salvo" : "Nenhum drone selecionado"}</p>
                 </div>
               </article>
-            </div>
+            </div>}
 
-            <div className="assign-task" id="nova-tarefa" ref={assignTaskRef}>
+            {detailTab === "tasks" && <div className="assign-task" id="nova-tarefa" ref={assignTaskRef}>
               <input
                 ref={taskInputRef}
                 value={taskTitle}
-                onChange={(event) => setTaskTitle(event.target.value)}
+                onChange={(event) => { setTaskTitle(event.target.value); if (taskAssignmentMessage.text) setTaskAssignmentMessage({ type: "", text: "" }) }}
+                onKeyDown={(event) => { if (event.key === "Enter") assignTask() }}
                 placeholder="Nova tarefa para este funcionário"
+                disabled={isAssigningTask}
               />
-              <button onClick={assignTask}>Atribuir tarefa</button>
-            </div>
+              <button type="button" onClick={assignTask} disabled={isAssigningTask}>{isAssigningTask ? "Atribuindo..." : "Atribuir tarefa"}</button>
+              {taskAssignmentMessage.text && <p className={`task-assignment-message ${taskAssignmentMessage.type}`} role="status">{taskAssignmentMessage.text}</p>}
+            </div>}
 
-            <section className="owner-task-board">
+            {detailTab === "tasks" && <section className="owner-task-board">
               <div className="owner-task-board__header">
                 <div><span className="material-symbols-outlined">fact_check</span><span><small>ATUALIZAÇÃO EM TEMPO REAL</small><h3>Acompanhamento de tarefas</h3></span></div>
                 <strong>{selected.tasks?.length || 0} no total</strong>
@@ -878,7 +933,7 @@ export default function AdminTeamDashboard() {
                     )
                   }) : <div className="owner-task-board__empty"><span className="material-symbols-outlined">assignment_add</span><div><strong>Nenhuma tarefa atribuída</strong><p>Use o campo acima para enviar a primeira tarefa a este funcionário.</p></div></div>}
               </div>
-            </section>
+            </section>}
 
           </aside>
         )}

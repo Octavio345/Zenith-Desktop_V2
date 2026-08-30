@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { createPortal } from "react-dom"
 import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { collection, doc, getDoc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore"
@@ -21,6 +22,7 @@ export default function Home() {
   const [assignedTasks, setAssignedTasks] = useState([])
   const [employeeAction, setEmployeeAction] = useState("")
   const [employeeActionError, setEmployeeActionError] = useState("")
+  const [selectedWorkItem, setSelectedWorkItem] = useState(null)
   const [lifecycleNow, setLifecycleNow] = useState(Date.now())
 
   useEffect(() => {
@@ -169,11 +171,22 @@ export default function Home() {
       } else {
         setActivities((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
       }
+      setSelectedWorkItem((current) => current?.id === task.id && current.workCollection === workCollection ? { ...current, ...payload } : current)
+      return true
     } catch (error) {
       console.error("Erro ao atualizar tarefa:", error)
       setEmployeeActionError("Não foi possível atualizar a tarefa. Verifique a permissão do Firestore.")
+      return false
     } finally { setEmployeeAction("") }
   }
+
+  const workItemStatusLabel = (status) => ({
+    pendente: "Pendente",
+    andamento: "Em andamento",
+    em_andamento: "Em andamento",
+    concluida: "Concluída",
+    cancelada: "Cancelada",
+  }[status] || "Pendente")
 
   return (
     <div className="zenith-home">
@@ -250,7 +263,16 @@ export default function Home() {
             {isEmployee && <div className="employee-shift-card"><div><span className={`employee-shift-card__dot ${userData?.status === "trabalhando" ? "active" : ""}`} /><span><small>Jornada de hoje</small><strong>{userData?.status === "trabalhando" ? `Em campo desde ${userData?.entry || "agora"}` : "Aguardando entrada"}</strong></span></div><button type="button" disabled={Boolean(employeeAction)} onClick={() => updateWorkShift(userData?.status === "trabalhando" ? "end" : "start")}>{employeeAction === "start" || employeeAction === "end" ? "Salvando..." : userData?.status === "trabalhando" ? "Registrar saída" : "Registrar entrada"}</button></div>}
             {isEmployee && employeeActionError && <p className="employee-action-error">{employeeActionError}</p>}
             {isEmployee && employeeWorkItems.length ? employeeWorkItems.slice(0, 3).map((task) => (
-              <div className="home-activity-row home-activity-row--task" key={`${task.workCollection}:${task.id}`}><span className="material-symbols-outlined">assignment_turned_in</span><span><strong>{task.title || "Tarefa da equipe"}</strong><small>{task.due && task.due !== "Sem prazo" ? `Prazo: ${task.due}` : "Sem prazo definido"}</small></span><div className="employee-task-action">{task.status === "pendente" ? <button type="button" disabled={Boolean(employeeAction)} onClick={() => updateAssignedTask(task, task.progressStatus)}>{employeeAction === `${task.workCollection}:${task.id}` ? "..." : "Iniciar"}</button> : task.status === "andamento" || task.status === "em_andamento" ? <button type="button" disabled={Boolean(employeeAction)} onClick={() => updateAssignedTask(task, "concluida")}>{employeeAction === `${task.workCollection}:${task.id}` ? "..." : "Finalizar tarefa"}</button> : <i>{task.ownerConfirmedAt ? "Finalização confirmada" : "Aguardando confirmação"}</i>}</div></div>
+              <div className="home-activity-row home-activity-row--task" key={`${task.workCollection}:${task.id}`}>
+                <span className="material-symbols-outlined">assignment_turned_in</span>
+                <span>
+                  <strong>{task.title || "Tarefa da equipe"}</strong>
+                  <small>{task.due && task.due !== "Sem prazo" ? `Prazo: ${task.due}` : workItemStatusLabel(task.status)}</small>
+                </span>
+                <div className="employee-task-action">
+                  <button type="button" onClick={() => setSelectedWorkItem(task)}>Ver atividade</button>
+                </div>
+              </div>
             )) : !isEmployee && visibleActivities.length ? visibleActivities.slice(0, 3).map((activity, index) => (
               <div className="home-activity-row" key={activity.id || index}><span className="material-symbols-outlined">task_alt</span><span><strong>{activity.title || activity.name || "Atividade da fazenda"}</strong><small>{activity.date || "Registro recente"}</small></span><i>{activity.status || "Pendente"}</i></div>
             )) : <div className="home-activity-empty"><span className="material-symbols-outlined">event_available</span><div><strong>{isEmployee ? "Nenhuma tarefa recebida" : "Sua rotina começa aqui"}</strong><p>{isEmployee ? "As novas tarefas enviadas pelo responsável aparecerão aqui." : "Crie tarefas e acompanhe a operação da fazenda."}</p></div><button type="button" onClick={() => openExplore("atividades")}>Abrir atividades</button></div>}
@@ -259,6 +281,75 @@ export default function Home() {
       </main>
       <AppFooter />
       <MenuBar />
+      {selectedWorkItem && createPortal((
+        <div className="employee-work-modal" role="presentation" onClick={() => setSelectedWorkItem(null)}>
+          <section
+            className="employee-work-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="employee-work-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="employee-work-dialog__header">
+              <span className="material-symbols-outlined">assignment</span>
+              <div>
+                <small>ATIVIDADE ATRIBUÍDA</small>
+                <h2 id="employee-work-title">{selectedWorkItem.title || "Tarefa da equipe"}</h2>
+              </div>
+              <button type="button" aria-label="Fechar atividade" onClick={() => setSelectedWorkItem(null)}>
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </header>
+
+            <div className="employee-work-dialog__status">
+              <span className={`employee-work-status employee-work-status--${selectedWorkItem.status || "pendente"}`}>
+                {workItemStatusLabel(selectedWorkItem.status)}
+              </span>
+              <span>{selectedWorkItem.priority ? `Prioridade ${selectedWorkItem.priority}` : "Prioridade padrão"}</span>
+            </div>
+
+            <div className="employee-work-dialog__description">
+              <small>O que precisa ser feito</small>
+              <p>{selectedWorkItem.description || selectedWorkItem.title || "Consulte o responsável para mais orientações sobre esta atividade."}</p>
+            </div>
+
+            <div className="employee-work-dialog__details">
+              <span><small>Prazo</small><strong>{selectedWorkItem.due || selectedWorkItem.date || "Sem prazo definido"}</strong></span>
+              <span><small>Horário</small><strong>{selectedWorkItem.time || "Não informado"}</strong></span>
+              <span><small>Responsável</small><strong>{selectedWorkItem.responsible || userData?.name || "Funcionário"}</strong></span>
+              <span><small>Status</small><strong>{workItemStatusLabel(selectedWorkItem.status)}</strong></span>
+            </div>
+
+            <footer className="employee-work-dialog__actions">
+              <button type="button" className="secondary" onClick={() => setSelectedWorkItem(null)}>Fechar</button>
+              {selectedWorkItem.status === "pendente" && (
+                <button
+                  type="button"
+                  disabled={Boolean(employeeAction)}
+                  onClick={() => updateAssignedTask(selectedWorkItem, selectedWorkItem.progressStatus)}
+                >
+                  {employeeAction ? "Salvando..." : "Iniciar atividade"}
+                </button>
+              )}
+              {(selectedWorkItem.status === "andamento" || selectedWorkItem.status === "em_andamento") && (
+                <button
+                  type="button"
+                  disabled={Boolean(employeeAction)}
+                  onClick={() => updateAssignedTask(selectedWorkItem, "concluida")}
+                >
+                  {employeeAction ? "Salvando..." : "Concluir atividade"}
+                </button>
+              )}
+              {selectedWorkItem.status === "concluida" && (
+                <span className="employee-work-dialog__completed">
+                  <span className="material-symbols-outlined">check_circle</span>
+                  {selectedWorkItem.ownerConfirmedAt ? "Finalização confirmada" : "Aguardando confirmação do responsável"}
+                </span>
+              )}
+            </footer>
+          </section>
+        </div>
+      ), document.body)}
     </div>
   )
 }

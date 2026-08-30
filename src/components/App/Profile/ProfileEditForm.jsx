@@ -96,7 +96,8 @@ export default function ProfileEditForm({ formData, onChange, onIconSelect, onSa
                 name="document"
                 value={formData.document}
                 placeholder={formData.type === "PJ" ? "CNPJ" : "CPF"}
-                maxLength={formData.type === "PJ" ? 14 : 11}
+                inputMode="numeric"
+                maxLength={formData.type === "PJ" ? 18 : 14}
                 onChange={onChange}
               />
             </div>
