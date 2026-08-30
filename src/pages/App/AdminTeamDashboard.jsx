@@ -38,6 +38,15 @@ const taskStatusMeta = {
   concluida: { label: "Concluída", icon: "task_alt" },
 }
 
+const createInitialTaskDraft = () => ({
+  title: "",
+  description: "",
+  type: "tarefa",
+  priority: "media",
+  date: new Date().toISOString().split("T")[0],
+  time: "",
+})
+
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
 const isStrongPassword = (value) => value.length >= 8 && /[A-Z]/.test(value) && /[a-z]/.test(value) && /\d/.test(value) && /[^A-Za-z0-9]/.test(value)
 const onlyDigits = (value = "") => String(value).replace(/\D/g, "")
@@ -147,7 +156,7 @@ export default function AdminTeamDashboard() {
   const [selectedId, setSelectedId] = useState("")
   const [isTeamLoading, setIsTeamLoading] = useState(true)
   const [filters, setFilters] = useState({ employee: "", sector: "todos", status: "todos", date: "" })
-  const [taskTitle, setTaskTitle] = useState("")
+  const [taskDraft, setTaskDraft] = useState(createInitialTaskDraft)
   const [detailTab, setDetailTab] = useState("summary")
   const [isAssigningTask, setIsAssigningTask] = useState(false)
   const [taskAssignmentMessage, setTaskAssignmentMessage] = useState({ type: "", text: "" })
@@ -339,7 +348,8 @@ export default function AdminTeamDashboard() {
   }), [employees])
 
   const assignTask = async () => {
-    const title = taskTitle.trim()
+    const title = taskDraft.title.trim()
+    const description = taskDraft.description.trim()
     if (!selected) {
       setTaskAssignmentMessage({ type: "error", text: "Selecione um funcionário antes de atribuir a tarefa." })
       return
@@ -361,15 +371,20 @@ export default function AdminTeamDashboard() {
         employeeId: selected.id,
         employeeName: selected.name,
         title,
+        description,
+        type: taskDraft.type,
         status: "pendente",
-        priority: "media",
-        due: filters.date || "Sem prazo",
+        priority: taskDraft.priority,
+        date: taskDraft.date,
+        due: taskDraft.date || "Sem prazo",
+        time: taskDraft.time,
+        responsible: selected.name,
         ownerId: auth.currentUser.uid,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
       await addDoc(collection(db, "tasks"), taskPayload)
-      setTaskTitle("")
+      setTaskDraft(createInitialTaskDraft())
       setTaskAssignmentMessage({ type: "success", text: `Tarefa atribuída a ${selected.name}.` })
     } catch (error) {
       console.error("Erro ao atribuir tarefa:", error)
@@ -893,15 +908,72 @@ export default function AdminTeamDashboard() {
             </div>}
 
             {detailTab === "tasks" && <div className="assign-task" id="nova-tarefa" ref={assignTaskRef}>
-              <input
-                ref={taskInputRef}
-                value={taskTitle}
-                onChange={(event) => { setTaskTitle(event.target.value); if (taskAssignmentMessage.text) setTaskAssignmentMessage({ type: "", text: "" }) }}
-                onKeyDown={(event) => { if (event.key === "Enter") assignTask() }}
-                placeholder="Nova tarefa para este funcionário"
-                disabled={isAssigningTask}
-              />
-              <button type="button" onClick={assignTask} disabled={isAssigningTask}>{isAssigningTask ? "Atribuindo..." : "Atribuir tarefa"}</button>
+              <div className="assign-task__header">
+                <span className="material-symbols-outlined">assignment_add</span>
+                <div><small>NOVA ATIVIDADE</small><h3>Atribuir tarefa para {selected.name}</h3><p>Defina a orientação, prioridade e prazo que aparecerão para o funcionário.</p></div>
+              </div>
+
+              <div className="assign-task__grid">
+                <label className="assign-task__field assign-task__field--title">
+                  <span>Título da tarefa</span>
+                  <input
+                    ref={taskInputRef}
+                    value={taskDraft.title}
+                    onChange={(event) => { setTaskDraft((current) => ({ ...current, title: event.target.value })); if (taskAssignmentMessage.text) setTaskAssignmentMessage({ type: "", text: "" }) }}
+                    placeholder="Ex.: Verificar o talhão Norte"
+                    disabled={isAssigningTask}
+                    maxLength={100}
+                  />
+                </label>
+
+                <label className="assign-task__field assign-task__field--description">
+                  <span>Descrição e orientações</span>
+                  <textarea
+                    value={taskDraft.description}
+                    onChange={(event) => setTaskDraft((current) => ({ ...current, description: event.target.value }))}
+                    placeholder="Explique o que deve ser feito, onde e quais cuidados são necessários."
+                    disabled={isAssigningTask}
+                    rows={4}
+                    maxLength={600}
+                  />
+                </label>
+
+                <label className="assign-task__field">
+                  <span>Tipo</span>
+                  <select value={taskDraft.type} onChange={(event) => setTaskDraft((current) => ({ ...current, type: event.target.value }))} disabled={isAssigningTask}>
+                    <option value="tarefa">Tarefa</option>
+                    <option value="voo">Voo de drone</option>
+                    <option value="irrigacao">Irrigação</option>
+                    <option value="pulverizacao">Pulverização</option>
+                    <option value="colheita">Colheita</option>
+                    <option value="manutencao">Manutenção</option>
+                  </select>
+                </label>
+
+                <label className="assign-task__field">
+                  <span>Prioridade</span>
+                  <select value={taskDraft.priority} onChange={(event) => setTaskDraft((current) => ({ ...current, priority: event.target.value }))} disabled={isAssigningTask}>
+                    <option value="alta">Alta</option>
+                    <option value="media">Média</option>
+                    <option value="baixa">Baixa</option>
+                  </select>
+                </label>
+
+                <label className="assign-task__field">
+                  <span>Data</span>
+                  <input type="date" value={taskDraft.date} onChange={(event) => setTaskDraft((current) => ({ ...current, date: event.target.value }))} disabled={isAssigningTask} />
+                </label>
+
+                <label className="assign-task__field">
+                  <span>Horário</span>
+                  <input type="time" value={taskDraft.time} onChange={(event) => setTaskDraft((current) => ({ ...current, time: event.target.value }))} disabled={isAssigningTask} />
+                </label>
+              </div>
+
+              <div className="assign-task__footer">
+                <span><span className="material-symbols-outlined">person</span>Será enviada somente para <strong>{selected.name}</strong></span>
+                <button type="button" onClick={assignTask} disabled={isAssigningTask}><span className="material-symbols-outlined">send</span>{isAssigningTask ? "Atribuindo..." : "Atribuir tarefa"}</button>
+              </div>
               {taskAssignmentMessage.text && <p className={`task-assignment-message ${taskAssignmentMessage.type}`} role="status">{taskAssignmentMessage.text}</p>}
             </div>}
 
@@ -925,7 +997,9 @@ export default function AdminTeamDashboard() {
                         <span className="material-symbols-outlined owner-task-item__icon">{status.icon}</span>
                         <div className="owner-task-item__content">
                           <div><strong>{task.title || "Tarefa sem título"}</strong><span className={`owner-task-item__status ${task.status || "pendente"}`}>{status.label}</span></div>
-                          <p>{task.status === "concluida" && task.completedAt ? `Concluída em ${formatTaskDate(task.completedAt)}` : (task.status === "andamento" || task.status === "em_andamento") && task.startedAt ? `Iniciada em ${formatTaskDate(task.startedAt)}` : `Atribuída em ${formatTaskDate(task.createdAt) || "data não informada"}`}</p>
+                          {task.description && <p className="owner-task-item__description">{task.description}</p>}
+                          <p className="owner-task-item__history">{task.status === "concluida" && task.completedAt ? `Concluída em ${formatTaskDate(task.completedAt)}` : (task.status === "andamento" || task.status === "em_andamento") && task.startedAt ? `Iniciada em ${formatTaskDate(task.startedAt)}` : `Atribuída em ${formatTaskDate(task.createdAt) || "data não informada"}`}</p>
+                          <div className="owner-task-item__meta"><span>{task.type || "tarefa"}</span><span className={task.priority || "media"}>Prioridade {task.priority || "média"}</span>{task.time && <span>{task.time}</span>}</div>
                         </div>
                         <span className="owner-task-item__due"><small>Prazo</small><strong>{task.due || "Sem prazo"}</strong></span>
                         {isAwaitingOwnerConfirmation(task) && <button type="button" className="owner-task-item__confirm" onClick={() => confirmTaskCompletion(task)}><span className="material-symbols-outlined">verified</span>Confirmar finalização</button>}

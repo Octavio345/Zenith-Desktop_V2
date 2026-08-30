@@ -188,6 +188,16 @@ export default function Home() {
     cancelada: "Cancelada",
   }[status] || "Pendente")
 
+  const workItemPriorityLabel = (priority) => ({ alta: "Alta", media: "Média", baixa: "Baixa" }[priority] || "Padrão")
+  const workItemTypeLabel = (type) => ({
+    tarefa: "Tarefa",
+    voo: "Voo de drone",
+    irrigacao: "Irrigação",
+    pulverizacao: "Pulverização",
+    colheita: "Colheita",
+    manutencao: "Manutenção",
+  }[type] || "Tarefa")
+
   return (
     <div className="zenith-home">
       <AppHeader />
@@ -305,7 +315,7 @@ export default function Home() {
               <span className={`employee-work-status employee-work-status--${selectedWorkItem.status || "pendente"}`}>
                 {workItemStatusLabel(selectedWorkItem.status)}
               </span>
-              <span>{selectedWorkItem.priority ? `Prioridade ${selectedWorkItem.priority}` : "Prioridade padrão"}</span>
+              <span>Prioridade {workItemPriorityLabel(selectedWorkItem.priority)}</span>
             </div>
 
             <div className="employee-work-dialog__description">
@@ -316,6 +326,7 @@ export default function Home() {
             <div className="employee-work-dialog__details">
               <span><small>Prazo</small><strong>{selectedWorkItem.due || selectedWorkItem.date || "Sem prazo definido"}</strong></span>
               <span><small>Horário</small><strong>{selectedWorkItem.time || "Não informado"}</strong></span>
+              <span><small>Tipo</small><strong>{workItemTypeLabel(selectedWorkItem.type)}</strong></span>
               <span><small>Responsável</small><strong>{selectedWorkItem.responsible || userData?.name || "Funcionário"}</strong></span>
               <span><small>Status</small><strong>{workItemStatusLabel(selectedWorkItem.status)}</strong></span>
             </div>

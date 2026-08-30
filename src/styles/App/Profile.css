@@ -30,7 +30,10 @@
 }
 
 .pf-page {
+  height: auto;
   min-height: 100vh;
+  flex: none;
+  display: flow-root;
   padding: 0 0 110px;
   position: relative;
   z-index: 2;
