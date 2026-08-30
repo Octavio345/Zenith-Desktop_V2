@@ -20,6 +20,7 @@ L.Icon.Default.mergeOptions({
 const STORAGE_KEY = "farmPolygons"
 const DEFAULT_CENTER = [-15.7801, -47.9292]
 const FARM_COLORS = ["#22c55e", "#38bdf8", "#f59e0b", "#a78bfa", "#f97316"]
+const ARCGIS_API_KEY = import.meta.env.VITE_ARCGIS_API_KEY?.trim()
 
 const onlyDigits = (value) => String(value || "").replace(/\D/g, "")
 
@@ -390,27 +391,38 @@ export default function MapaTab() {
     mapRef.current = map
     featureGroupRef.current = new L.FeatureGroup()
 
-    const satelliteLayer = L.tileLayer(
-      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      {
-
-        maxZoom: 21,
-
-
-
-
-
-
-        maxNativeZoom: 17,
-        attribution: "Tiles © Esri"
-      }
-    )
-
     const streetLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
       maxNativeZoom: 19,
       attribution: "© OpenStreetMap"
     })
+
+    const satelliteLayer = L.layerGroup()
+
+    if (ARCGIS_API_KEY) {
+      import("esri-leaflet-vector")
+        .then(({ vectorBasemapLayer }) => {
+          if (mapRef.current !== map) return
+
+          satelliteLayer.addLayer(
+            vectorBasemapLayer("arcgis/imagery", {
+              token: ARCGIS_API_KEY
+            })
+          )
+        })
+        .catch((error) => {
+          console.error("Não foi possível carregar o mapa ArcGIS Imagery.", error)
+        })
+    } else {
+      console.error("ArcGIS API Key não configurada. Defina VITE_ARCGIS_API_KEY.")
+      satelliteLayer.addLayer(
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          maxZoom: 19,
+          maxNativeZoom: 19,
+          attribution: "© OpenStreetMap"
+        })
+      )
+    }
 
     satelliteLayer.addTo(map)
     featureGroupRef.current.addTo(map)
