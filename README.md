@@ -25,7 +25,9 @@ O resultado não substitui vistoria agronômica nem laudo técnico. Ele organiza
 - Tarefas individuais e atividades para toda a fazenda.
 - Registro de entrada e saída do funcionário.
 - Diagnóstico de soja, análise de plantio e reconstrução 3D.
-- Clima, diário de campo, mapa de áreas e estoque.
+- Clima, diário de campo, mapa 2D de áreas e estoque.
+- Demarcação de talhões em 2D, com medida ao vivo de área e perímetro, edição dos vértices e cálculo em hectares.
+- Visualização 3D opcional da propriedade, com satélite e terreno reais, para analisar talhões já demarcados.
 - PWA com possibilidade de instalação no navegador.
 
 ## Tecnologias
@@ -33,7 +35,8 @@ O resultado não substitui vistoria agronômica nem laudo técnico. Ele organiza
 - React 18 e Vite
 - Firebase Authentication e Firestore
 - React Router
-- Leaflet e Leaflet Draw
+- Leaflet e Leaflet Draw para a demarcação 2D
+- ArcGIS Maps SDK for JavaScript para a visualização 3D opcional
 - Framer Motion, GSAP e Lottie
 - `vite-plugin-pwa`
 
@@ -63,12 +66,15 @@ Alguns endpoints e dados institucionais podem ser definidos localmente em `.env`
 VITE_SOJA_API_URL=
 VITE_MONITORAMENTO_API_URL=
 VITE_MODELO_3D_API_URL=
+VITE_ARCGIS_API_KEY=
 VITE_ZENITH_PHONE=
 VITE_ZENITH_EMAIL=
 VITE_ZENITH_INSTAGRAM=
 ```
 
 `.env` e `.env.example` são ignorados pelo Git. Variáveis iniciadas por `VITE_` ficam visíveis no código entregue ao navegador; não use esse arquivo para segredos de servidor.
+
+`VITE_ARCGIS_API_KEY` habilita a imagem de satélite e o modo 3D. É uma credencial pública de cliente e deve ser restringida no painel ArcGIS aos domínios autorizados da aplicação.
 
 ## Firebase
 

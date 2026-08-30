@@ -514,9 +514,14 @@ export default function MapaTab() {
 
     drawHandlerRef.current = new L.Draw.Polygon(mapRef.current, {
       allowIntersection: false,
-      showArea: false,
-      showLength: false,
+      showArea: true,
+      showLength: true,
       metric: true,
+      drawError: {
+        color: "#b91c1c",
+        timeout: 2200,
+        message: "Os limites não podem se cruzar. Ajuste o último ponto e continue.",
+      },
       shapeOptions: {
         color: "#22c55e",
         fillColor: "#22c55e",

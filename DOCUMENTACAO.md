@@ -35,7 +35,7 @@ O Zenith é uma aplicação cliente: React renderiza a interface no navegador, F
 | Interface | telas, rotas, formulários e experiência desktop | React 18, React Router e Vite |
 | Dados e acesso | login, perfis, equipe, tarefas e atividades em tempo real | Firebase Authentication e Firestore |
 | Visão computacional | diagnóstico de soja, plantio e geração 3D | APIs HTTP configuráveis |
-| Mapa | visualização, geocodificação, desenho e cálculo de talhões | Leaflet, Leaflet Draw, Esri e OpenStreetMap |
+| Mapa | visualização, geocodificação, desenho, cálculo e inspeção 3D de talhões | Leaflet, Leaflet Draw, ArcGIS Maps SDK, Esri e OpenStreetMap |
 | Dados locais | itens que ainda não são sincronizados entre dispositivos | `localStorage` e IndexedDB |
 | Instalação | versão instalável e cache do navegador | `vite-plugin-pwa` |
 
@@ -240,7 +240,7 @@ O painel usa uma instância secundária do Firebase Auth para criar a nova conta
 | Plantio | leitura de cobertura, uniformidade, fileiras e falhas | `components/App/Explore/Monitoramento/` | API externa |
 | Clima | condições atuais e previsão da cidade da fazenda | `components/App/Explore/ClimaTab.jsx` | OpenWeatherMap |
 | Diário | registro manual de acontecimentos no campo | `components/App/Explore/DiarioTab.jsx` | `localStorage["diaryEntries"]` |
-| Mapa | localização, talhões, áreas, ocorrências e camadas de imagem | `components/App/Explore/MapaTab.jsx` | `localStorage["farmPolygons"]` e APIs de mapa |
+| Mapa | localização, talhões, áreas, ocorrências, demarcação 2D e inspeção 3D | `components/App/Explore/MapaTab.jsx` | `localStorage["farmPolygons"]` e APIs de mapa |
 | Estoque | produtos, quantidade e movimentações da operação | `components/App/Explore/EstoqueTab.jsx` | `localStorage["inventory"]` |
 | Atividades | atividades gerais e individuais da fazenda | `components/App/Explore/AtividadesTab.jsx` | Firestore, em tempo real |
 
@@ -252,7 +252,7 @@ O fluxo do módulo é:
 
 1. A pessoa pesquisa CEP, endereço, cidade/UF ou nome da fazenda.
 2. O sistema tenta obter coordenadas confiáveis e centraliza o mapa no local encontrado.
-3. Com a imagem de satélite como referência, a pessoa desenha um polígono para cada talhão ou área operacional.
+3. Com a imagem de satélite como referência, a pessoa desenha um polígono para cada talhão ou área operacional. Durante o traçado, o mapa mostra área e comprimento dos trechos em tempo real e impede cruzamento de bordas.
 4. O Zenith calcula a área em hectares, permite renomear e editar os vértices do polígono.
 5. Diagnósticos associados a um talhão são mostrados como ocorrências que aguardam vistoria.
 
@@ -273,6 +273,14 @@ O cálculo prioriza a área geodésica disponibilizada pelo Leaflet. Caso ela n�
 
 O módulo oferece dois mapas-base: imagem de satélite da Esri e mapa de ruas do OpenStreetMap. Também pode usar a geolocalização do navegador quando a pessoa autoriza o acesso. Essa permissão pertence ao navegador/dispositivo e pode ser recusada pelo usuário.
 
+#### Modos 2D e 3D
+
+O mapa abre em **2D**, que é o modo destinado à demarcação e à edição das bordas. A ferramenta usa Leaflet Draw porque a visão vertical facilita posicionar os vértices sobre os limites visíveis na imagem de satélite. Ao finalizar, o polígono é salvo localmente em `farmPolygons` e fica disponível para diagnósticos e para o 3D.
+
+O **3D** é uma visualização complementar com ArcGIS `SceneView`, imagem de satélite e terreno reais. Ele não cria nem edita talhões: sua finalidade é inspecionar a lavoura, o relevo e os limites já demarcados. Ao entrar no 3D, o enquadramento prioriza a área selecionada; sem seleção, enquadra o conjunto de áreas; sem áreas, preserva a região atual do mapa 2D. A câmera abre com inclinação de 45° e os polígonos ficam aderidos ao terreno, sem extrusão.
+
+O módulo ArcGIS é carregado somente quando o modo 3D é aberto. Ao voltar ao 2D, o centro aproximado da câmera é reaproveitado para preservar o contexto. Navegadores ou dispositivos sem suporte ao 3D recebem uma mensagem de indisponibilidade e podem continuar no 2D.
+
 ### Integrações e APIs
 
 | Integração | Requisição usada pelo Zenith | Finalidade | Onde está integrada |
@@ -286,6 +294,7 @@ O módulo oferece dois mapas-base: imagem de satélite da Esri e mapa de ruas do
 | ViaCEP | `GET /ws/:cep/json/` | endereço por CEP para cadastro e busca geográfica | cadastro de fazenda, cadastro completo e mapa |
 | Nominatim / OpenStreetMap | `GET /search` | geocodifica endereço, cidade ou resultado do CEP | `MapaTab.jsx` |
 | Esri World Imagery | tiles XYZ | imagem de satélite para desenhar as áreas | `MapaTab.jsx` |
+| ArcGIS Maps SDK | `SceneView`, `world-elevation` e satélite | visualização 3D opcional de talhões e terreno | `FarmMap3D.jsx` |
 | OpenStreetMap tiles | tiles XYZ | alternativa de mapa de ruas | `MapaTab.jsx` |
 
 As URLs das três APIs de visão computacional podem ser alteradas sem editar o código pelo arquivo `.env`:
@@ -294,6 +303,7 @@ As URLs das três APIs de visão computacional podem ser alteradas sem editar o 
 VITE_SOJA_API_URL=https://seu-endpoint-de-diagnostico
 VITE_MONITORAMENTO_API_URL=https://seu-endpoint-de-plantio/analyze
 VITE_MODELO_3D_API_URL=https://seu-endpoint-3d
+VITE_ARCGIS_API_KEY=sua-chave-publica-do-arcgis
 ```
 
 Sem essas variáveis, o sistema usa as URLs padrão definidas nos respectivos arquivos de serviço. Em produção, o servidor das APIs precisa liberar o domínio da aplicação no CORS. Se qualquer API passar a exigir chave secreta, ela deve ser chamada por um backend/proxy próprio; variáveis iniciadas por `VITE_` ficam visíveis no navegador.
@@ -371,12 +381,13 @@ O repositório ignora `.env` e `.env.example`. Para desenvolvimento local, crie 
 VITE_SOJA_API_URL=
 VITE_MONITORAMENTO_API_URL=
 VITE_MODELO_3D_API_URL=
+VITE_ARCGIS_API_KEY=
 VITE_ZENITH_PHONE=
 VITE_ZENITH_EMAIL=
 VITE_ZENITH_INSTAGRAM=
 ```
 
-Variáveis `VITE_` são públicas no bundle. Não coloque senhas, chaves administrativas ou credenciais de servidor nesse arquivo.
+Variáveis `VITE_` são públicas no bundle. Não coloque senhas, chaves administrativas ou credenciais de servidor nesse arquivo. A `VITE_ARCGIS_API_KEY` é usada apenas pelas APIs de mapa no navegador e deve ser restringida por domínio no ArcGIS Location Platform.
 
 ## PWA e cache
 
