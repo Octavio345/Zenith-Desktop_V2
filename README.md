@@ -26,7 +26,7 @@ O resultado não substitui vistoria agronômica nem laudo técnico. Ele organiza
 - Registro de entrada e saída do funcionário.
 - Diagnóstico de soja, análise de plantio e reconstrução 3D.
 - Clima, diário de campo, mapa 2D de áreas e estoque.
-- Demarcação de talhões em 2D, com medida ao vivo de área e perímetro, edição dos vértices e cálculo em hectares.
+- Demarcação de talhões em 2D, com quantidade livre de vértices, edição das bordas e cálculo em hectares.
 - Visualização 3D opcional da propriedade, com satélite e terreno reais, para analisar talhões já demarcados.
 - PWA com possibilidade de instalação no navegador.
 

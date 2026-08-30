@@ -252,7 +252,7 @@ O fluxo do módulo é:
 
 1. A pessoa pesquisa CEP, endereço, cidade/UF ou nome da fazenda.
 2. O sistema tenta obter coordenadas confiáveis e centraliza o mapa no local encontrado.
-3. Com a imagem de satélite como referência, a pessoa desenha um polígono para cada talhão ou área operacional. Durante o traçado, o mapa mostra área e comprimento dos trechos em tempo real e impede cruzamento de bordas.
+3. Com a imagem de satélite como referência, a pessoa desenha um polígono para cada talhão ou área operacional. Cada polígono aceita quantos vértices forem necessários e o mapa impede cruzamento de bordas.
 4. O Zenith calcula a área em hectares, permite renomear e editar os vértices do polígono.
 5. Diagnósticos associados a um talhão são mostrados como ocorrências que aguardam vistoria.
 

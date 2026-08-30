@@ -514,8 +514,9 @@ export default function MapaTab() {
 
     drawHandlerRef.current = new L.Draw.Polygon(mapRef.current, {
       allowIntersection: false,
-      showArea: true,
-      showLength: true,
+      maxPoints: 0,
+      showArea: false,
+      showLength: false,
       metric: true,
       drawError: {
         color: "#b91c1c",
