@@ -179,7 +179,10 @@ export default function AtividadesTab() {
     if (!isOwner && activity.assigneeId !== auth.currentUser?.uid) return
     const now = new Date().toISOString()
     const payload = { status: newStatus, updatedAt: now, ...(newStatus === "em_andamento" ? { startedAt: now } : {}), ...(newStatus === "concluida" ? { completedAt: now } : {}) }
-    try { await updateDoc(doc(db, "activities", activity.id), payload) }
+    try {
+      await updateDoc(doc(db, "activities", activity.id), payload)
+      if (newStatus === "concluida") removeFieldOccurrence(activity.occurrenceId)
+    }
     catch (error) { console.error("Erro ao atualizar atividade:", error); setActivityMessage("Não foi possível atualizar a atividade.") }
   }
 

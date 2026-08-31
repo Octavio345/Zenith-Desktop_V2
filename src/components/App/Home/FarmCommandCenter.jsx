@@ -57,7 +57,15 @@ export default function FarmCommandCenter({ activities = [], onOpen }) {
     () => activities.filter((activity) => activity.priority === "alta" && activity.status !== "concluida").length,
     [activities]
   )
-  const attentionOccurrences = occurrences.filter((item) => item.status === "aguarda_vistoria")
+  const mappedAreaIds = useMemo(
+    () => new Set(fieldAreas.map((area) => String(area.id))),
+    [fieldAreas]
+  )
+  const attentionOccurrences = occurrences.filter((item) => (
+    item.status === "aguarda_vistoria" &&
+    item.fieldAreaId &&
+    mappedAreaIds.has(String(item.fieldAreaId))
+  ))
 
   return (
     <section className="farm-command-center" aria-label="Central operacional da fazenda">

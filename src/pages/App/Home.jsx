@@ -7,6 +7,7 @@ import { auth, db } from "../../services/firebase"
 import { isOperationalRole } from "../../services/accessControl"
 import { getWeatherByCity } from "../../services/weatherService"
 import { isConfirmedWorkItemExpired } from "../../services/workItemLifecycle"
+import { removeFieldOccurrence } from "../../services/fieldOperations"
 import AppHeader from "../../components/App/Global/AppHeader"
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppFooter from "../../components/App/Global/AppFooter"
@@ -166,6 +167,9 @@ export default function Home() {
           ? { status, startedAt: now, updatedAt: now }
         : { status, completedAt: now, updatedAt: now }
       await updateDoc(doc(db, workCollection, task.id), payload)
+      if (workCollection === "activities" && status === "concluida") {
+        removeFieldOccurrence(task.occurrenceId)
+      }
       if (workCollection === "tasks") {
         setAssignedTasks((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
       } else {
