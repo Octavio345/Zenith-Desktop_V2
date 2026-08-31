@@ -8,7 +8,7 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png"
 import markerIcon from "leaflet/dist/images/marker-icon.png"
 import markerShadow from "leaflet/dist/images/marker-shadow.png"
 import "../../../styles/App/MapaTab.css"
-import { getFieldOccurrences } from "../../../services/fieldOperations"
+import { getFieldOccurrences, removeFieldOccurrencesForAreas } from "../../../services/fieldOperations"
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -273,6 +273,7 @@ export default function MapaTab() {
   const [searching, setSearching] = useState(false)
   const [mapViewMode, setMapViewMode] = useState("2d")
   const [sceneInitialView, setSceneInitialView] = useState(null)
+  const [sceneActivation, setSceneActivation] = useState(0)
 
   const totalArea = useMemo(
     () => areas.reduce((sum, area) => sum + (Number(area.areaHa) || 0), 0),
@@ -281,6 +282,10 @@ export default function MapaTab() {
   const selectedArea = useMemo(
     () => areas.find((area) => area.id === selectedAreaId) || null,
     [areas, selectedAreaId]
+  )
+  const selectedAreaOccurrences = useMemo(
+    () => selectedArea ? occurrences.filter((item) => item.fieldAreaId === selectedArea.id) : [],
+    [occurrences, selectedArea]
   )
 
   useEffect(() => {
@@ -292,9 +297,11 @@ export default function MapaTab() {
     syncOccurrences()
     window.addEventListener("focus", syncOccurrences)
     window.addEventListener("storage", syncOccurrences)
+    window.addEventListener("zenith:field-occurrences-updated", syncOccurrences)
     return () => {
       window.removeEventListener("focus", syncOccurrences)
       window.removeEventListener("storage", syncOccurrences)
+      window.removeEventListener("zenith:field-occurrences-updated", syncOccurrences)
     }
   }, [])
 
@@ -383,6 +390,18 @@ export default function MapaTab() {
   useEffect(() => {
     renderAreasOnMap()
   }, [areas, selectedAreaId])
+
+  useEffect(() => {
+    if (mapViewMode !== "2d" || !selectedAreaId || !mapRef.current || !featureGroupRef.current) return
+
+    const selectedLayer = featureGroupRef.current
+      .getLayers()
+      .find((layer) => layer._farmAreaId === selectedAreaId)
+
+    if (selectedLayer) {
+      mapRef.current.fitBounds(selectedLayer.getBounds(), { padding: [34, 34], maxZoom: 18 })
+    }
+  }, [areas, mapViewMode, selectedAreaId])
 
   useEffect(() => {
     if (mapViewMode !== "2d" || !mapRef.current) return
@@ -586,12 +605,14 @@ export default function MapaTab() {
     if (deleteDialog.type === "single") {
       const nextAreas = areasRef.current.filter((area) => area.id !== deleteDialog.area.id)
       persistAreas(nextAreas)
+      removeFieldOccurrencesForAreas([deleteDialog.area.id])
       setSelectedAreaId(null)
       setStatusMessage(`${deleteDialog.area.name} removida.`)
       setDeleteDialog(null)
       return
     }
 
+    removeFieldOccurrencesForAreas(areasRef.current.map((area) => area.id))
     persistAreas([])
     setSelectedAreaId(null)
     setStatusMessage("Todas as áreas foram removidas.")
@@ -673,12 +694,16 @@ export default function MapaTab() {
   }
 
   const switchMapView = (nextMode) => {
-    if (nextMode === mapViewMode) return
+    if (nextMode === mapViewMode) {
+      if (nextMode === "3d") setSceneActivation((current) => current + 1)
+      return
+    }
 
     if (nextMode === "3d" && mapRef.current) {
       stopActiveTool({ revertEdit: true })
       const center = mapRef.current.getCenter()
       setSceneInitialView({ center: [center.lng, center.lat], zoom: mapRef.current.getZoom() })
+      setSceneActivation((current) => current + 1)
       setStatusMessage("Visualização 3D: navegue, incline e rotacione o terreno. Para editar áreas, volte ao modo 2D.")
     }
 
@@ -690,6 +715,7 @@ export default function MapaTab() {
     const [longitude, latitude] = sceneCamera.center
     if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) return
     mapRef.current.setView([latitude, longitude], Math.max(3, Math.min(20, sceneCamera.zoom || 15)))
+    setSceneInitialView(sceneCamera)
   }
 
   const locateUser = () => {
@@ -740,7 +766,7 @@ export default function MapaTab() {
 
       searchMarkerRef.current = L.marker([lat, lng]).addTo(mapRef.current)
       searchMarkerRef.current.bindPopup(data[0].display_name).openPopup()
-      mapRef.current.setView([lat, lng], 17)
+      moveMapToLocation(lat, lng)
       setStatusMessage("Local encontrado. Agora contorne a borda real da fazenda.")
     } catch {
       setStatusMessage("Erro ao buscar endereço. Verifique a conexão e tente novamente.")
@@ -797,13 +823,19 @@ export default function MapaTab() {
 
       searchMarkerRef.current = L.marker([lat, lng]).addTo(mapRef.current)
       searchMarkerRef.current.bindPopup(place.display_name).openPopup()
-      mapRef.current.setView([lat, lng], 17)
+      moveMapToLocation(lat, lng)
       setStatusMessage("Local encontrado. Agora contorne a borda real da fazenda.")
     } catch {
       setStatusMessage("Erro ao buscar endereço. Verifique a conexão e tente novamente.")
     } finally {
       setSearching(false)
     }
+  }
+
+  const moveMapToLocation = (latitude, longitude, zoom = 17) => {
+    if (!mapRef.current) return
+    mapRef.current.setView([latitude, longitude], zoom)
+    setSceneInitialView({ center: [longitude, latitude], zoom })
   }
 
   return (
@@ -995,16 +1027,16 @@ export default function MapaTab() {
               <span className="material-symbols-outlined">crisis_alert</span>
               Ocorrências da IA
             </div>
-            {occurrences.filter((item) => !selectedArea || item.fieldAreaId === selectedArea.id).length ? (
+            {selectedAreaOccurrences.length ? (
               <div className="farm-map-occurrence-list">
-                {occurrences.filter((item) => !selectedArea || item.fieldAreaId === selectedArea.id).slice(0, 4).map((item) => (
+                {selectedAreaOccurrences.slice(0, 4).map((item) => (
                   <div className="farm-map-occurrence" key={item.id}>
                     <span className="material-symbols-outlined">{item.source === "monitoramento" ? "satellite_alt" : "biotech"}</span>
                     <div><strong>{String(item.condition || "Ocorrência").replace(/_/g, " ")}</strong><small>{item.fieldAreaName} · {item.confidence}%</small></div>
                   </div>
                 ))}
               </div>
-            ) : <p className="farm-map-empty">Nenhuma ocorrência vinculada {selectedArea ? "a este talhão" : "ao mapa"}.</p>}
+            ) : <p className="farm-map-empty">{selectedArea ? "Nenhuma ocorrência vinculada a este talhão." : "Selecione um talhão para ver as ocorrências vinculadas."}</p>}
           </div>
         </aside>
 
@@ -1027,8 +1059,9 @@ export default function MapaTab() {
                 selectedAreaId={selectedAreaId}
                 initialView={sceneInitialView}
                 apiKey={ARCGIS_API_KEY}
-                onAreaSelect={setSelectedAreaId}
-                onCameraChange={handleSceneCameraChange}
+              onAreaSelect={setSelectedAreaId}
+              onCameraChange={handleSceneCameraChange}
+              activationToken={sceneActivation}
               />
             </Suspense>
           )}

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react"
 import "@arcgis/core/assets/esri/themes/light/main.css"
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max)
+const SCENE_TILT = 58
+const SCENE_HEADING = -18
 
 const hexWithOpacity = (hex, opacity) => {
   const normalized = String(hex || "#22c55e").replace("#", "")
@@ -20,6 +22,16 @@ const hexWithOpacity = (hex, opacity) => {
 const getValidCoordinates = (area) => (area.coordinates || [])
   .map(([latitude, longitude]) => [Number(longitude), Number(latitude)])
   .filter(([longitude, latitude]) => Number.isFinite(longitude) && Number.isFinite(latitude))
+
+const closeRing = (coordinates) => {
+  if (coordinates.length < 3) return coordinates
+  const [firstLongitude, firstLatitude] = coordinates[0]
+  const [lastLongitude, lastLatitude] = coordinates[coordinates.length - 1]
+
+  return firstLongitude === lastLongitude && firstLatitude === lastLatitude
+    ? coordinates
+    : [...coordinates, coordinates[0]]
+}
 
 const getFocusExtent = (areas, selectedAreaId, Extent) => {
   const selectedArea = areas.find((area) => area.id === selectedAreaId)
@@ -50,7 +62,7 @@ const renderAreaGraphics = (runtime, areas, selectedAreaId) => {
   graphicsLayer.removeAll()
 
   areas.forEach((area) => {
-    const ring = getValidCoordinates(area)
+    const ring = closeRing(getValidCoordinates(area))
 
     if (ring.length < 3) return
 
@@ -79,6 +91,7 @@ export default function FarmMap3D({
   apiKey,
   onAreaSelect,
   onCameraChange,
+  activationToken,
 }) {
   const containerRef = useRef(null)
   const runtimeRef = useRef(null)
@@ -91,6 +104,19 @@ export default function FarmMap3D({
 
   useEffect(() => { onAreaSelectRef.current = onAreaSelect }, [onAreaSelect])
   useEffect(() => { onCameraChangeRef.current = onCameraChange }, [onCameraChange])
+  useEffect(() => {
+    initialViewRef.current = initialView
+    const view = runtimeRef.current?.view
+    const center = initialView?.center
+    if (!view || !Array.isArray(center)) return
+
+    view.goTo({
+      center,
+      zoom: clamp(Number(initialView.zoom) || 15, 14, 19),
+      tilt: SCENE_TILT,
+      heading: SCENE_HEADING,
+    }, { duration: 650 }).catch(() => {})
+  }, [initialView])
 
   useEffect(() => {
     let cancelled = false
@@ -146,10 +172,14 @@ export default function FarmMap3D({
           center,
           zoom,
           qualityProfile: window.matchMedia("(max-width: 760px)").matches ? "medium" : "high",
+          environment: {
+            atmosphere: { quality: "high" },
+            lighting: { directShadowsEnabled: true },
+          },
           ui: { components: [] },
         })
 
-        runtimeRef.current = { view, graphicsLayer, Graphic, Polygon, SimpleFillSymbol }
+        runtimeRef.current = { view, graphicsLayer, Graphic, Polygon, SimpleFillSymbol, Extent }
         await view.when()
 
         if (cancelled) return
@@ -158,8 +188,8 @@ export default function FarmMap3D({
 
         const focusExtent = getFocusExtent(areasRef.current, selectedAreaIdRef.current, Extent)
         await view.goTo(focusExtent
-          ? { target: focusExtent, tilt: 45, heading: 0 }
-          : { center, zoom, tilt: 45, heading: 0 },
+          ? { target: focusExtent, tilt: SCENE_TILT, heading: SCENE_HEADING }
+          : { center, zoom, tilt: SCENE_TILT, heading: SCENE_HEADING },
         { duration: 0 })
 
         view.on("click", async (event) => {
@@ -195,10 +225,32 @@ export default function FarmMap3D({
     if (!runtime) return
 
     renderAreaGraphics(runtime, areas, selectedAreaId)
+    const focusExtent = getFocusExtent(areas, selectedAreaId, runtime.Extent)
+    if (focusExtent) {
+      runtime.view.goTo({ target: focusExtent, tilt: SCENE_TILT, heading: SCENE_HEADING }, { duration: 420 }).catch(() => {})
+    }
   }, [areas, selectedAreaId])
 
+  useEffect(() => {
+    const view = runtimeRef.current?.view
+    if (!view) return
+
+    const frame = window.requestAnimationFrame(() => {
+      view.resize()
+      view.focus?.()
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [activationToken])
+
+  const focusScene = () => {
+    const view = runtimeRef.current?.view
+    view?.resize()
+    view?.focus?.()
+  }
+
   return (
-    <div className="farm-map-3d" aria-label="Visualização tridimensional da propriedade">
+    <div className="farm-map-3d" aria-label="Visualização tridimensional da propriedade" onPointerDown={focusScene}>
       <div ref={containerRef} className="farm-map-3d__scene" />
       {errorMessage && <p className="farm-map-3d__error" role="status">{errorMessage}</p>}
     </div>

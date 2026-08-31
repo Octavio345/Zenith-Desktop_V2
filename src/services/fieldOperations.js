@@ -45,6 +45,14 @@ export function removeFieldOccurrence(occurrenceId) {
   notifyOccurrencesChanged()
 }
 
+export function removeFieldOccurrencesForAreas(areaIds) {
+  const ids = new Set(areaIds.filter(Boolean))
+  if (ids.size === 0) return
+  const next = getFieldOccurrences().filter((occurrence) => !ids.has(occurrence.fieldAreaId))
+  localStorage.setItem(OCCURRENCES_KEY, JSON.stringify(next))
+  notifyOccurrencesChanged()
+}
+
 export function createOccurrenceFromAnalysis({ result, fieldArea, imageCount = 0, source = "diagnostico" }) {
   const general = result?.resultado_geral || result || {}
   const condition = general.condicao_predominante || general.doenca || general.disease || "Análise para vistoria"
