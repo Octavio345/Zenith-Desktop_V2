@@ -73,13 +73,7 @@ VITE_ZENITH_EMAIL=
 VITE_ZENITH_INSTAGRAM=
 ```
 
-Variáveis iniciadas por `VITE_` ficam visíveis no código entregue ao navegador; não use esse arquivo para segredos de servidor. Para o clima em produção, registre somente na Vercel (sem `VITE_`):
-
-```env
-OPENWEATHER_API_KEY=
-```
-
-A função `api/weather.js` lê essa variável no servidor e o navegador chama apenas `/api/weather`. O arquivo `.env` é ignorado pelo Git; `.env.example` é o modelo versionado.
+Variáveis iniciadas por `VITE_` ficam visíveis no código entregue ao navegador; não use esse arquivo para segredos de servidor. O arquivo `.env` é ignorado pelo Git; `.env.example` é o modelo versionado.
 
 `VITE_ARCGIS_API_KEY` habilita a imagem de satélite e o modo 3D. É uma credencial pública de cliente e deve ser restringida no painel ArcGIS aos domínios autorizados da aplicação.
 
@@ -132,9 +126,8 @@ vercel.json               deploy na Vercel
 1. Execute `npm run build`.
 2. Publique `firestore.rules` se houver alteração de permissões.
 3. Confira os domínios autorizados no Firebase Authentication.
-4. Cadastre `OPENWEATHER_API_KEY` em **Vercel > Settings > Environment Variables** e rotacione a chave anterior caso tenha sido exposta.
-5. Restrinja as chaves públicas do Firebase e ArcGIS aos domínios autorizados.
-6. Teste proprietário e funcionário em sessões separadas.
-7. Teste confirmação de e-mail, tarefa, jornada e bloqueio de funcionário.
+4. Restrinja as chaves públicas do Firebase e ArcGIS aos domínios autorizados.
+5. Teste proprietário e funcionário em sessões separadas.
+6. Teste confirmação de e-mail, tarefa, jornada e bloqueio de funcionário.
 
 Leia [DOCUMENTACAO.md](./DOCUMENTACAO.md) para detalhes de permissões, dados e manutenção.

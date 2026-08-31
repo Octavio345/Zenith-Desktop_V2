@@ -1,15 +1,12 @@
-export async function fetchWeatherData(city, state) {
-  const query = new URLSearchParams({ city: String(city || ""), state: String(state || "") })
-  const response = await fetch(`/api/weather?${query}`)
-
-  if (!response.ok) throw new Error("Clima indisponível")
-  return response.json()
-}
+const API_KEY = "d77668673cf15b7d0488f921007cbd6b"
 
 export async function getWeatherByCity(city, state) {
   try {
     if (!city || !state) return null
-    const { weather } = await fetchWeatherData(city, state)
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)},${encodeURIComponent(state)},BR&appid=${API_KEY}&units=metric&lang=pt_br`
+    )
+    const weather = await response.json()
 
     if (Number(weather.cod) !== 200) {
       return null
@@ -27,7 +24,8 @@ export async function getWeatherByCity(city, state) {
       updatedAt: new Date().toISOString()
     }
 
-  } catch {
+  } catch (error) {
+    console.error("Erro ao buscar clima:", error)
     return null
   }
 }

@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react"
 import { useFarm } from "./hooks/useFarm"
-import { fetchWeatherData } from "../../../services/weatherService"
 import "../../../styles/App/Explore.css"
+
+const API_KEY = "d77668673cf15b7d0488f921007cbd6b"
 
 export default function ClimaTab() {
   const { farmData, loading: farmLoading } = useFarm()
@@ -27,9 +28,18 @@ export default function ClimaTab() {
     setError(null)
 
     try {
-      const city = farmData.municipio
+      const city = encodeURIComponent(farmData.municipio)
       const state = farmData.uf
-      const { weather, forecast } = await fetchWeatherData(city, state)
+
+      const weatherRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city},${state},BR&appid=${API_KEY}&units=metric&lang=pt_br`
+      )
+      const weather = await weatherRes.json()
+
+      const forecastRes = await fetch(
+        `https://api.openweathermap.org/data/2.5/forecast?q=${city},${state},BR&appid=${API_KEY}&units=metric&lang=pt_br`
+      )
+      const forecast = await forecastRes.json()
 
       let minTempDay = weather.main.temp
       let maxTempDay = weather.main.temp
