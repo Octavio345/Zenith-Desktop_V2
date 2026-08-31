@@ -411,17 +411,6 @@ O service worker é configurado em `vite.config.js`. Se uma publicação continu
 3. remova o service worker antigo nas DevTools, se necessário;
 4. gere e publique novo build.
 
-## Segurança para produção
-
-`vercel.json` aplica HTTPS estrito via HSTS e inclui políticas para reduzir riscos de conteúdo misto, sniffing de MIME, incorporação por terceiros, permissões do navegador e execução de recursos inesperados. A política de conteúdo permite apenas recursos necessários ao Zenith e atualiza referências HTTP para HTTPS.
-
-As regras do Firestore negam toda coleção que não foi declarada. Funcionários só podem alterar o andamento dos próprios itens e precisam seguir a transição `pendente → em andamento → concluída`; o proprietário confirmado é quem cria, administra e confirma os itens da equipe.
-
-Antes do primeiro deploy, faça três configurações fora do repositório:
-
-1. No Firebase Authentication, adicione apenas os domínios de produção e preview necessários; no Google Cloud, restrinja a chave de cliente do Firebase às APIs e origens usadas pela aplicação.
-2. No ArcGIS, limite a chave pública aos domínios do Zenith. Não use chaves administrativas nem chaves de servidor em variáveis `VITE_`.
-
 ## Checklist de publicação
 
 1. Execute `npm run build`.
