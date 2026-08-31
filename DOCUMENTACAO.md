@@ -28,7 +28,7 @@ Os resultados devem ser usados como apoio à vistoria. A plataforma não emite l
 
 ## Arquitetura da aplicação
 
-O Zenith é uma aplicação cliente: React renderiza a interface no navegador, Firebase concentra autenticação e dados operacionais, e serviços externos fornecem análise visual, clima, endereço e camadas de mapa. Não há uma API de servidor própria neste repositório; por isso, toda integração acessada pelo navegador precisa aceitar CORS e tratar indisponibilidade de rede.
+O Zenith é uma aplicação React no navegador, com Firebase para autenticação e dados operacionais. As integrações públicas são chamadas pelo cliente; a consulta de clima passa pela função serverless `api/weather.js` na Vercel, para que a chave do OpenWeatherMap não seja entregue ao navegador.
 
 | Camada | Responsabilidade | Tecnologia principal |
 | --- | --- | --- |
@@ -37,6 +37,7 @@ O Zenith é uma aplicação cliente: React renderiza a interface no navegador, F
 | Visão computacional | diagnóstico de soja, plantio e geração 3D | APIs HTTP configuráveis |
 | Mapa | visualização, geocodificação, desenho, cálculo e inspeção 3D de talhões | Leaflet, Leaflet Draw, ArcGIS Maps SDK, Esri e OpenStreetMap |
 | Dados locais | itens que ainda não são sincronizados entre dispositivos | `localStorage` e IndexedDB |
+| Função de servidor | consulta de clima sem expor a chave do provedor | Vercel Function em `api/weather.js` |
 | Instalação | versão instalável e cache do navegador | `vite-plugin-pwa` |
 
 Essa separação é importante para manutenção: o front não deve guardar segredos e não deve assumir que uma API externa estará sempre disponível. Cada módulo mostra um retorno seguro quando o serviço não responde.
@@ -301,7 +302,7 @@ A aba inclui links externos oficiais. Como normas e procedimentos podem mudar, a
 | API de diagnóstico de soja | `POST /predict` e `POST /predict/batch`, com `FormData` | analisa uma foto ou um lote de fotos de soja | `services/sojaApi.js` |
 | API de monitoramento de plantio | `POST /analyze`, com `FormData` no campo `file` | devolve cobertura, uniformidade, fileiras, falhas e imagens de sobreposição quando disponíveis | `services/monitoramentoService.js` |
 | API de reconstrução 3D | `POST /webodm/tasks`, `GET /webodm/tasks/:id` e rota de visualização | cria e acompanha o processamento de 2 a 40 fotografias | `services/modelo3dApi.js` |
-| OpenWeatherMap | `GET /data/2.5/weather` e `GET /data/2.5/forecast` | clima atual e previsão por cidade e UF | `services/weatherService.js` e `ClimaTab.jsx` |
+| OpenWeatherMap | `GET /api/weather` no cliente; a função Vercel consulta `weather` e `forecast` no provedor | clima atual e previsão por cidade e UF sem expor credencial | `api/weather.js` e `services/weatherService.js` |
 | BrasilAPI CEP | `GET /api/cep/v2/:cep` | primeira tentativa de endereço e coordenadas por CEP | `MapaTab.jsx` |
 | AwesomeAPI CEP | `GET /json/:cep` | segunda tentativa de coordenadas por CEP | `MapaTab.jsx` |
 | ViaCEP | `GET /ws/:cep/json/` | endereço por CEP para cadastro e busca geográfica | cadastro de fazenda, cadastro completo e mapa |
@@ -319,7 +320,7 @@ VITE_MODELO_3D_API_URL=https://seu-endpoint-3d
 VITE_ARCGIS_API_KEY=sua-chave-publica-do-arcgis
 ```
 
-Sem essas variáveis, o sistema usa as URLs padrão definidas nos respectivos arquivos de serviço. Em produção, o servidor das APIs precisa liberar o domínio da aplicação no CORS. Se qualquer API passar a exigir chave secreta, ela deve ser chamada por um backend/proxy próprio; variáveis iniciadas por `VITE_` ficam visíveis no navegador.
+Sem essas variáveis, o sistema usa as URLs padrão definidas nos respectivos arquivos de serviço. Em produção, o servidor das APIs precisa liberar o domínio da aplicação no CORS. Variáveis iniciadas por `VITE_` ficam visíveis no navegador; qualquer integração que exija chave secreta deve usar uma função de servidor, como o clima.
 
 ### Operação, equipe e rotina de campo
 
@@ -380,7 +381,7 @@ No diagnóstico de soja, respostas como baixa qualidade, baixa confiança ou ima
 
 ### Clima
 
-O clima é consultado com a cidade e a UF da fazenda. A implementação está em `src/services/weatherService.js`. A chave atual do OpenWeatherMap está no arquivo de serviço; antes de abrir um novo ambiente público, migre-a para uma configuração adequada e rotacione a chave existente, se ela já tiver sido exposta.
+O clima é consultado com a cidade e a UF da fazenda. O navegador usa `src/services/weatherService.js` para chamar `/api/weather`; a função `api/weather.js` valida cidade/UF, usa HTTPS para falar com o OpenWeatherMap e lê `OPENWEATHER_API_KEY` somente no ambiente da Vercel. Cadastre essa variável em **Vercel > Settings > Environment Variables** e rotacione uma chave que tenha sido exposta anteriormente.
 
 ### Dados locais
 
@@ -400,6 +401,12 @@ VITE_ZENITH_EMAIL=
 VITE_ZENITH_INSTAGRAM=
 ```
 
+Em produção, configure também, apenas no painel da Vercel:
+
+```env
+OPENWEATHER_API_KEY=
+```
+
 Variáveis `VITE_` são públicas no bundle. Não coloque senhas, chaves administrativas ou credenciais de servidor nesse arquivo. A `VITE_ARCGIS_API_KEY` é usada apenas pelas APIs de mapa no navegador e deve ser restringida por domínio no ArcGIS Location Platform.
 
 ## PWA e cache
@@ -411,14 +418,27 @@ O service worker é configurado em `vite.config.js`. Se uma publicação continu
 3. remova o service worker antigo nas DevTools, se necessário;
 4. gere e publique novo build.
 
+## Segurança para produção
+
+`vercel.json` aplica HTTPS estrito via HSTS e inclui políticas para reduzir riscos de conteúdo misto, sniffing de MIME, incorporação por terceiros, permissões do navegador e execução de recursos inesperados. A política de conteúdo permite apenas recursos necessários ao Zenith e atualiza referências HTTP para HTTPS.
+
+As regras do Firestore negam toda coleção que não foi declarada. Funcionários só podem alterar o andamento dos próprios itens e precisam seguir a transição `pendente → em andamento → concluída`; o proprietário confirmado é quem cria, administra e confirma os itens da equipe.
+
+Antes do primeiro deploy, faça três configurações fora do repositório:
+
+1. Defina `OPENWEATHER_API_KEY` na Vercel e rotacione qualquer chave usada antes no frontend.
+2. No Firebase Authentication, adicione apenas os domínios de produção e preview necessários; no Google Cloud, restrinja a chave de cliente do Firebase às APIs e origens usadas pela aplicação.
+3. No ArcGIS, limite a chave pública aos domínios do Zenith. Não use chaves administrativas nem chaves de servidor em variáveis `VITE_`.
+
 ## Checklist de publicação
 
 1. Execute `npm run build`.
 2. Publique regras do Firestore quando houver alteração em permissões.
 3. Revise domínios autorizados no Firebase Authentication.
-4. Teste gestor e funcionário em sessões separadas.
-5. Teste confirmação de e-mail, criação de equipe, bloqueio de acesso, jornada, tarefa e confirmação de conclusão.
-6. Teste cache do PWA em produção.
+4. Configure `OPENWEATHER_API_KEY` na Vercel e confirme que ela não aparece no bundle publicado.
+5. Teste gestor e funcionário em sessões separadas.
+6. Teste confirmação de e-mail, criação de equipe, bloqueio de acesso, jornada, tarefa e confirmação de conclusão.
+7. Teste cache do PWA em produção.
 
 ## Pontos de atenção
 

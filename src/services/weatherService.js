@@ -1,33 +1,33 @@
-const API_KEY = "d77668673cf15b7d0488f921007cbd6b"
+export async function fetchWeatherData(city, state) {
+  const query = new URLSearchParams({ city: String(city || ""), state: String(state || "") })
+  const response = await fetch(`/api/weather?${query}`)
+
+  if (!response.ok) throw new Error("Clima indisponível")
+  return response.json()
+}
 
 export async function getWeatherByCity(city, state) {
   try {
     if (!city || !state) return null
-    const response = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)},${encodeURIComponent(state)},BR&appid=${API_KEY}&units=metric&lang=pt_br`
-    ) 
+    const { weather } = await fetchWeatherData(city, state)
 
-    const data = await response.json()
-
-    if (data.cod !== 200) {
-      console.error("Cidade não encontrada:", data.message)
+    if (Number(weather.cod) !== 200) {
       return null
     }
 
     return {
-      temperature: Math.round(data.main.temp),
-      feelsLike: Math.round(data.main.feels_like),
-      humidity: data.main.humidity,
-      windSpeed: Math.round((data.wind?.speed || 0) * 3.6),
-      rain: data.rain?.["1h"] || 0,
-      conditionDescription: data.weather?.[0]?.description || "Condição atual",
-      description: data.weather?.[0]?.description || "Condição atual",
-      icon: data.weather?.[0]?.icon || "",
+      temperature: Math.round(weather.main.temp),
+      feelsLike: Math.round(weather.main.feels_like),
+      humidity: weather.main.humidity,
+      windSpeed: Math.round((weather.wind?.speed || 0) * 3.6),
+      rain: weather.rain?.["1h"] || 0,
+      conditionDescription: weather.weather?.[0]?.description || "Condição atual",
+      description: weather.weather?.[0]?.description || "Condição atual",
+      icon: weather.weather?.[0]?.icon || "",
       updatedAt: new Date().toISOString()
     }
 
-  } catch (error) {
-    console.error("Erro ao buscar clima:", error)
+  } catch {
     return null
   }
 }

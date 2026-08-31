@@ -64,6 +64,46 @@ service cloud.firestore {
         && perfilEstaAtivo(get(/databases/$(database)/documents/users/$(employeeId)).data);
     }
 
+    function funcionarioIniciaTarefa() {
+      return resource.data.status == "pendente"
+        && request.resource.data.status == "andamento"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status",
+          "startedAt",
+          "updatedAt"
+        ]);
+    }
+
+    function funcionarioConcluiTarefa() {
+      return resource.data.status == "andamento"
+        && request.resource.data.status == "concluida"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status",
+          "completedAt",
+          "updatedAt"
+        ]);
+    }
+
+    function funcionarioIniciaAtividade() {
+      return resource.data.status == "pendente"
+        && request.resource.data.status == "em_andamento"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status",
+          "startedAt",
+          "updatedAt"
+        ]);
+    }
+
+    function funcionarioConcluiAtividade() {
+      return resource.data.status == "em_andamento"
+        && request.resource.data.status == "concluida"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status",
+          "completedAt",
+          "updatedAt"
+        ]);
+    }
+
     match /users/{userId} {
 
 
@@ -210,15 +250,7 @@ service cloud.firestore {
                     && resource.data.employeeId == request.auth.uid
                     && request.resource.data.ownerId == resource.data.ownerId
                     && request.resource.data.employeeId == resource.data.employeeId
-                    && request.resource.data.status in ["andamento", "concluida"]
-                    && request.resource.data.diff(resource.data)
-                      .affectedKeys()
-                      .hasOnly([
-                        "status",
-                        "startedAt",
-                        "completedAt",
-                        "updatedAt"
-                      ]);
+                    && (funcionarioIniciaTarefa() || funcionarioConcluiTarefa());
 
       allow delete: if administradorConfirmado()
                     && resource.data.ownerId == request.auth.uid;
@@ -265,15 +297,7 @@ service cloud.firestore {
                     && resource.data.assigneeId == request.auth.uid
                     && request.resource.data.ownerId == resource.data.ownerId
                     && request.resource.data.assigneeId == resource.data.assigneeId
-                    && request.resource.data.status in ["em_andamento", "concluida"]
-                    && request.resource.data.diff(resource.data)
-                      .affectedKeys()
-                      .hasOnly([
-                        "status",
-                        "startedAt",
-                        "completedAt",
-                        "updatedAt"
-                      ]);
+                    && (funcionarioIniciaAtividade() || funcionarioConcluiAtividade());
 
       allow delete: if administradorConfirmado()
                     && resource.data.ownerId == request.auth.uid;
