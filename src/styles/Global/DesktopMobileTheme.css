@@ -951,6 +951,19 @@ html,body,button,input,select,textarea,h1,h2,h3,h4,h5,h6,p,a,label,strong,small,
   opacity: 1 !important;
 }
 
+/* Mantém o CTA de atividade dentro da paleta agrícola, sem o verde neon do Explorer. */
+.atividades-container .empty-state > button {
+  background: #2e6f46 !important;
+  border-color: #2e6f46 !important;
+  color: #ffffff !important;
+  box-shadow: 0 9px 20px rgba(39, 108, 71, .2) !important;
+}
+
+.atividades-container .empty-state > button:hover {
+  background: #245c39 !important;
+  border-color: #245c39 !important;
+}
+
 .owner-task-item__confirm {
   grid-column: 2 / -1 !important;
   min-height: 34px !important;

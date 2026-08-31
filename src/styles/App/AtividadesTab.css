@@ -786,7 +786,8 @@
   font-size: 14px;
 }
 
-.confirm-text strong { color: var(--text); font-weight: 600; }
+.atividades-modal .confirm-text { color: #5f7266 !important; }
+.atividades-modal .confirm-text strong { color: #173326 !important; font-weight: 750; }
 
 
 @media (max-width: 640px) {

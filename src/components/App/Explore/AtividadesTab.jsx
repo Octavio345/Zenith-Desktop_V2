@@ -6,7 +6,7 @@ import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query, updateDo
 import { auth, db } from "../../../services/firebase"
 import { isAccountBlocked, isOperationalRole } from "../../../services/accessControl"
 import { isAwaitingOwnerConfirmation, isConfirmedWorkItemExpired } from "../../../services/workItemLifecycle"
-import { clearActivityDraft, getActivityDraft } from "../../../services/fieldOperations"
+import { clearActivityDraft, getActivityDraft, removeFieldOccurrence } from "../../../services/fieldOperations"
 import CustomSelect from "../Global/CustomSelect"
 import "../../../styles/App/AtividadesTab.css"
 
@@ -166,7 +166,12 @@ export default function AtividadesTab() {
 
   const deleteActivity = async (id) => {
     if (!isOwner) return
-    try { await deleteDoc(doc(db, "activities", id)); setDeleteTarget(null) }
+    try {
+      await deleteDoc(doc(db, "activities", id))
+      removeFieldOccurrence(deleteTarget?.occurrenceId)
+      setActivities((current) => current.filter((activity) => activity.id !== id))
+      setDeleteTarget(null)
+    }
     catch (error) { console.error("Erro ao excluir atividade:", error); setActivityMessage("Não foi possível excluir a atividade.") }
   }
 

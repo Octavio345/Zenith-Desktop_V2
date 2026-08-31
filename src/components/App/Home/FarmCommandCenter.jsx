@@ -41,9 +41,11 @@ export default function FarmCommandCenter({ activities = [], onOpen }) {
     sync()
     window.addEventListener("focus", sync)
     window.addEventListener("storage", sync)
+    window.addEventListener("zenith:field-occurrences-updated", sync)
     return () => {
       window.removeEventListener("focus", sync)
       window.removeEventListener("storage", sync)
+      window.removeEventListener("zenith:field-occurrences-updated", sync)
     }
   }, [])
 

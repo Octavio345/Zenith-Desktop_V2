@@ -1,6 +1,10 @@
 const ACTIVITY_DRAFT_KEY = "zenithActivityDraft"
 const OCCURRENCES_KEY = "zenithFieldOccurrences"
 
+function notifyOccurrencesChanged() {
+  window.dispatchEvent(new Event("zenith:field-occurrences-updated"))
+}
+
 function readJson(key, fallback) {
   try {
     const value = localStorage.getItem(key)
@@ -30,7 +34,15 @@ export function getFieldOccurrences() {
 export function saveFieldOccurrence(occurrence) {
   const next = [occurrence, ...getFieldOccurrences()].slice(0, 100)
   localStorage.setItem(OCCURRENCES_KEY, JSON.stringify(next))
+  notifyOccurrencesChanged()
   return occurrence
+}
+
+export function removeFieldOccurrence(occurrenceId) {
+  if (!occurrenceId) return
+  const next = getFieldOccurrences().filter((occurrence) => occurrence.id !== occurrenceId)
+  localStorage.setItem(OCCURRENCES_KEY, JSON.stringify(next))
+  notifyOccurrencesChanged()
 }
 
 export function createOccurrenceFromAnalysis({ result, fieldArea, imageCount = 0, source = "diagnostico" }) {
