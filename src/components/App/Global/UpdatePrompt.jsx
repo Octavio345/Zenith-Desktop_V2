@@ -3,13 +3,16 @@ import { useRegisterSW } from "virtual:pwa-register/react"
 import "../../../styles/Global/UpdatePrompt.css"
 
 const UPDATE_INTERVAL_MS = 60 * 60 * 1000
-const REMIND_LATER_MS = 30 * 60 * 1000
+const REMIND_LATER_MS = 5 * 60 * 60 * 1000
 const UPDATE_APPLIED_KEY = "zenith:update-applied"
+const UPDATE_SNOOZE_KEY = "zenith:update-snoozed-until"
 
 export default function UpdatePrompt({ preview = null }) {
   const [registration, setRegistration] = useState(null)
   const [updating, setUpdating] = useState(false)
-  const [snoozed, setSnoozed] = useState(false)
+  const [snoozed, setSnoozed] = useState(
+    () => Number(localStorage.getItem(UPDATE_SNOOZE_KEY)) > Date.now(),
+  )
   const [errorMessage, setErrorMessage] = useState("")
   const [showUpdated, setShowUpdated] = useState(
     () => sessionStorage.getItem(UPDATE_APPLIED_KEY) === "true",
@@ -63,14 +66,25 @@ export default function UpdatePrompt({ preview = null }) {
 
   useEffect(() => {
     if (!snoozed) return undefined
-    const reminderTimer = window.setTimeout(() => setSnoozed(false), REMIND_LATER_MS)
+    const snoozedUntil = Number(localStorage.getItem(UPDATE_SNOOZE_KEY))
+    const remainingTime = Math.max(0, snoozedUntil - Date.now())
+    const reminderTimer = window.setTimeout(() => {
+      localStorage.removeItem(UPDATE_SNOOZE_KEY)
+      setSnoozed(false)
+    }, remainingTime)
     return () => window.clearTimeout(reminderTimer)
   }, [snoozed])
+
+  const remindLater = () => {
+    localStorage.setItem(UPDATE_SNOOZE_KEY, String(Date.now() + REMIND_LATER_MS))
+    setSnoozed(true)
+  }
 
   const installUpdate = async () => {
     if (updating) return
     setUpdating(true)
     setErrorMessage("")
+    localStorage.removeItem(UPDATE_SNOOZE_KEY)
     sessionStorage.setItem(UPDATE_APPLIED_KEY, "true")
 
     try {
@@ -86,33 +100,35 @@ export default function UpdatePrompt({ preview = null }) {
   return (
     <>
       {(needRefresh || preview === "update") && !snoozed && (
-        <aside className="update-prompt" role="alert" aria-live="polite">
-          <button className="update-prompt__close" type="button" onClick={() => setSnoozed(true)} aria-label="Lembrar mais tarde">
-            <span className="material-symbols-outlined" aria-hidden="true">close</span>
-          </button>
-
-          <div className="update-prompt__brand" aria-hidden="true">
-            <img src="/assets/image/Logo-192.png" alt="" />
-            <span className="material-symbols-outlined">sync</span>
-          </div>
-
-          <div className="update-prompt__copy">
-            <small>NOVA VERSÃO DISPONÍVEL</small>
-            <h2>A Zenith ficou ainda melhor</h2>
-            <p>Há melhorias e correções prontas para instalar. A atualização leva apenas alguns segundos.</p>
-          </div>
-
-          {errorMessage && <p className="update-prompt__error">{errorMessage}</p>}
-
-          <div className="update-prompt__actions">
-            <button className="update-prompt__primary" type="button" onClick={installUpdate} disabled={updating}>
-              {updating ? <><i aria-hidden="true" /> Atualizando...</> : <><span className="material-symbols-outlined" aria-hidden="true">system_update_alt</span> Atualizar agora</>}
+        <div className="update-prompt-overlay" role="presentation">
+          <aside className="update-prompt" role="alertdialog" aria-modal="true" aria-labelledby="update-prompt-title" aria-describedby="update-prompt-description">
+            <button className="update-prompt__close" type="button" onClick={remindLater} aria-label="Lembrar em cinco horas">
+              <span className="material-symbols-outlined" aria-hidden="true">close</span>
             </button>
-            <button className="update-prompt__secondary" type="button" onClick={() => setSnoozed(true)} disabled={updating}>
-              Lembrar depois
-            </button>
-          </div>
-        </aside>
+
+            <div className="update-prompt__brand" aria-hidden="true">
+              <img src="/assets/image/Logo-192.png" alt="" />
+              <span className="material-symbols-outlined">sync</span>
+            </div>
+
+            <div className="update-prompt__copy">
+              <small>NOVA VERSÃO DISPONÍVEL</small>
+              <h2 id="update-prompt-title">A Zenith ficou ainda melhor</h2>
+              <p id="update-prompt-description">Há melhorias e correções prontas para instalar. A atualização leva apenas alguns segundos.</p>
+            </div>
+
+            {errorMessage && <p className="update-prompt__error">{errorMessage}</p>}
+
+            <div className="update-prompt__actions">
+              <button className="update-prompt__primary" type="button" onClick={installUpdate} disabled={updating}>
+                {updating ? <><i aria-hidden="true" /> Atualizando...</> : <><span className="material-symbols-outlined" aria-hidden="true">system_update_alt</span> Atualizar agora</>}
+              </button>
+              <button className="update-prompt__secondary" type="button" onClick={remindLater} disabled={updating}>
+                Lembrar em 5 horas
+              </button>
+            </div>
+          </aside>
+        </div>
       )}
 
       {(showUpdated || preview === "updated") && (

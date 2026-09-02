@@ -1,13 +1,29 @@
+.update-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9600;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(17, 53, 36, .34);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  animation: update-overlay-in .25s ease both;
+}
+
 .update-prompt,
+.update-complete {
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
 .update-complete {
   position: fixed;
   right: 24px;
   z-index: 9600;
-  font-family: Inter, "Segoe UI", sans-serif;
 }
 
 .update-prompt {
-  bottom: 24px;
+  position: relative;
   width: min(410px, calc(100vw - 32px));
   overflow: hidden;
   padding: 24px;
@@ -120,10 +136,12 @@
 .update-complete > button .material-symbols-outlined { font-size: 17px; }
 
 @keyframes update-prompt-in { from { opacity: 0; transform: translateY(22px) scale(.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes update-overlay-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes update-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 760px) {
-  .update-prompt { right: 16px; bottom: 94px; padding: 21px; border-radius: 21px; }
+  .update-prompt-overlay { padding: 16px; }
+  .update-prompt { padding: 21px; border-radius: 21px; }
   .update-complete { top: 14px; right: 16px; }
 }
 
@@ -132,6 +150,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .update-prompt, .update-complete, .update-prompt__primary i { animation: none; }
+  .update-prompt-overlay, .update-prompt, .update-complete, .update-prompt__primary i { animation: none; }
   .update-prompt__actions button { transition: none; }
 }
