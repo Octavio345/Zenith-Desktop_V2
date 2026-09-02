@@ -29,7 +29,7 @@ import "./styles/Global/DesktopMobileTheme.css"
 const BRAND_TITLE = "Zenith - Sua precisão agrícola no ponto mais alto"
 // No Windows, a janela instalada já exibe o `name` do manifesto.
 // Um título visível aqui faria o sistema concatenar os dois textos.
-const STANDALONE_TITLE = "\u200B"
+const STANDALONE_TITLE = ""
 
 function AccountRoute({ children }) {
   const [access, setAccess] = useState("loading")
