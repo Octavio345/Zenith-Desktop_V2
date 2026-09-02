@@ -1,4 +1,4 @@
-import { doc, getDoc } from "firebase/firestore"
+import { deleteDoc, doc, getDoc, setDoc } from "firebase/firestore"
 import { db } from "./firebase"
 
 export const ACCOUNT_ROLES = {
@@ -28,14 +28,21 @@ export function getRoleHomePath() {
 
 export async function getUserAccessProfile(uid) {
   if (!uid) return null
-
-  const userSnap = await getDoc(doc(db, "users", uid))
-  if (!userSnap.exists()) return null
-
-  const data = userSnap.data()
-  return {
-    id: userSnap.id,
-    ...data,
-    role: normalizeRole(data.role),
+  for (const profileCollection of ["owners", "employees", "users"]) {
+    const userSnap = await getDoc(doc(db, profileCollection, uid))
+    if (!userSnap.exists()) continue
+    const data = userSnap.data()
+    if (profileCollection === "users") {
+      const targetCollection = isOperationalRole(data.role) ? "employees" : "owners"
+      try {
+        await setDoc(doc(db, targetCollection, uid), data)
+        await deleteDoc(doc(db, "users", uid))
+        return { id: uid, ...data, profileCollection: targetCollection, role: normalizeRole(data.role) }
+      } catch {
+        // Compatibilidade temporária enquanto as regras novas ainda não foram publicadas.
+      }
+    }
+    return { id: userSnap.id, ...data, profileCollection, role: normalizeRole(data.role) }
   }
+  return null
 }

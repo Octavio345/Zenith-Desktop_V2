@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { collection, doc, getDoc, getDocs, onSnapshot, query, updateDoc, where } from "firebase/firestore"
 import { auth, db } from "../../services/firebase"
-import { isOperationalRole } from "../../services/accessControl"
+import { getUserAccessProfile, isOperationalRole } from "../../services/accessControl"
 import { getWeatherByCity } from "../../services/weatherService"
 import { isConfirmedWorkItemExpired } from "../../services/workItemLifecycle"
 import { removeFieldOccurrence } from "../../services/fieldOperations"
@@ -34,11 +34,10 @@ export default function Home() {
   useEffect(() => onAuthStateChanged(auth, async (user) => {
     if (!user) return
     try {
-      const userSnap = await getDoc(doc(db, "users", user.uid))
-      const profile = userSnap.exists() ? userSnap.data() : {}
-      if (userSnap.exists()) setUserData({ ...profile, uid: user.uid })
+      const profile = await getUserAccessProfile(user.uid) || {}
+      if (profile.id) setUserData({ ...profile, uid: user.uid })
       if (isOperationalRole(profile.role)) {
-        const tasksSnap = await getDocs(query(collection(db, "tasks"), where("employeeId", "==", user.uid)))
+        const tasksSnap = await getDocs(query(collection(db, "activities"), where("assigneeId", "==", user.uid)))
         setAssignedTasks(tasksSnap.docs.map((taskDoc) => ({ id: taskDoc.id, ...taskDoc.data() })).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""))))
       } else {
         setAssignedTasks([])
@@ -57,7 +56,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!auth.currentUser || !isOperationalRole(userData?.role)) return undefined
-    const tasksQuery = query(collection(db, "tasks"), where("employeeId", "==", auth.currentUser.uid))
+    const tasksQuery = query(collection(db, "activities"), where("assigneeId", "==", auth.currentUser.uid))
     return onSnapshot(tasksQuery, (snapshot) => {
       setAssignedTasks(snapshot.docs.map((taskDoc) => ({ id: taskDoc.id, ...taskDoc.data() })).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || ""))))
     }, (error) => console.error("Erro ao sincronizar tarefas do funcionário:", error))
@@ -109,12 +108,8 @@ export default function Home() {
   )
   const employeeWorkItems = useMemo(() => {
     if (!isEmployee || !userData?.uid) return []
-    const taskItems = assignedTasks.map((task) => ({ ...task, workCollection: "tasks", progressStatus: "andamento" }))
-    const activityItems = visibleActivities
-      .filter((activity) => activity.scope === "individual" && activity.assigneeId === userData.uid)
-      .map((activity) => ({ ...activity, workCollection: "activities", progressStatus: "em_andamento", due: activity.date || "Sem prazo" }))
-
-    return [...taskItems, ...activityItems]
+    const taskItems = assignedTasks.map((task) => ({ ...task, workCollection: "activities", progressStatus: "em_andamento", due: task.date || "Sem prazo" }))
+    return taskItems
       .filter((item) => !isConfirmedWorkItemExpired(item, lifecycleNow))
       .sort((a, b) => String(b.createdAt || b.date || "").localeCompare(String(a.createdAt || a.date || "")))
   }, [assignedTasks, isEmployee, lifecycleNow, userData?.uid, visibleActivities])
@@ -147,7 +142,7 @@ export default function Home() {
             hours: Math.max(0, Math.round(((now.getTime() - new Date(userData?.workStartedAt || now).getTime()) / 3600000) * 100) / 100),
             lastActivity: `Saída registrada em ${formatClock(now)}`,
           }
-      await updateDoc(doc(db, "users", auth.currentUser.uid), payload)
+      await updateDoc(doc(db, userData?.profileCollection || "employees", auth.currentUser.uid), payload)
       setUserData((current) => ({ ...current, ...payload }))
     } catch (error) {
       console.error("Erro ao registrar jornada:", error)
@@ -157,7 +152,7 @@ export default function Home() {
 
   const updateAssignedTask = async (task, status) => {
     const now = new Date().toISOString()
-    const workCollection = task.workCollection || "tasks"
+    const workCollection = "activities"
     setEmployeeActionError("")
     setEmployeeAction(`${workCollection}:${task.id}`)
     try {
@@ -170,11 +165,8 @@ export default function Home() {
       if (workCollection === "activities" && status === "concluida") {
         removeFieldOccurrence(task.occurrenceId)
       }
-      if (workCollection === "tasks") {
-        setAssignedTasks((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
-      } else {
-        setActivities((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
-      }
+      setAssignedTasks((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
+      setActivities((current) => current.map((item) => item.id === task.id ? { ...item, ...payload } : item))
       setSelectedWorkItem((current) => current?.id === task.id && current.workCollection === workCollection ? { ...current, ...payload } : current)
       return true
     } catch (error) {

@@ -1,7 +1,7 @@
 
 import { BrowserRouter, Navigate, Routes, Route, useLocation } from "react-router-dom"
 import { useState, useEffect, useLayoutEffect, useRef } from "react"
-import { onAuthStateChanged, reload, sendEmailVerification, signOut } from "firebase/auth"
+import { onAuthStateChanged, signOut } from "firebase/auth"
 import { doc, onSnapshot } from "firebase/firestore"
 
 import Intro from "./pages/App/Intro"
@@ -37,7 +37,7 @@ function AccountRoute({ children }) {
   useEffect(() => {
     let stopProfileListener = null
 
-    const stopAuthListener = onAuthStateChanged(auth, (user) => {
+    const stopAuthListener = onAuthStateChanged(auth, async (user) => {
       if (stopProfileListener) {
         stopProfileListener()
         stopProfileListener = null
@@ -48,7 +48,13 @@ function AccountRoute({ children }) {
         return
       }
 
-      stopProfileListener = onSnapshot(doc(db, "users", user.uid), async (profileSnap) => {
+      const currentProfile = await getUserAccessProfile(user.uid)
+      if (!currentProfile) {
+        setAccess("denied")
+        try { await signOut(auth) } catch {   }
+        return
+      }
+      stopProfileListener = onSnapshot(doc(db, currentProfile.profileCollection, user.uid), async (profileSnap) => {
         const profile = profileSnap.exists() ? profileSnap.data() : null
         if (!profile || isAccountBlocked(profile)) {
           sessionStorage.setItem(
@@ -88,15 +94,10 @@ function AccountRoute({ children }) {
 
 function TeamRoute() {
   const [access, setAccess] = useState("loading")
-  const [verificationMessage, setVerificationMessage] = useState("")
 
   useEffect(() => onAuthStateChanged(auth, async (user) => {
     if (!user) {
       setAccess("denied")
-      return
-    }
-    if (!user.emailVerified) {
-      setAccess("unverified")
       return
     }
     try {
@@ -114,44 +115,6 @@ function TeamRoute() {
         <div><strong>Verificando acesso</strong><span>Preparando sua área de trabalho</span></div>
         <i aria-hidden="true" />
       </div>
-    )
-  }
-  if (access === "unverified") {
-    const resendVerification = async () => {
-      if (!auth.currentUser) return
-      try {
-        auth.languageCode = "pt-BR"
-        await sendEmailVerification(auth.currentUser)
-        setVerificationMessage("Novo link enviado. Confira também a caixa de spam.")
-      } catch {
-        setVerificationMessage("Não foi possível reenviar agora. Aguarde alguns minutos e tente novamente.")
-      }
-    }
-    const refreshVerification = async () => {
-      if (!auth.currentUser) return
-      try {
-        await reload(auth.currentUser)
-        if (!auth.currentUser.emailVerified) {
-          setVerificationMessage("O email ainda não foi confirmado. Abra o link recebido e tente novamente.")
-          return
-        }
-        await auth.currentUser.getIdToken(true)
-        window.location.reload()
-      } catch {
-        setVerificationMessage("Não foi possível atualizar a confirmação agora. Tente novamente em instantes.")
-      }
-    }
-    return (
-      <main className="email-verification-gate">
-        <section>
-          <span className="material-symbols-outlined">mark_email_unread</span>
-          <small>SEGURANÇA DA CONTA</small>
-          <h1>Confirme seu email para gerenciar a equipe</h1>
-          <p>Você pode usar a plataforma normalmente. Para cadastrar funcionários e administrar tarefas, confirme o link enviado ao seu email.</p>
-          {verificationMessage && <strong>{verificationMessage}</strong>}
-          <div><button type="button" onClick={resendVerification}>Reenviar confirmação</button><button type="button" onClick={refreshVerification}>Já confirmei</button></div>
-        </section>
-      </main>
     )
   }
   return access === "allowed" ? <AdminTeamDashboard /> : <Navigate to="/home" replace />

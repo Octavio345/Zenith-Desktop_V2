@@ -2,311 +2,115 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function estaLogado() {
-      return request.auth != null;
+    function loggedIn() { return request.auth != null; }
+    function ownerExists() { return loggedIn() && exists(/databases/$(database)/documents/owners/$(request.auth.uid)); }
+    function employeeExists() { return loggedIn() && exists(/databases/$(database)/documents/employees/$(request.auth.uid)); }
+    function legacyExists() { return loggedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function profileExists() { return ownerExists() || employeeExists() || legacyExists(); }
+    function currentProfile() {
+      return ownerExists()
+        ? get(/databases/$(database)/documents/owners/$(request.auth.uid)).data
+        : employeeExists()
+          ? get(/databases/$(database)/documents/employees/$(request.auth.uid)).data
+          : get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
-
-    function perfilExiste() {
-      return estaLogado()
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    function active(profile) { return profile.get("archived", false) != true && profile.get("accessStatus", "active") != "blocked"; }
+    function activeAccount() { return profileExists() && active(currentProfile()); }
+    function isOwner() { return activeAccount() && (!currentProfile().keys().hasAny(["role"]) || currentProfile().role == "admin"); }
+    function belongsTo(ownerId) {
+      return activeAccount() && (request.auth.uid == ownerId || currentProfile().get("ownerId", "") == ownerId || currentProfile().get("teamId", "") == ownerId);
     }
-
-    function perfilAtual() {
-      return get(
-        /databases/$(database)/documents/users/$(request.auth.uid)
-      ).data;
-    }
-
-    function perfilEhAdministrador(profile) {
-      return !profile.keys().hasAny(["role"]) || profile.role == "admin";
-    }
-
-    function perfilEstaAtivo(profile) {
-      return profile.get("archived", false) != true
-        && profile.get("accessStatus", "active") != "blocked";
-    }
-
-    function contaAtiva() {
-      return perfilExiste() && perfilEstaAtivo(perfilAtual());
-    }
-
-    function emailConfirmado() {
-      return estaLogado() && request.auth.token.email_verified == true;
-    }
-
-    function ehAdministrador() {
-      return contaAtiva() && perfilEhAdministrador(perfilAtual());
-    }
-
-    function administradorConfirmado() {
-      return ehAdministrador() && emailConfirmado();
-    }
-
-    function pertenceAoProprietario(ownerId) {
-      return contaAtiva() && (
-        request.auth.uid == ownerId ||
-        (
-          perfilExiste() &&
-          (
-            perfilAtual().ownerId == ownerId ||
-            perfilAtual().teamId == ownerId
-          )
-        )
+    function managedEmployee(employeeId) {
+      return activeAccount() && (
+        (exists(/databases/$(database)/documents/employees/$(employeeId))
+          && get(/databases/$(database)/documents/employees/$(employeeId)).data.ownerId == request.auth.uid
+          && get(/databases/$(database)/documents/employees/$(employeeId)).data.role in ["employee", "collaborator"]
+          && active(get(/databases/$(database)/documents/employees/$(employeeId)).data))
+        || (exists(/databases/$(database)/documents/users/$(employeeId))
+          && get(/databases/$(database)/documents/users/$(employeeId)).data.ownerId == request.auth.uid
+          && get(/databases/$(database)/documents/users/$(employeeId)).data.role in ["employee", "collaborator"])
       );
     }
-
-    function ehFuncionarioDoAdministrador(employeeId) {
-      return contaAtiva()
-        && exists(/databases/$(database)/documents/users/$(employeeId))
-        && get(/databases/$(database)/documents/users/$(employeeId)).data.ownerId == request.auth.uid
-        && get(/databases/$(database)/documents/users/$(employeeId)).data.role in ["employee", "collaborator"]
-        && perfilEstaAtivo(get(/databases/$(database)/documents/users/$(employeeId)).data);
+    function employeeStartsActivity() {
+      return resource.data.status == "pendente" && request.resource.data.status == "em_andamento"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "startedAt", "updatedAt"]);
+    }
+    function employeeCompletesActivity() {
+      return resource.data.status == "em_andamento" && request.resource.data.status == "concluida"
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "completedAt", "updatedAt"]);
     }
 
-    function funcionarioIniciaTarefa() {
-      return resource.data.status == "pendente"
-        && request.resource.data.status == "andamento"
+    match /owners/{ownerId} {
+      allow create: if loggedIn() && request.auth.uid == ownerId && request.resource.data.email == request.auth.token.email
+        && (!request.resource.data.keys().hasAny(["role"]) || request.resource.data.role == "admin");
+      allow read: if loggedIn() && (request.auth.uid == ownerId || (employeeExists() && belongsTo(ownerId)));
+      allow update: if isOwner() && request.auth.uid == ownerId
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          "status",
-          "startedAt",
-          "updatedAt"
+          "name", "age", "type", "document", "email", "profileIcon", "phone", "city", "state",
+          "hectares", "plan", "planName", "updatedAt"
         ]);
-    }
-
-    function funcionarioConcluiTarefa() {
-      return resource.data.status == "andamento"
-        && request.resource.data.status == "concluida"
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          "status",
-          "completedAt",
-          "updatedAt"
-        ]);
-    }
-
-    function funcionarioIniciaAtividade() {
-      return resource.data.status == "pendente"
-        && request.resource.data.status == "em_andamento"
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          "status",
-          "startedAt",
-          "updatedAt"
-        ]);
-    }
-
-    function funcionarioConcluiAtividade() {
-      return resource.data.status == "em_andamento"
-        && request.resource.data.status == "concluida"
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          "status",
-          "completedAt",
-          "updatedAt"
-        ]);
-    }
-
-    match /users/{userId} {
-
-
-      allow create: if estaLogado() && (
-        (
-          request.auth.uid == userId &&
-          request.resource.data.email == request.auth.token.email &&
-          !request.resource.data.keys().hasAny(["ownerId", "teamId"]) &&
-          (
-            !request.resource.data.keys().hasAny(["role"]) ||
-            request.resource.data.role == "admin"
-          )
-        ) ||
-        (
-          administradorConfirmado() &&
-          request.resource.data.role in ["employee", "collaborator"] &&
-          request.resource.data.ownerId == request.auth.uid &&
-          request.resource.data.teamId == request.auth.uid
-        )
-      );
-
-
-
-      allow read: if (
-        estaLogado() && request.auth.uid == userId
-      ) || (
-        contaAtiva() && (
-          (
-            ehAdministrador() &&
-            (
-              resource.data.ownerId == request.auth.uid ||
-              resource.data.teamId == request.auth.uid
-            )
-          ) ||
-          (
-            userId == perfilAtual().ownerId ||
-            userId == perfilAtual().teamId
-          )
-        )
-      );
-
-
-      allow update: if contaAtiva() &&
-        request.auth.uid == userId &&
-        perfilEhAdministrador(resource.data) &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          "name",
-          "age",
-          "type",
-          "document",
-          "email",
-          "profileIcon",
-          "phone",
-          "city",
-          "state",
-          "hectares",
-          "plan",
-          "planName",
-          "updatedAt"
-        ]);
-
-
-      allow update: if administradorConfirmado() &&
-        resource.data.ownerId == request.auth.uid &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          "name",
-          "age",
-          "phone",
-          "type",
-          "document",
-          "employmentType",
-          "position",
-          "sector",
-          "droneModel",
-          "status",
-          "entry",
-          "exit",
-          "hours",
-          "delays",
-          "absences",
-          "lastActivity",
-          "inviteStatus",
-          "archived",
-          "archivedAt",
-          "accessStatus",
-          "updatedAt"
-        ]);
-
-
-      allow update: if contaAtiva() &&
-        request.auth.uid == userId &&
-        resource.data.role in ["employee", "collaborator"] &&
-        request.resource.data.ownerId == resource.data.ownerId &&
-        request.resource.data.teamId == resource.data.teamId &&
-        request.resource.data.role == resource.data.role &&
-        request.resource.data.email == resource.data.email &&
-        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-          "status",
-          "entry",
-          "exit",
-          "hours",
-          "workStartedAt",
-          "workEndedAt",
-          "lastActivity",
-          "updatedAt"
-        ]);
-
-
-
       allow delete: if false;
     }
 
-    match /farms/{farmId} {
-
-      allow create: if ehAdministrador()
-                    && request.resource.data.ownerId == request.auth.uid;
-
-      allow read: if pertenceAoProprietario(resource.data.ownerId);
-
-      allow update, delete: if ehAdministrador()
-                            && resource.data.ownerId == request.auth.uid
-                            && request.resource.data.ownerId == resource.data.ownerId;
+    match /employees/{employeeId} {
+      allow create: if (isOwner() && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.teamId == request.auth.uid && request.resource.data.role in ["employee", "collaborator"])
+        || (loggedIn() && request.auth.uid == employeeId && legacyExists()
+          && get(/databases/$(database)/documents/users/$(employeeId)).data.role in ["employee", "collaborator"]
+          && request.resource.data.role == get(/databases/$(database)/documents/users/$(employeeId)).data.role
+          && request.resource.data.ownerId == get(/databases/$(database)/documents/users/$(employeeId)).data.ownerId
+          && request.resource.data.teamId == get(/databases/$(database)/documents/users/$(employeeId)).data.teamId
+          && request.resource.data.email == get(/databases/$(database)/documents/users/$(employeeId)).data.email);
+      allow read: if (loggedIn() && request.auth.uid == employeeId) || (isOwner() && resource.data.ownerId == request.auth.uid);
+      allow update: if isOwner() && resource.data.ownerId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "name", "age", "phone", "type", "document", "employmentType", "position", "sector", "droneModel",
+          "status", "entry", "exit", "hours", "delays", "absences", "lastActivity", "inviteStatus",
+          "archived", "archivedAt", "accessStatus", "updatedAt"
+        ]);
+      allow update: if activeAccount() && request.auth.uid == employeeId
+        && request.resource.data.ownerId == resource.data.ownerId && request.resource.data.teamId == resource.data.teamId
+        && request.resource.data.role == resource.data.role && request.resource.data.email == resource.data.email
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "status", "entry", "exit", "hours", "workStartedAt", "workEndedAt", "lastActivity", "updatedAt"
+        ]);
+      allow delete: if false;
     }
 
-    match /tasks/{taskId} {
+    match /users/{userId} {
+      allow create, update: if false;
+      allow read: if loggedIn() && (request.auth.uid == userId || (isOwner() && resource.data.ownerId == request.auth.uid));
+      allow delete: if loggedIn() && (request.auth.uid == userId || (isOwner() && resource.data.ownerId == request.auth.uid));
+    }
 
-      allow create: if administradorConfirmado()
-                    && request.resource.data.ownerId == request.auth.uid
-                    && ehFuncionarioDoAdministrador(request.resource.data.employeeId);
-
-      allow read: if contaAtiva() && (
-        resource.data.ownerId == request.auth.uid ||
-        resource.data.employeeId == request.auth.uid
-      );
-
-
-      allow update: if administradorConfirmado()
-                    && resource.data.ownerId == request.auth.uid
-                    && request.resource.data.ownerId == resource.data.ownerId
-                    && request.resource.data.employeeId == resource.data.employeeId;
-
-
-      allow update: if contaAtiva()
-                    && resource.data.employeeId == request.auth.uid
-                    && request.resource.data.ownerId == resource.data.ownerId
-                    && request.resource.data.employeeId == resource.data.employeeId
-                    && (funcionarioIniciaTarefa() || funcionarioConcluiTarefa());
-
-      allow delete: if administradorConfirmado()
-                    && resource.data.ownerId == request.auth.uid;
+    match /farms/{farmId} {
+      allow create: if isOwner() && request.resource.data.ownerId == request.auth.uid;
+      allow read: if belongsTo(resource.data.ownerId);
+      allow update, delete: if isOwner() && resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == resource.data.ownerId;
     }
 
     match /activities/{activityId} {
-
-
-
-      allow create: if administradorConfirmado()
-                    && request.resource.data.ownerId == request.auth.uid
-                    && (
-                      request.resource.data.scope == "general" ||
-                      (
-                        request.resource.data.scope == "individual" &&
-                        ehFuncionarioDoAdministrador(request.resource.data.assigneeId)
-                      )
-                    );
-
-
-
-      allow read: if contaAtiva() && (
-        resource.data.ownerId == request.auth.uid ||
-        (
-          resource.data.scope == "general" &&
-          pertenceAoProprietario(resource.data.ownerId)
-        ) ||
-        resource.data.assigneeId == request.auth.uid
+      allow create: if isOwner() && request.resource.data.ownerId == request.auth.uid && (
+        request.resource.data.scope == "general" ||
+        (request.resource.data.scope == "individual" && managedEmployee(request.resource.data.assigneeId))
       );
-
-      allow update: if administradorConfirmado()
-                    && resource.data.ownerId == request.auth.uid
-                    && request.resource.data.ownerId == resource.data.ownerId
-                    && (
-                      request.resource.data.scope == "general" ||
-                      (
-                        request.resource.data.scope == "individual" &&
-                        ehFuncionarioDoAdministrador(request.resource.data.assigneeId)
-                      )
-                    );
-
-
-      allow update: if contaAtiva()
-                    && resource.data.assigneeId == request.auth.uid
-                    && request.resource.data.ownerId == resource.data.ownerId
-                    && request.resource.data.assigneeId == resource.data.assigneeId
-                    && (funcionarioIniciaAtividade() || funcionarioConcluiAtividade());
-
-      allow delete: if administradorConfirmado()
-                    && resource.data.ownerId == request.auth.uid;
+      allow read: if activeAccount() && (resource.data.ownerId == request.auth.uid
+        || (resource.data.scope == "general" && belongsTo(resource.data.ownerId))
+        || resource.data.assigneeId == request.auth.uid);
+      allow update: if isOwner() && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow update: if activeAccount() && resource.data.assigneeId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId
+        && request.resource.data.assigneeId == resource.data.assigneeId
+        && (employeeStartsActivity() || employeeCompletesActivity());
+      allow delete: if isOwner() && resource.data.ownerId == request.auth.uid;
     }
 
-
-    match /{document=**} {
-      allow read, write: if false;
+    match /tasks/{taskId} {
+      allow create, update: if false;
+      allow read, delete: if isOwner() && resource.data.ownerId == request.auth.uid;
     }
+
+    match /{document=**} { allow read, write: if false; }
   }
-
 }

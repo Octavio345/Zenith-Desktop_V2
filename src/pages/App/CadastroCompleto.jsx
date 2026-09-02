@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../services/firebase"
-import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification } from "firebase/auth"
+import { createUserWithEmailAndPassword, deleteUser } from "firebase/auth"
 import { doc, setDoc, addDoc, collection } from "firebase/firestore"
 import { ACCOUNT_ROLES } from "../../services/accessControl"
 import CustomSelect from "../../components/App/Global/CustomSelect"
@@ -112,7 +112,7 @@ export default function CadastroCompleto() {
     name: "", age: "", type: "", document: "", email: "", password: "", confirmPassword: "", plan: "agro-vision"
   })
   const [farmData, setFarmData] = useState({
-    name: "", tipo_proprietario: "", data_aquisicao: "", cep: "",
+    name: "", tipo_proprietario: "", documento_proprietario: "", data_aquisicao: "", cep: "",
     bairro: "", municipio: "", uf: "", area_total: "", telefone: "", plantacao: "Soja"
   })
 
@@ -146,6 +146,11 @@ export default function CadastroCompleto() {
   }
   const handleFarmChange = (e) => {
     const { name, value } = e.target
+    if (name === "tipo_proprietario") {
+      setFarmData({ ...farmData, tipo_proprietario: value, documento_proprietario: "" })
+      setAlertMessage({ type: "", text: "" })
+      return
+    }
     let formatted = value
     if (name === "name") formatted = value.replace(/\s+/g, " ").slice(0, 80)
     if (name === "cep") { formatted = formatCEP(value); setCepData(null) }
@@ -153,6 +158,7 @@ export default function CadastroCompleto() {
     if (name === "uf") formatted = value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2)
     if (name === "bairro" || name === "municipio") formatted = value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "").replace(/\s+/g, " ").slice(0, 80)
     if (name === "area_total") formatted = sanitizeHectaresInput(value)
+    if (name === "documento_proprietario") formatted = formatDocument(value, farmData.tipo_proprietario === "PF" ? "CPF" : "PJ")
     setFarmData({ ...farmData, [name]: formatted })
     setAlertMessage({ type: "", text: "" })
   }
@@ -197,11 +203,13 @@ export default function CadastroCompleto() {
   }
   const validateFarmData = async () => {
     const f = farmData
-    if (!f.name || !f.tipo_proprietario || !f.data_aquisicao || !f.cep || !f.bairro || !f.municipio || !f.uf || !f.area_total || !f.telefone || !f.plantacao) {
+    if (!f.name || !f.tipo_proprietario || !f.documento_proprietario || !f.data_aquisicao || !f.cep || !f.bairro || !f.municipio || !f.uf || !f.area_total || !f.telefone || !f.plantacao) {
       setAlertMessage({ type: "error", text: "Preencha todos os dados da fazenda." })
       return false
     }
     if (!isValidHectares(f.area_total)) { setAlertMessage({ type: "error", text: "Informe uma área total maior que zero." }); return false }
+    const ownerDocument = f.documento_proprietario.replace(/\D/g, "")
+    if (f.tipo_proprietario === "PF" ? !isValidCPF(ownerDocument) : !isValidCNPJ(ownerDocument)) { setAlertMessage({ type: "error", text: f.tipo_proprietario === "PJ" ? "Informe um CNPJ válido." : "Informe um CPF válido." }); return false }
     if (!hasMinLetters(f.name, 3)) { setAlertMessage({ type: "error", text: "Informe um nome de fazenda válido." }); return false }
     const cepDigits = f.cep.replace(/\D/g, "")
     if (cepDigits.length !== 8) { setAlertMessage({ type: "error", text: "Informe um CEP válido com 8 dígitos." }); return false }
@@ -225,7 +233,7 @@ export default function CadastroCompleto() {
       const userCred = await createUserWithEmailAndPassword(auth, userData.email, userData.password)
       createdUser = userCred.user
       const selectedPlan = PLAN_OPTIONS.find((plan) => plan.id === userData.plan) || PLAN_OPTIONS[0]
-      await setDoc(doc(db, "users", userCred.user.uid), {
+      await setDoc(doc(db, "owners", userCred.user.uid), {
         name: userData.name,
         age: parseInt(userData.age),
         type: userData.type,
@@ -239,23 +247,12 @@ export default function CadastroCompleto() {
         profileIcon: "agriculture"
       })
 
-      let verificationSent = true
-      try {
-        auth.languageCode = "pt-BR"
-        await sendEmailVerification(userCred.user)
-      } catch (verificationError) {
-        verificationSent = false
-        console.error("Não foi possível enviar a verificação de email:", verificationError)
-      }
-
       localStorage.setItem("zenithAccessType", "owner")
       setUserId(userCred.user.uid)
       setEtapa(2)
       setAlertMessage({
         type: "success",
-        text: verificationSent
-          ? "Conta criada. Enviamos um link de confirmação para seu email. Você já pode cadastrar sua fazenda."
-          : "Conta criada. Cadastre sua fazenda; você poderá reenviar a confirmação de email antes de acessar a equipe.",
+        text: "Conta criada com sucesso. Agora cadastre sua fazenda.",
       })
     } catch (error) {
       if (createdUser && auth.currentUser?.uid === createdUser.uid) {
@@ -273,12 +270,13 @@ export default function CadastroCompleto() {
     try {
       await addDoc(collection(db, "farms"), {
         ...farmData,
+        documento_proprietario: farmData.documento_proprietario.replace(/\D/g, ""),
         area_total: parseHectaresInput(farmData.area_total),
         ownerId: userId,
         ownerName: userData.name,
         createdAt: new Date()
       })
-      await setDoc(doc(db, "users", userId), { hectares: parseHectaresInput(farmData.area_total) }, { merge: true })
+      await setDoc(doc(db, "owners", userId), { hectares: parseHectaresInput(farmData.area_total) }, { merge: true })
       navigate("/home", { replace: true })
     } catch (error) {
       console.error(error)
@@ -313,6 +311,12 @@ export default function CadastroCompleto() {
             <img src="/assets/image/Logo-redonda.webp" alt="" />
             <span><strong>Zenith</strong><small>Sua precisão agrícola no ponto mais alto</small></span>
           </div>
+          {etapa === 1 && (
+            <button className="cc-back-login" type="button" onClick={() => navigate("/login")}>
+              <span className="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+              <span>Voltar para o login</span>
+            </button>
+          )}
         </header>
 
         <div className="cc-stepper">
@@ -470,6 +474,11 @@ export default function CadastroCompleto() {
                     <input type="date" name="data_aquisicao" value={farmData.data_aquisicao} onChange={handleFarmChange}/>
                   </div>
                 </div>
+
+                {farmData.tipo_proprietario && <div className="cc-field">
+                  <label>{farmData.tipo_proprietario === "PJ" ? "CNPJ" : "CPF"}</label>
+                  <input type="text" name="documento_proprietario" value={farmData.documento_proprietario} onChange={handleFarmChange} inputMode="numeric" maxLength={farmData.tipo_proprietario === "PJ" ? 18 : 14} placeholder={farmData.tipo_proprietario === "PJ" ? "00.000.000/0000-00" : "000.000.000-00"}/>
+                </div>}
 
                 <div className="cc-row">
                   <div className="cc-field">

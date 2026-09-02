@@ -11,9 +11,10 @@ import {
   getDocs,
 } from "firebase/firestore"
 import { useLocation, useNavigate } from "react-router-dom"
-import { isOperationalRole } from "../../services/accessControl"
+import { getUserAccessProfile, isOperationalRole } from "../../services/accessControl"
 import { BRAZIL_STATE_CODES, BRAZIL_STATE_SET } from "../../constants/brazilStates"
 import { isValidHectares, parseHectaresInput, sanitizeHectaresInput } from "../../utils/hectares"
+import { documentDigits, formatBrazilianDocument, isValidBrazilianDocument } from "../../utils/brazilianDocuments"
 
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
@@ -196,7 +197,8 @@ export default function Profile() {
     cep: "",
     data_aquisicao: "",
     telefone: "",
-    tipo_proprietario: "Proprietário",
+    tipo_proprietario: "",
+    documento_proprietario: "",
   })
 
   const navigate = useNavigate()
@@ -224,9 +226,8 @@ export default function Profile() {
 
   const loadUserData = async (uid) => {
     try {
-      const snap = await getDoc(doc(db, "users", uid))
-      if (snap.exists()) {
-        const data = snap.data()
+      const data = await getUserAccessProfile(uid)
+      if (data) {
         setUserData(data)
         setFormData({
           name: data.name || "",
@@ -267,6 +268,7 @@ export default function Profile() {
           plantacao: "Soja",
           telefone: data.telefone || "",
           tipo_proprietario: data.tipo_proprietario || "",
+          documento_proprietario: data.documento_proprietario || "",
           uf: data.uf || "",
         }
         setFarmData(farm)
@@ -323,6 +325,11 @@ export default function Profile() {
     if (name === "uf")
       next = value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2)
     if (name === "area_total") next = sanitizeHectaresInput(value)
+    if (name === "tipo_proprietario") {
+      setFarmForm({ ...farmForm, tipo_proprietario: value, documento_proprietario: "" })
+      return
+    }
+    if (name === "documento_proprietario") next = formatBrazilianDocument(value, farmForm.tipo_proprietario)
     setFarmForm({ ...farmForm, [name]: next })
   }
 
@@ -388,7 +395,7 @@ export default function Profile() {
 
     setSaving(true)
     try {
-      await updateDoc(doc(db, "users", user.uid), {
+      await updateDoc(doc(db, userData?.profileCollection || "owners", user.uid), {
         name,
         age: parseInt(formData.age) || null,
         type: formData.type,
@@ -441,6 +448,10 @@ export default function Profile() {
       showAlert("error", "Informe uma área total maior que zero.")
       return
     }
+    if (!farmForm.tipo_proprietario || !isValidBrazilianDocument(farmForm.documento_proprietario, farmForm.tipo_proprietario)) {
+      showAlert("error", farmForm.tipo_proprietario === "PJ" ? "Informe um CNPJ válido." : "Informe um CPF válido.")
+      return
+    }
 
     setSavingFarm(true)
     try {
@@ -455,6 +466,7 @@ export default function Profile() {
         data_aquisicao: farmForm.data_aquisicao || "",
         telefone: farmPhoneDigits,
         tipo_proprietario: farmForm.tipo_proprietario || "Proprietário",
+        documento_proprietario: documentDigits(farmForm.documento_proprietario),
         updatedAt: new Date().toISOString(),
       })
       showAlert("success", "Fazenda atualizada com sucesso!")
@@ -475,7 +487,7 @@ export default function Profile() {
 
     setSavingPlan(planId)
     try {
-      await updateDoc(doc(db, "users", user.uid), {
+      await updateDoc(doc(db, userData?.profileCollection || "owners", user.uid), {
         plan: plan.id,
         planName: plan.name,
         updatedAt: new Date().toISOString(),
@@ -1061,8 +1073,12 @@ export default function Profile() {
                     <p>{formatPhoneInput(farmData.telefone) || "—"}</p>
                   </div>
                   <div className="pf-field">
-                    <label>Tipo de propriedade</label>
-                    <p>{farmData.tipo_proprietario || "—"}</p>
+                    <label>Tipo de proprietário</label>
+                    <p>{farmData.tipo_proprietario === "PJ" ? "Pessoa jurídica" : farmData.tipo_proprietario === "PF" ? "Pessoa física" : "—"}</p>
+                  </div>
+                  <div className="pf-field">
+                    <label>{farmData.tipo_proprietario === "PJ" ? "CNPJ" : "CPF"}</label>
+                    <p>{farmData.documento_proprietario ? formatBrazilianDocument(farmData.documento_proprietario, farmData.tipo_proprietario) : "—"}</p>
                   </div>
                 </div>
               ) : (
@@ -1159,18 +1175,22 @@ export default function Profile() {
                     />
                   </div>
                   <div className="pf-field pf-field-input">
-                    <label htmlFor="farm-tipo">Tipo de propriedade</label>
+                    <label htmlFor="farm-tipo">Tipo de proprietário</label>
                     <select
                       id="farm-tipo"
                       name="tipo_proprietario"
                       value={farmForm.tipo_proprietario}
                       onChange={handleFarmChange}
                     >
-                      <option value="Proprietário">Proprietário</option>
-                      <option value="Arrendatário">Arrendatário</option>
-                      <option value="Parceiro">Parceiro</option>
+                      <option value="">Selecione</option>
+                      <option value="PF">Pessoa física</option>
+                      <option value="PJ">Pessoa jurídica</option>
                     </select>
                   </div>
+                  {farmForm.tipo_proprietario && <div className="pf-field pf-field-input">
+                    <label htmlFor="farm-documento">{farmForm.tipo_proprietario === "PJ" ? "CNPJ" : "CPF"}</label>
+                    <input id="farm-documento" name="documento_proprietario" value={formatBrazilianDocument(farmForm.documento_proprietario, farmForm.tipo_proprietario)} onChange={handleFarmChange} inputMode="numeric" maxLength={farmForm.tipo_proprietario === "PJ" ? 18 : 14} placeholder={farmForm.tipo_proprietario === "PJ" ? "00.000.000/0000-00" : "000.000.000-00"} />
+                  </div>}
                 </div>
               )}
               </div>
@@ -1245,22 +1265,7 @@ export default function Profile() {
                   <label>ID da conta</label>
                   <p className="pf-mono">{user?.uid?.slice(0, 16)}...</p>
                 </div>
-                <div className="pf-field">
-                  <label>Email verificado</label>
-                  <p>
-                    {user?.emailVerified ? (
-                      <span className="pf-badge pf-badge-success">
-                        <span className="material-symbols-outlined">check_circle</span>
-                        Verificado
-                      </span>
-                    ) : (
-                      <span className="pf-badge pf-badge-warn">
-                        <span className="material-symbols-outlined">schedule</span>
-                        Pendente
-                      </span>
-                    )}
-                  </p>
-                </div>
+                <div className="pf-field"><label>Email da conta</label><p>{user?.email || "—"}</p></div>
                 <div className="pf-field">
                   <label>Último login</label>
                   <p>

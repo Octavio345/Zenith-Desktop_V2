@@ -1,4 +1,5 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
 import "leaflet-draw"
@@ -788,18 +789,20 @@ export default function MapaTab() {
       let place = null
 
       if (isBrazilianCep(query)) {
-        const { coordinates, data: brasilApiCepData } = await fetchBrasilApiCep(query).catch(() => ({ coordinates: null, data: null }))
+        const cepData = await fetchCepAddress(query)
+        const isSpecificAddress = Boolean(cepData.logradouro || cepData.bairro)
+        const { coordinates: awesomeCoordinates, data: awesomeCepData } = await fetchAwesomeApiCep(query).catch(() => ({ coordinates: null, data: null }))
 
-        if (coordinates) {
-          place = makeCepPlace(coordinates, brasilApiCepData, query)
+        if (awesomeCoordinates) {
+          place = makeCepPlace(awesomeCoordinates, awesomeCepData, query)
         } else {
-          const { coordinates: awesomeCoordinates, data: awesomeCepData } = await fetchAwesomeApiCep(query).catch(() => ({ coordinates: null, data: null }))
+          place = await geocodeQueries(buildCepSearchQueries(cepData, query), { cep: query })
 
-          if (awesomeCoordinates) {
-            place = makeCepPlace(awesomeCoordinates, awesomeCepData, query)
-          } else {
-            const cepData = await fetchCepAddress(query)
-            place = await geocodeQueries(buildCepSearchQueries(cepData, query), { cep: query })
+          // Coordenadas municipais são aceitáveis somente para CEPs gerais.
+          // Em CEP de rua/bairro, é melhor não marcar do que enviar ao centro da cidade.
+          if (!place && !isSpecificAddress) {
+            const { coordinates, data: brasilApiCepData } = await fetchBrasilApiCep(query).catch(() => ({ coordinates: null, data: null }))
+            if (coordinates) place = makeCepPlace(coordinates, brasilApiCepData, query)
           }
         }
       } else {
@@ -1068,7 +1071,7 @@ export default function MapaTab() {
         </section>
       </section>
 
-      {deleteDialog && (
+      {deleteDialog && createPortal((
         <div className="farm-map-dialog-backdrop" role="presentation">
           <div
             className="farm-map-dialog"
@@ -1097,7 +1100,7 @@ export default function MapaTab() {
             </div>
           </div>
         </div>
-      )}
+      ), document.body)}
     </main>
   )
 }

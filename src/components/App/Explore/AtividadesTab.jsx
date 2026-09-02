@@ -2,9 +2,9 @@ import { useState, useEffect } from "react"
 import { createPortal } from "react-dom"
 import { motion } from "framer-motion"
 import { onAuthStateChanged } from "firebase/auth"
-import { addDoc, collection, deleteDoc, doc, getDoc, onSnapshot, query, updateDoc, where } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, onSnapshot, query, updateDoc, where } from "firebase/firestore"
 import { auth, db } from "../../../services/firebase"
-import { isAccountBlocked, isOperationalRole } from "../../../services/accessControl"
+import { getUserAccessProfile, isAccountBlocked, isOperationalRole } from "../../../services/accessControl"
 import { isAwaitingOwnerConfirmation, isConfirmedWorkItemExpired } from "../../../services/workItemLifecycle"
 import { clearActivityDraft, getActivityDraft, removeFieldOccurrence } from "../../../services/fieldOperations"
 import CustomSelect from "../Global/CustomSelect"
@@ -81,8 +81,7 @@ export default function AtividadesTab() {
   useEffect(() => onAuthStateChanged(auth, async (user) => {
     if (!user) { setUserProfile(null); setActivitiesLoading(false); return }
     try {
-      const profileSnap = await getDoc(doc(db, "users", user.uid))
-      setUserProfile(profileSnap.exists() ? { id: user.uid, ...profileSnap.data() } : null)
+      setUserProfile(await getUserAccessProfile(user.uid))
     } catch (error) {
       console.error("Erro ao carregar acesso das atividades:", error)
       setActivitiesLoading(false)
@@ -97,7 +96,7 @@ export default function AtividadesTab() {
 
     if (!isOperationalRole(userProfile.role)) {
       const ownerActivities = query(collection(db, "activities"), where("ownerId", "==", user.uid))
-      const teamMembers = query(collection(db, "users"), where("ownerId", "==", user.uid))
+      const teamMembers = query(collection(db, "employees"), where("ownerId", "==", user.uid))
       unsubscribers.push(onSnapshot(ownerActivities, (snapshot) => {
         setActivities(snapshot.docs.map((activityDoc) => ({ id: activityDoc.id, ...activityDoc.data() })))
         setActivitiesLoading(false)

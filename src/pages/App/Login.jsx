@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../services/firebase"
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth"
-import { doc, getDoc, setDoc } from "firebase/firestore"
+import { doc, setDoc } from "firebase/firestore"
 import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa"
 import { ACCOUNT_ROLES, getUserAccessProfile, isAccountBlocked, isOperationalRole, normalizeRole } from "../../services/accessControl"
 import "../../styles/App/Login.css"
@@ -54,8 +54,7 @@ export default function Login() {
   const togglePasswordVisibility = () => setShowPassword(!showPassword)
 
   const validateAccountRole = async (user) => {
-    const profileSnap = await getDoc(doc(db, "users", user.uid))
-    const profile = profileSnap.exists() ? profileSnap.data() : null
+    const profile = await getUserAccessProfile(user.uid)
     if (isAccountBlocked(profile)) {
       await signOut(auth)
       const blockedError = new Error("Acesso removido pelo proprietário.")
@@ -70,7 +69,7 @@ export default function Login() {
       roleError.code = "auth/role-mismatch"
       throw roleError
     }
-    return profileSnap
+    return profile
   }
 
   const handleLogin = async () => {
@@ -116,10 +115,10 @@ export default function Login() {
       const provider = new GoogleAuthProvider()
       provider.setCustomParameters({ prompt: "select_account" })
       const credential = await signInWithPopup(auth, provider)
-      const profileRef = doc(db, "users", credential.user.uid)
-      const profileSnap = await getDoc(profileRef)
+      const profileRef = doc(db, "owners", credential.user.uid)
+      const existingProfile = await getUserAccessProfile(credential.user.uid)
 
-      if (!profileSnap.exists()) {
+      if (!existingProfile) {
         if (accessType === "employee") {
           await signOut(auth)
           const employeeError = new Error("Funcionário sem vínculo")

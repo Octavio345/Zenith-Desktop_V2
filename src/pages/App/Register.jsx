@@ -80,7 +80,7 @@ export default function Register() {
         form.password
       )
 
-      await setDoc(doc(db, "users", userCred.user.uid), {
+      await setDoc(doc(db, "owners", userCred.user.uid), {
         name: form.name,
         age: parseInt(form.age),
         type: form.type,

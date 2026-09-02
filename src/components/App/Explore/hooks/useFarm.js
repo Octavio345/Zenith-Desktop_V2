@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { auth, db } from "../../../../services/firebase"
-import { collection, doc, getDoc, query, where, getDocs } from "firebase/firestore"
+import { collection, query, where, getDocs } from "firebase/firestore"
+import { getUserAccessProfile } from "../../../../services/accessControl"
 
 export function useFarm() {
   const [farmData, setFarmData] = useState(null)
@@ -16,8 +17,7 @@ export function useFarm() {
       }
 
       try {
-        const profileSnap = await getDoc(doc(db, "users", user.uid))
-        const profile = profileSnap.exists() ? profileSnap.data() : {}
+        const profile = await getUserAccessProfile(user.uid) || {}
         const farmOwnerId = profile.ownerId || profile.teamId || user.uid
         const q = query(
           collection(db, "farms"),

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { useLocation } from "react-router-dom"
 import { deleteApp, initializeApp } from "firebase/app"
 import { createUserWithEmailAndPassword, deleteUser, getAuth, signOut } from "firebase/auth"
-import { addDoc, collection, doc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDocs, onSnapshot, query, setDoc, updateDoc, where } from "firebase/firestore"
 import { auth, db, firebaseConfig } from "../../services/firebase"
 import { isAwaitingOwnerConfirmation, isConfirmedWorkItemExpired } from "../../services/workItemLifecycle"
 import MenuBar from "../../components/App/Global/MenuBar"
@@ -202,16 +202,15 @@ export default function AdminTeamDashboard() {
       return undefined
     }
 
-    const employeesQuery = query(collection(db, "users"), where("ownerId", "==", ownerId))
-    const ownerTasksQuery = query(collection(db, "tasks"), where("ownerId", "==", ownerId))
+    const employeesQuery = query(collection(db, "employees"), where("ownerId", "==", ownerId))
+    const legacyEmployeesQuery = query(collection(db, "users"), where("ownerId", "==", ownerId))
+    const legacyTasksQuery = query(collection(db, "tasks"), where("ownerId", "==", ownerId))
     const ownerActivitiesQuery = query(collection(db, "activities"), where("ownerId", "==", ownerId))
     let employeeDocs = []
-    let tasks = []
     let activities = []
 
     const syncTeam = () => {
       const allWorkItems = [
-        ...tasks.map((task) => ({ ...task, workCollection: "tasks" })),
         ...activities
           .filter((activity) => activity.scope === "individual" && activity.assigneeId)
           .map((activity) => ({
@@ -278,10 +277,25 @@ export default function AdminTeamDashboard() {
       syncTeam()
       setIsTeamLoading(false)
     }, handleError)
-    const unsubscribeTasks = onSnapshot(ownerTasksQuery, (snapshot) => {
-      tasks = snapshot.docs.map((taskDoc) => ({ id: taskDoc.id, ...taskDoc.data() }))
-      syncTeam()
-      setIsTeamLoading(false)
+    const unsubscribeLegacyEmployees = onSnapshot(legacyEmployeesQuery, (snapshot) => {
+      Promise.all(snapshot.docs.map(async (legacyDoc) => {
+        const data = legacyDoc.data()
+        if (![ACCOUNT_ROLES.EMPLOYEE, ACCOUNT_ROLES.COLLABORATOR].includes(data.role)) return
+        await setDoc(doc(db, "employees", legacyDoc.id), data)
+        await deleteDoc(doc(db, "users", legacyDoc.id))
+      })).catch(handleError)
+    }, handleError)
+    const unsubscribeLegacyTasks = onSnapshot(legacyTasksQuery, (snapshot) => {
+      Promise.all(snapshot.docs.map(async (legacyDoc) => {
+        const data = legacyDoc.data()
+        await setDoc(doc(db, "activities", legacyDoc.id), {
+          ...data,
+          scope: "individual",
+          assigneeId: data.assigneeId || data.employeeId,
+          status: data.status === "andamento" ? "em_andamento" : data.status,
+        })
+        await deleteDoc(doc(db, "tasks", legacyDoc.id))
+      })).catch(handleError)
     }, handleError)
     const unsubscribeActivities = onSnapshot(ownerActivitiesQuery, (snapshot) => {
       activities = snapshot.docs.map((activityDoc) => ({ id: activityDoc.id, ...activityDoc.data() }))
@@ -292,7 +306,8 @@ export default function AdminTeamDashboard() {
 
     return () => {
       unsubscribeEmployees()
-      unsubscribeTasks()
+      unsubscribeLegacyEmployees()
+      unsubscribeLegacyTasks()
       unsubscribeActivities()
       window.clearInterval(lifecycleTimer)
     }
@@ -383,7 +398,11 @@ export default function AdminTeamDashboard() {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       }
-      await addDoc(collection(db, "tasks"), taskPayload)
+      await addDoc(collection(db, "activities"), {
+        ...taskPayload,
+        scope: "individual",
+        assigneeId: selected.id,
+      })
       setTaskDraft(createInitialTaskDraft())
       setTaskAssignmentMessage({ type: "success", text: `Tarefa atribuída a ${selected.name}.` })
     } catch (error) {
@@ -391,7 +410,7 @@ export default function AdminTeamDashboard() {
       setTaskAssignmentMessage({
         type: "error",
         text: error?.code === "permission-denied"
-          ? "O Firebase recusou a operação. Confirme o email do proprietário e publique as regras atuais do Firestore."
+          ? "O Firebase recusou a operação. Confirme se as regras atuais do Firestore foram publicadas."
           : "Não foi possível atribuir a tarefa. Tente novamente.",
       })
     } finally {
@@ -449,7 +468,7 @@ export default function AdminTeamDashboard() {
     try {
       const credential = await createUserWithEmailAndPassword(secondaryAuth, employeePayload.email, newEmployee.password)
       createdAuthUser = credential.user
-      await setDoc(doc(db, "users", credential.user.uid), employeePayload)
+      await setDoc(doc(db, "employees", credential.user.uid), employeePayload)
       setSelectedId(credential.user.uid)
       setNewEmployee({ name: "", email: "", password: "", age: "", phone: "", personType: "CPF", document: "", employmentType: "CLT", position: "", sector: "", droneModel: "", role: ACCOUNT_ROLES.EMPLOYEE })
       setShowEmployeePassword(false)
@@ -481,7 +500,7 @@ export default function AdminTeamDashboard() {
     )))
 
     try {
-      await updateDoc(doc(db, "users", selected.id), {
+      await updateDoc(doc(db, "employees", selected.id), {
         droneModel,
         updatedAt: new Date().toISOString(),
       })
@@ -497,7 +516,7 @@ export default function AdminTeamDashboard() {
     if (!task?.id || task.status !== "concluida" || !auth.currentUser?.uid) return
     const now = new Date().toISOString()
     try {
-      await updateDoc(doc(db, task.workCollection || "tasks", task.id), {
+      await updateDoc(doc(db, "activities", task.id), {
         ownerConfirmedAt: now,
         ownerConfirmedBy: auth.currentUser.uid,
         updatedAt: now,
@@ -562,7 +581,7 @@ export default function AdminTeamDashboard() {
     setIsSavingEmployee(true)
     setEmployeeEditMessage({ type: "", text: "" })
     try {
-      await updateDoc(doc(db, "users", selected.id), payload)
+      await updateDoc(doc(db, "employees", selected.id), payload)
       setEmployees((current) => current.map((employee) => (
         employee.id === selected.id
           ? { ...employee, ...payload, personType: payload.type }
@@ -583,7 +602,7 @@ export default function AdminTeamDashboard() {
     setIsDeletingEmployee(true)
     setDeleteEmployeeError("")
     try {
-      await updateDoc(doc(db, "users", deleteEmployeeTarget.id), {
+      await updateDoc(doc(db, "employees", deleteEmployeeTarget.id), {
         archived: true,
         accessStatus: "blocked",
         archivedAt: new Date().toISOString(),
@@ -993,7 +1012,7 @@ export default function AdminTeamDashboard() {
                   .map((task) => {
                     const status = taskStatusMeta[task.status] || taskStatusMeta.pendente
                     return (
-                      <article className={`owner-task-item ${task.status || "pendente"}`} key={`${task.workCollection || "tasks"}:${task.id}`}>
+                      <article className={`owner-task-item ${task.status || "pendente"}`} key={`activities:${task.id}`}>
                         <span className="material-symbols-outlined owner-task-item__icon">{status.icon}</span>
                         <div className="owner-task-item__content">
                           <div><strong>{task.title || "Tarefa sem título"}</strong><span className={`owner-task-item__status ${task.status || "pendente"}`}>{status.label}</span></div>
