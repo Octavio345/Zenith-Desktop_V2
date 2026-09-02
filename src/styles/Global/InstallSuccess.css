@@ -1,0 +1,169 @@
+.install-success-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(12, 38, 24, .66);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.install-success {
+  position: relative;
+  width: min(430px, 100%);
+  overflow: hidden;
+  padding: 36px;
+  border: 1px solid #d9e7d5;
+  border-top: 4px solid #286c47;
+  border-radius: 28px;
+  background: #fbfdf8;
+  box-shadow: 0 34px 90px rgba(7, 34, 18, .35);
+  color: #183d2b;
+  text-align: center;
+}
+
+.install-success-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #dce7d9;
+  border-radius: 11px;
+  background: #fff;
+  color: #718077;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.install-success-close:hover {
+  border-color: #bad4b8;
+  background: #edf6e9;
+  color: #2d7549;
+}
+
+.install-success__brand {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  margin: 0 auto 20px;
+}
+
+.install-success__brand img {
+  width: 84px;
+  height: 84px;
+  display: block;
+  border: 3px solid #fff;
+  border-radius: 24px;
+  background: #fff;
+  object-fit: cover;
+  box-shadow: 0 15px 32px rgba(34, 91, 54, .2);
+}
+
+.install-success__brand span {
+  position: absolute;
+  right: -7px;
+  bottom: -5px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #f9fcf6;
+  border-radius: 50%;
+  background: #2d7549;
+  color: #fff;
+  font-size: 12px;
+  box-shadow: 0 7px 15px rgba(39, 108, 71, .25);
+}
+
+.install-success__eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #397b50;
+  font-size: .62rem;
+  font-weight: 900;
+  letter-spacing: .15em;
+}
+
+.install-success h2 {
+  margin: 0;
+  color: #173d2b;
+  font: 800 1.75rem/1.08 Georgia, "Times New Roman", serif;
+  letter-spacing: -.035em;
+}
+
+.install-success__message {
+  max-width: 345px;
+  margin: 13px auto 21px;
+  color: #67776d;
+  font-size: .8rem;
+  line-height: 1.65;
+}
+
+.install-success__status {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 20px;
+  padding: 13px 14px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #dce9d8;
+  border-radius: 14px;
+  background: #edf5e9;
+  text-align: left;
+}
+
+.install-success__status > span {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #dcefd6;
+  color: #2d7549;
+  font-size: 19px;
+}
+
+.install-success__status div { display: grid; gap: 2px; }
+.install-success__status strong { color: #214c33; font-size: .75rem; }
+.install-success__status small { color: #748177; font-size: .65rem; line-height: 1.35; }
+
+.success-button {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 14px;
+  background: #286c47;
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 850;
+  cursor: pointer;
+  box-shadow: 0 13px 27px rgba(39, 108, 71, .22);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.success-button .material-symbols-outlined { font-size: 18px; }
+.success-button:hover { transform: translateY(-2px); background: #205c39; box-shadow: 0 17px 32px rgba(39, 108, 71, .3); }
+
+@media (max-width: 480px) {
+  .install-success { padding: 31px 20px 24px; border-radius: 23px; }
+  .install-success h2 { font-size: 1.48rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-success-close, .success-button { transition: none; }
+}

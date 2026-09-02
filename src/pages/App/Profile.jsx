@@ -13,11 +13,13 @@ import {
 import { useLocation, useNavigate } from "react-router-dom"
 import { isOperationalRole } from "../../services/accessControl"
 import { BRAZIL_STATE_CODES, BRAZIL_STATE_SET } from "../../constants/brazilStates"
+import { isValidHectares, parseHectaresInput, sanitizeHectaresInput } from "../../utils/hectares"
 
 import MenuBar from "../../components/App/Global/MenuBar"
 import AppHeader from "../../components/App/Global/AppHeader"
 import AppFooter from "../../components/App/Global/AppFooter"
 import SplashScreen from "../../components/App/Global/SplashScreen"
+import HectareInput from "../../components/App/Global/HectareInput"
 
 import "../../styles/App/Profile.css"
 
@@ -320,6 +322,7 @@ export default function Profile() {
     if (name === "municipio") next = formatCityInput(value)
     if (name === "uf")
       next = value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2)
+    if (name === "area_total") next = sanitizeHectaresInput(value)
     setFarmForm({ ...farmForm, [name]: next })
   }
 
@@ -434,12 +437,16 @@ export default function Profile() {
       showAlert("error", "Selecione uma UF válida para a fazenda.")
       return
     }
+    if (!isValidHectares(farmForm.area_total)) {
+      showAlert("error", "Informe uma área total maior que zero.")
+      return
+    }
 
     setSavingFarm(true)
     try {
       await updateDoc(doc(db, "farms", farmData.id), {
         name: normalizeText(farmForm.name),
-        area_total: parseFloat(farmForm.area_total) || 0,
+        area_total: parseHectaresInput(farmForm.area_total),
         plantacao: "Soja",
         municipio,
         uf: farmForm.uf,
@@ -1072,15 +1079,13 @@ export default function Profile() {
                     />
                   </div>
                   <div className="pf-field pf-field-input">
-                    <label htmlFor="farm-area">Área total (ha)</label>
-                    <input
+                    <label htmlFor="farm-area">Área total</label>
+                    <HectareInput
                       id="farm-area"
                       name="area_total"
-                      type="number"
-                      step="0.1"
                       value={farmForm.area_total}
                       onChange={handleFarmChange}
-                      placeholder="0.0"
+                      placeholder="Ex.: 125,5"
                     />
                   </div>
                   <div className="pf-field pf-field-input">

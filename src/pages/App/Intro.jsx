@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { useEffect, useRef, useState } from "react"
 import "../../styles/App/Intro.css"
 
-import Logo from "/public/assets/image/Logo.png"
+const Logo = "/assets/image/Logo.png"
 
 export default function Intro() {
   const navigate = useNavigate()

@@ -3,15 +3,12 @@ import { useNavigate } from "react-router-dom"
 import { auth, db } from "../../services/firebase"
 import { addDoc, collection, query, where, getDocs } from "firebase/firestore"
 import CustomSelect from "../../components/App/Global/CustomSelect"
+import HectareInput from "../../components/App/Global/HectareInput"
 import { BRAZIL_STATE_OPTIONS } from "../../constants/brazilStates"
+import { isValidHectares, parseHectaresInput, sanitizeHectaresInput } from "../../utils/hectares"
 import "../../styles/App/CadastrarFazenda.css"
 
 const OWNER_TYPES = [{ value: "PF", label: "Pessoa Física" }, { value: "PJ", label: "Pessoa Jurídica" }]
-const AREA_OPTIONS = [
-  { value: "1-6", label: "1 – 6 ha" }, { value: "7-12", label: "7 – 12 ha" },
-  { value: "13-20", label: "13 – 20 ha" }, { value: "21-29", label: "21 – 29 ha" },
-  { value: "30-40", label: "30 – 40 ha" }, { value: "40+", label: "Mais de 40 ha" },
-]
 export default function CadastrarFazenda() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
@@ -26,6 +23,7 @@ export default function CadastrarFazenda() {
       formatted = digits.replace(/^(\d{2})(\d)/, "($1) $2").replace(digits.length <= 10 ? /(\d{4})(\d)/ : /(\d{5})(\d)/, "$1-$2")
     }
     if (name === "uf") formatted = value.replace(/[^a-z]/gi, "").toUpperCase().slice(0, 2)
+    if (name === "area_total") formatted = sanitizeHectaresInput(value)
     setFormData((current) => ({ ...current, [name]: formatted }))
     setNotice("")
   }
@@ -45,11 +43,12 @@ export default function CadastrarFazenda() {
     const user = auth.currentUser
     if (!user) { navigate("/login"); return }
     if (Object.values(formData).some((value) => !String(value).trim())) { setNotice("Preencha todos os campos da propriedade para continuar."); return }
+    if (!isValidHectares(formData.area_total)) { setNotice("Informe uma área total maior que zero."); return }
     try {
       setLoading(true)
       const existing = await getDocs(query(collection(db, "farms"), where("ownerId", "==", user.uid)))
       if (!existing.empty) { navigate("/home"); return }
-      await addDoc(collection(db, "farms"), { ...formData, ownerId: user.uid, createdAt: new Date().toISOString() })
+      await addDoc(collection(db, "farms"), { ...formData, area_total: parseHectaresInput(formData.area_total), ownerId: user.uid, createdAt: new Date().toISOString() })
       navigate("/home")
     } catch (error) { console.error(error); setNotice("Não foi possível salvar a fazenda. Revise os dados e tente novamente.") } finally { setLoading(false) }
   }
@@ -84,7 +83,7 @@ export default function CadastrarFazenda() {
             <label className="farm-field"><span>UF</span><CustomSelect name="uf" value={formData.uf} onChange={handleChange} options={BRAZIL_STATE_OPTIONS} placeholder="Selecione a UF" /></label>
             <label className="farm-field"><span>Bairro</span><input name="bairro" value={formData.bairro} onChange={handleChange} placeholder="Bairro ou distrito" /></label>
             <label className="farm-field"><span>Município</span><input name="municipio" value={formData.municipio} onChange={handleChange} placeholder="Cidade" /></label>
-            <label className="farm-field"><span>Área total</span><CustomSelect name="area_total" value={formData.area_total} onChange={handleChange} options={AREA_OPTIONS} placeholder="Selecione a área" /></label>
+            <label className="farm-field"><span>Área total</span><HectareInput name="area_total" value={formData.area_total} onChange={handleChange} placeholder="Ex.: 125,5" /></label>
             <label className="farm-field"><span>Telefone</span><input type="tel" inputMode="numeric" maxLength={15} name="telefone" value={formData.telefone} onChange={handleChange} placeholder="(00) 00000-0000" /></label>
           </div>
           {notice && <p className="farm-registration__notice">{notice}</p>}

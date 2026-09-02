@@ -15,14 +15,21 @@ import Explore from "./pages/App/Explore"
 import AdminTeamDashboard from "./pages/App/AdminTeamDashboard"
 import { auth, db } from "./services/firebase"
 import { getUserAccessProfile, isAccountBlocked, isOperationalRole } from "./services/accessControl"
+import { InstallAppProvider } from "./contexts/InstallAppContext"
 
 
 import InstallPrompt from "./components/App/Global/InstallPrompt"
 import InstallSuccess from "./components/App/Global/InstallSuccess"
+import UpdatePrompt from "./components/App/Global/UpdatePrompt"
 
 
 import "./App.css"
 import "./styles/Global/DesktopMobileTheme.css"
+
+const BRAND_TITLE = "Zenith - Sua precisão agrícola no ponto mais alto"
+// No Windows, a janela instalada já exibe o `name` do manifesto.
+// Um título visível aqui faria o sistema concatenar os dois textos.
+const STANDALONE_TITLE = "\u200B"
 
 function AccountRoute({ children }) {
   const [access, setAccess] = useState("loading")
@@ -162,6 +169,9 @@ const resetPageScroll = () => {
 
 function AppShell() {
   const location = useLocation()
+  const noticePreview = import.meta.env.DEV
+    ? new URLSearchParams(location.search).get("notice")
+    : null
   const [deferredPrompt, setDeferredPrompt] = useState(null)
   const [showInstallPrompt, setShowInstallPrompt] = useState(false)
   const [showInstallSuccess, setShowInstallSuccess] = useState(false)
@@ -211,93 +221,71 @@ function AppShell() {
 
 
   useEffect(() => {
-
     const userAgent = navigator.userAgent
     setIsIOS(/iPhone|iPad|iPod/i.test(userAgent))
     setIsAndroid(/Android/i.test(userAgent))
 
-
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-                         window.navigator.standalone === true
-
-    if (isStandalone) {
-      setIsInstalled(true)
-      console.log('✅ App rodando em modo standalone')
-      return
+    const displayMode = window.matchMedia("(display-mode: standalone)")
+    const updateInstalledState = () => {
+      const isStandalone = displayMode.matches || window.navigator.standalone === true
+      setIsInstalled(isStandalone)
+      document.title = isStandalone ? STANDALONE_TITLE : BRAND_TITLE
     }
-
+    updateInstalledState()
 
     const params = new URLSearchParams(window.location.search)
-    const shouldInstall = params.get('install') === 'true'
-    const source = params.get('source')
-
-    console.log('📱 Modo:', isStandalone ? 'standalone' : 'navegador')
-    console.log('🔧 Parâmetros:', { shouldInstall, source })
-
-
-    if (shouldInstall && !isStandalone) {
-      setTimeout(() => {
-        setShowInstallPrompt(true)
-      }, 1000)
+    const shouldShowInstall = params.get("install") === "true"
+    let promptTimer = null
+    if (shouldShowInstall && !displayMode.matches) {
+      promptTimer = window.setTimeout(() => setShowInstallPrompt(true), 700)
     }
 
-
-    const handleBeforeInstallPrompt = (e) => {
-      e.preventDefault()
-      console.log('📲 Evento beforeinstallprompt capturado')
-      setDeferredPrompt(e)
-
-
-      if (shouldInstall) {
-        setTimeout(() => {
-          handleInstall()
-        }, 1500)
-      }
+    const handleBeforeInstallPrompt = (event) => {
+      event.preventDefault()
+      setDeferredPrompt(event)
     }
 
-
-
-
-    const handleAppInstalled = (e) => {
-      console.log('🎉 App instalado com sucesso!', e)
+    const handleAppInstalled = () => {
       setIsInstalled(true)
       setShowInstallPrompt(false)
       setShowInstallSuccess(true)
       setDeferredPrompt(null)
-
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-    window.addEventListener('appinstalled', handleAppInstalled)
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+    window.addEventListener("appinstalled", handleAppInstalled)
+    displayMode.addEventListener?.("change", updateInstalledState)
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
-      window.removeEventListener('appinstalled', handleAppInstalled)
+      window.clearTimeout(promptTimer)
+      window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
+      window.removeEventListener("appinstalled", handleAppInstalled)
+      displayMode.removeEventListener?.("change", updateInstalledState)
+      document.title = BRAND_TITLE
     }
   }, [])
 
+  const handleInstall = async () => {
+    if (!deferredPrompt) {
+      setShowInstallPrompt(true)
+      return
+    }
 
-const handleInstall = async () => {
-  if (!deferredPrompt) {
-    console.log('❌ Prompt não disponível')
-    return
+    setShowInstallPrompt(false)
+    await deferredPrompt.prompt()
+    await deferredPrompt.userChoice
+    setDeferredPrompt(null)
   }
 
-  deferredPrompt.prompt()
-
-  const choiceResult = await deferredPrompt.userChoice
-
-  if (choiceResult.outcome === 'accepted') {
-    console.log('✅ Usuário aceitou instalar')
-  } else {
-    console.log('❌ Usuário recusou')
+  const requestInstall = () => {
+    if (isInstalled) return
+    handleInstall()
   }
-
-  setDeferredPrompt(null)
-}
 
   return (
-          <>
+          <InstallAppProvider value={{ isInstalled, canInstall: Boolean(deferredPrompt), requestInstall }}>
+
+            <UpdatePrompt preview={noticePreview} />
 
             {showInstallPrompt && !isInstalled && (
               <InstallPrompt
@@ -305,12 +293,13 @@ const handleInstall = async () => {
                 onClose={() => setShowInstallPrompt(false)}
                 isIOS={isIOS}
                 isAndroid={isAndroid}
+                isDesktop={!isIOS && !isAndroid}
                 hasPrompt={!!deferredPrompt}
               />
             )}
 
 
-            {showInstallSuccess && (
+            {(showInstallSuccess || noticePreview === "installed") && (
               <InstallSuccess
                 onClose={() => setShowInstallSuccess(false)}
                 isIOS={isIOS}
@@ -339,7 +328,7 @@ const handleInstall = async () => {
                 <strong>Zenith</strong>
               </div>
             )}
-          </>
+          </InstallAppProvider>
   )
 }
 

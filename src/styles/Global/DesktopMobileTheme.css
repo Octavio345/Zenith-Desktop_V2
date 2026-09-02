@@ -26,7 +26,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   background: rgba(250,252,246,.94) !important; border-bottom: 1px solid rgba(39,91,57,.12) !important;
   backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); box-shadow: 0 8px 28px rgba(29,68,43,.06) !important;
 }
-.app-header__inner { width: min(1380px, 100%); height: 100%; margin: auto; display: grid; grid-template-columns: 260px 1fr 260px; align-items: center; gap: 24px; }
+.app-header__inner { width: min(1380px, 100%); height: 100%; margin: auto; display: grid; grid-template-columns: 260px 1fr 310px; align-items: center; gap: 24px; }
 .app-header__brand { display: flex; align-items: center; gap: 11px; border: 0; background: transparent; color: var(--zenith-forest); cursor: pointer; text-align: left; }
 .app-header__brand img { width: 42px; height: 42px; border-radius: 14px; object-fit: contain; box-shadow: 0 7px 18px rgba(39,108,71,.18); }
 .app-header__brand > span { display: grid; gap: 1px; }
@@ -38,6 +38,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .app-header__link:hover { background: #edf5ea; color: var(--zenith-green); }
 .app-header__link.active { background: var(--zenith-green); color: white; box-shadow: 0 8px 20px rgba(39,108,71,.2); }
 .app-header__actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; }
+.app-header__install { position:relative; height:42px; padding:0 15px; display:inline-flex; align-items:center; justify-content:center; gap:7px; overflow:hidden; border:1px solid #286c47; border-radius:999px; background:#286c47; color:#fff; font-size:.76rem; font-weight:850; white-space:nowrap; cursor:pointer; box-shadow:0 9px 21px rgba(39,108,71,.2); transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease; }
+.app-header__install:hover { transform:translateY(-2px); background:#205c39; box-shadow:0 13px 27px rgba(39,108,71,.27); }
+.app-header__install .material-symbols-outlined { font-size:18px; }
+.app-header__install.is-ready .material-symbols-outlined { animation:zenith-download-pulse 2.2s ease-in-out infinite; }
+@keyframes zenith-download-pulse { 0%,100%{transform:translateY(0)} 45%{transform:translateY(2px)} 60%{transform:translateY(-1px)} }
 .app-header__icon-btn, .app-header__profile { height: 42px; border: 1px solid var(--zenith-line); background: white; color: var(--zenith-forest); cursor: pointer; }
 .app-header__icon-btn { position: relative; width: 42px; border-radius: 50%; }
 .app-header__icon-btn i { position: absolute; top: 8px; right: 8px; width: 7px; height: 7px; border: 2px solid white; border-radius: 50%; background: #de755d; }
@@ -240,12 +245,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .zenith-home .footer { display:none!important; }
 
 @media (max-width:1100px) {
-  .app-header__inner{grid-template-columns:220px 1fr auto}.app-header__profile span:last-child{display:none}.app-header__link{padding:0 11px}.zenith-home__hero-grid,.home-operation-grid{grid-template-columns:1fr}.quick-summary-grid{grid-template-columns:repeat(2,1fr)}
+  .app-header__inner{grid-template-columns:220px 1fr auto}.app-header__profile span:last-child,.app-header__install span:last-child{display:none}.app-header__install{width:42px;padding:0}.app-header__link{padding:0 11px}.zenith-home__hero-grid,.home-operation-grid{grid-template-columns:1fr}.quick-summary-grid{grid-template-columns:repeat(2,1fr)}
   .diagnostic-main-grid{grid-template-columns:1fr!important}.diagnostic-header{min-height:230px!important}.weather-hero-card,.farm-showcase-card{min-height:370px}
 }
 
 @media (max-width:760px) {
-  .app-header { position:relative!important;height:68px!important;padding:0 18px!important; }.app-header__inner{display:flex;justify-content:space-between}.app-header__brand img{width:38px;height:38px}.app-header__brand small,.app-header__nav,.app-header__profile{display:none}.app-header__actions{margin-left:auto}
+  .app-header { position:relative!important;height:68px!important;padding:0 18px!important; }.app-header__inner{display:flex;justify-content:space-between}.app-header__brand img{width:38px;height:38px}.app-header__brand small,.app-header__nav,.app-header__profile{display:none}.app-header__actions{margin-left:auto}.app-header__install{width:42px;padding:0}.app-header__install span:last-child{display:none}
   .mobile-menu-bar { position:fixed;z-index:1300;left:14px;right:14px;bottom:12px;height:68px;padding:7px 10px;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;border:1px solid rgba(56,102,64,.12);border-radius:28px;background:rgba(252,254,248,.96);box-shadow:0 16px 40px rgba(28,65,38,.2);backdrop-filter:blur(18px); }
   .mobile-menu-bar button{height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border:0;background:transparent;color:#6e7c73}.mobile-menu-bar button.active{color:var(--zenith-green)}.mobile-menu-bar button .material-symbols-outlined{font-size:22px}.mobile-menu-bar button small{font-size:.57rem;font-weight:750}.mobile-menu-bar .mobile-menu-bar__primary{width:54px;height:54px;margin:auto;border-radius:50%;background:var(--zenith-green);color:white;box-shadow:0 10px 24px rgba(39,108,71,.28)}.mobile-menu-bar__primary .material-symbols-outlined{font-size:30px!important}
   .zenith-home__content{width:calc(100% - 28px);padding:24px 0 102px}.zenith-home__greeting{align-items:flex-start}.zenith-home__date{display:none}.zenith-home__greeting h1{font-size:2.25rem}.zenith-home__hero-grid{gap:14px}.weather-hero-card,.farm-showcase-card{min-height:365px;border-radius:24px}.weather-hero-card{padding:24px}.weather-hero-card__copy{max-width:62%}.weather-hero-card>img{right:-18%;top:7%;width:72%;height:61%}.weather-metrics{left:14px;right:14px;bottom:14px;gap:6px}.weather-metrics>div{padding:9px;grid-template-columns:29px 1fr}.weather-metrics .material-symbols-outlined{width:26px;height:26px}.weather-metrics small{font-size:.53rem}.weather-metrics strong{font-size:.68rem}.farm-showcase-card__top,.farm-showcase-card__bottom{left:20px;right:20px}.farm-showcase-card__bottom{display:grid;grid-template-columns:1fr 1fr}.farm-showcase-card__bottom button{grid-column:1/-1;width:100%;justify-content:center;margin-top:8px}.quick-summary-grid{grid-template-columns:1fr;gap:9px}.quick-summary-grid>button{min-height:88px}.zenith-section__head>button{display:none}.home-operation-card{min-height:390px;padding:25px;align-items:flex-start}.home-operation-card>div{width:100%}.home-operation-card>img{right:-14%;bottom:-19%;width:72%;height:72%}.home-activity-card{min-height:260px;padding:20px}

@@ -1,7 +1,9 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import CustomSelect from "../Global/CustomSelect"
+import HectareInput from "../Global/HectareInput"
 import { BRAZIL_STATE_OPTIONS } from "../../../constants/brazilStates"
+import { sanitizeHectaresInput } from "../../../utils/hectares"
 
 const onlyDigits = (value) => String(value || "").replace(/\D/g, "")
 
@@ -59,6 +61,7 @@ const FarmEditForm = ({ farmData, onSave, onCancel, saving }) => {
     if (name === "telefone") nextValue = formatPhoneInput(value)
     if (name === "cep") nextValue = onlyDigits(value).slice(0, 8)
     if (name === "uf") nextValue = value.toUpperCase().slice(0, 2)
+    if (name === "area_total") nextValue = sanitizeHectaresInput(value)
 
     setFormData(prev => ({ ...prev, [name]: nextValue }))
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }))
@@ -140,15 +143,12 @@ const FarmEditForm = ({ farmData, onSave, onCancel, saving }) => {
           {errors.name && <span className="error-message">{errors.name}</span>}
 
           <div className="input-group">
-            <label className="input-label">Area total (ha)</label>
-            <input
-              type="number"
+            <label className="input-label">Area total</label>
+            <HectareInput
               name="area_total"
               value={formData.area_total}
               onChange={handleChange}
-              className={`tech-input ${errors.area_total ? "error" : ""}`}
-              step="0.1"
-              min="0"
+              inputClassName={`tech-input ${errors.area_total ? "error" : ""}`}
               disabled={saving}
             />
           </div>

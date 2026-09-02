@@ -5,7 +5,9 @@ import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification } fro
 import { doc, setDoc, addDoc, collection } from "firebase/firestore"
 import { ACCOUNT_ROLES } from "../../services/accessControl"
 import CustomSelect from "../../components/App/Global/CustomSelect"
+import HectareInput from "../../components/App/Global/HectareInput"
 import { BRAZIL_STATE_OPTIONS, BRAZIL_STATE_SET } from "../../constants/brazilStates"
+import { isValidHectares, parseHectaresInput, sanitizeHectaresInput } from "../../utils/hectares"
 import "../../styles/App/CadastroCompleto.css"
 
 const PERSON_TYPE_OPTIONS = [
@@ -17,11 +19,6 @@ const OWNER_TYPE_OPTIONS = [
   { value: "PF", label: "Pessoa Física" },
   { value: "PJ", label: "Pessoa Jurídica" },
 ]
-
-const AREA_OPTIONS = ["1-6", "7-12", "13-20", "21-29", "30-40"].map((value) => ({
-  value,
-  label: `${value.replace("-", " – ")} ha`,
-}))
 
 const PLAN_OPTIONS = [
   {
@@ -155,6 +152,7 @@ export default function CadastroCompleto() {
     if (name === "telefone") formatted = formatPhone(value)
     if (name === "uf") formatted = value.replace(/[^a-zA-Z]/g, "").toUpperCase().slice(0, 2)
     if (name === "bairro" || name === "municipio") formatted = value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "").replace(/\s+/g, " ").slice(0, 80)
+    if (name === "area_total") formatted = sanitizeHectaresInput(value)
     setFarmData({ ...farmData, [name]: formatted })
     setAlertMessage({ type: "", text: "" })
   }
@@ -203,6 +201,7 @@ export default function CadastroCompleto() {
       setAlertMessage({ type: "error", text: "Preencha todos os dados da fazenda." })
       return false
     }
+    if (!isValidHectares(f.area_total)) { setAlertMessage({ type: "error", text: "Informe uma área total maior que zero." }); return false }
     if (!hasMinLetters(f.name, 3)) { setAlertMessage({ type: "error", text: "Informe um nome de fazenda válido." }); return false }
     const cepDigits = f.cep.replace(/\D/g, "")
     if (cepDigits.length !== 8) { setAlertMessage({ type: "error", text: "Informe um CEP válido com 8 dígitos." }); return false }
@@ -274,11 +273,12 @@ export default function CadastroCompleto() {
     try {
       await addDoc(collection(db, "farms"), {
         ...farmData,
+        area_total: parseHectaresInput(farmData.area_total),
         ownerId: userId,
         ownerName: userData.name,
         createdAt: new Date()
       })
-      await setDoc(doc(db, "users", userId), { hectares: parseFloat(farmData.area_total) }, { merge: true })
+      await setDoc(doc(db, "users", userId), { hectares: parseHectaresInput(farmData.area_total) }, { merge: true })
       navigate("/home", { replace: true })
     } catch (error) {
       console.error(error)
@@ -503,14 +503,12 @@ export default function CadastroCompleto() {
 
                 <div className="cc-row">
                   <div className="cc-field">
-                    <label>Área total (ha)</label>
-                    <CustomSelect
+                    <label>Área total</label>
+                    <HectareInput
                       name="area_total"
                       value={farmData.area_total}
                       onChange={handleFarmChange}
-                      options={AREA_OPTIONS}
-                      placeholder="Selecione a área"
-                      className="cc-custom-select"
+                      placeholder="Ex.: 125,5"
                     />
                   </div>
                   <div className="cc-field">

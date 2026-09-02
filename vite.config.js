@@ -6,35 +6,60 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      manifestFilename: 'manifest.json',
+      injectRegister: 'auto',
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
-        skipWaiting: true,
-        clientsClaim: true,
+        globPatterns: ['index.html', 'assets/index-*.css', 'assets/image/Logo-*.png'],
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            urlPattern: ({ request }) => request.destination === 'script' || request.destination === 'style',
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'zenith-static-v1',
+              expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 }
+            }
+          },
+          {
+            urlPattern: ({ request }) => request.destination === 'image',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'zenith-images-v1',
+              expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 30 }
+            }
+          }
+        ],
       },
-     manifest: {
-  name: 'AgroVoo',
-  short_name: 'AgroVoo',
-  start_url: '/',
-  display: 'standalone',
-  theme_color: '#1B5E20',
-  background_color: '#ffffff',
-   icons: [
-  {
-    src: "/assets/icons/icon-droneP.png",
-    sizes: "192x192",
-    type: "image/png",
-    purpose: "any"
-  },
-  {
-   src: "/assets/icons/icon-droneG.png",
-    sizes: "512x512",
-    type: "image/png",
-    purpose: "any"
-  }
-]
-},
+      manifest: {
+        id: '/',
+        name: 'Zenith - Sua precisão agrícola no ponto mais alto',
+        short_name: 'Zenith',
+        lang: 'pt-BR',
+        description: 'Plataforma para acompanhar a lavoura e tomar decisões mais seguras.',
+        start_url: '/',
+        scope: '/',
+        display: 'standalone',
+        display_override: ['window-controls-overlay', 'standalone'],
+        orientation: 'any',
+        categories: ['business', 'productivity'],
+        theme_color: '#245f3b',
+        background_color: '#f4f8ef',
+        icons: [
+          {
+            src: '/assets/image/Logo-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/assets/image/Logo-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any'
+          }
+        ]
+      },
 
       devOptions: {
         enabled: false

@@ -3,6 +3,8 @@ import { auth, db } from "../../services/firebase"
 import { createUserWithEmailAndPassword } from "firebase/auth"
 import { doc, setDoc } from "firebase/firestore"
 import CustomSelect from "../../components/App/Global/CustomSelect"
+import HectareInput from "../../components/App/Global/HectareInput"
+import { isValidHectares, parseHectaresInput, sanitizeHectaresInput } from "../../utils/hectares"
 import "../../styles/App/Register.css"
 
 export default function Register() {
@@ -40,7 +42,10 @@ export default function Register() {
     if (name === "type") {
       setForm({ ...form, type: value, document: "" })
     } else {
-      setForm({ ...form, [name]: name === "document" ? formatDocument(value, form.type) : value })
+      const formatted = name === "document"
+        ? formatDocument(value, form.type)
+        : name === "hectares" ? sanitizeHectaresInput(value) : value
+      setForm({ ...form, [name]: formatted })
     }
     setAlertMessage({ type: "", text: "" })
   }
@@ -53,6 +58,10 @@ export default function Register() {
 
     if (form.password.length < 6) {
       setAlertMessage({ type: "error", text: "A senha deve ter pelo menos 6 caracteres." })
+      return false
+    }
+    if (!isValidHectares(form.hectares)) {
+      setAlertMessage({ type: "error", text: "Informe uma área maior que zero." })
       return false
     }
 
@@ -76,7 +85,7 @@ export default function Register() {
         age: parseInt(form.age),
         type: form.type,
         document: form.document.replace(/\D/g, ""),
-        hectares: parseFloat(form.hectares),
+        hectares: parseHectaresInput(form.hectares),
         email: form.email,
         createdAt: new Date().toISOString(),
         profileIcon: "👨‍🌾"
@@ -200,13 +209,10 @@ export default function Register() {
 
             <div className="input-group-register">
               <label>Hectares</label>
-              <input
-                type="number"
+              <HectareInput
                 name="hectares"
                 value={form.hectares}
-                placeholder="Ex: 10.5 hectares"
-                min="0"
-                step="0.01"
+                placeholder="Ex.: 125,5"
                 onChange={handleChange}
               />
             </div>

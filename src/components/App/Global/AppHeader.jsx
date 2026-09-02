@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { onAuthStateChanged } from "firebase/auth"
 import { auth } from "../../../services/firebase"
 import { getUserAccessProfile, isOperationalRole } from "../../../services/accessControl"
+import { useInstallApp } from "../../../contexts/InstallAppContext"
 import "../../../styles/Global/AppHeader.css"
 
 const navItems = [
@@ -14,6 +15,7 @@ const navItems = [
 
 export default function AppHeader() {
   const navigate = useNavigate()
+  const { isInstalled, canInstall, requestInstall } = useInstallApp()
   const [canManageTeam, setCanManageTeam] = useState(false)
 
   useEffect(() => onAuthStateChanged(auth, async (user) => {
@@ -66,6 +68,12 @@ export default function AppHeader() {
         </nav>
 
         <div className="app-header__actions">
+          {!isInstalled && (
+            <button className={`app-header__install ${canInstall ? "is-ready" : ""}`} type="button" onClick={requestInstall} aria-label="Baixar aplicativo Zenith para o computador">
+              <span className="material-symbols-outlined" aria-hidden="true">download</span>
+              <span>Baixar app</span>
+            </button>
+          )}
           <button className="app-header__profile" type="button" onClick={() => navigateWithLoader("/profile", { tab: "seguranca" })}>
             <span className="material-symbols-outlined">person</span><span>Minha conta</span>
           </button>
